@@ -158,6 +158,7 @@ $retVal.='<maritalstatus>Single</maritalstatus>';
 $retVal.='<maritalstatus>Married</maritalstatus>';
 $retVal.='<maritalstatus>Separated</maritalstatus>';
 $retVal.='<maritalstatus>Widowed</maritalstatus>';
+$retVal.='<maritalstatus>Divorced</maritalstatus>';
 $retVal.='<sharedphone>No</sharedphone>';
 $retVal.='<sharedphone>Yes</sharedphone>';
 
