@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="598" height="368" initialize="loadData()" xmlns:packages="packages.*">
+
+	<mx:Script>
+	<![CDATA[
+
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import packages.DataGridDataExporter;
+		
+		[Bindable]private var oneEnabled:Boolean = false;
+		[Bindable]private var twoEnabled:Boolean = false;
+		[Bindable]private var showEnabled:Boolean = false;
+		[Bindable]private var tableEnabled:Boolean = false;
+		
+		[Bindable]private var defaultListHeight:uint = 170;
+		[Bindable]private var expandedListHeight:uint = 170;
+				
+		private function loadData():void {	
+			
+			syncButton.visible = (parentApplication.getSiteID() != 1);
+			parentApplication.searching = true;
+			
+			var parameters:Object=new Object();  
+			parameters.action = "Logs";
+			logSearch.url	=	parentApplication.getPath()	+	"sync.php";
+       		logSearch.send(parameters);	
+		}
+
+		private function syncData():void {	
+			
+			parentApplication.searching = true;
+			
+			var parameters:Object=new Object();  
+			parameters.action = "All";
+			syncRun.url	=	parentApplication.getPath()	+	"sync.php";
+       		syncRun.send(parameters);	
+		}
+		
+		private function exportCSV(dgObject:DataGridNew):void{
+			
+			DataGridDataExporter.exportCSV (dgObject);
+		}
+
+		private function toggleExpandedList(dgObject:Object,forceSmall:Boolean=false):void{
+
+			if (forceSmall || (dgObject.height == expandedListHeight)){
+				dgObject.height = defaultListHeight;
+			}
+			else {
+ 				dgObject.height = expandedListHeight;
+	 		}	 			
+	 	}
+				
+		private function comboChange():void {
+			
+			if (queryCombo.selectedIndex == 0) {
+
+				tableCombo.selectedIndex = 0;
+				showEnabled = false; 
+				tableEnabled = false; 
+				reset();				
+	
+			}	
+			else {
+				
+				parentApplication.searching = true;
+				showEnabled = true; 
+
+				var parameters:Object=new Object();  
+				parameters.fileroot = queryCombo.value;
+				parameters.action = "Tables";
+				trace("main combo ("+queryCombo.selectedIndex+") "+ parameters.fileroot);
+				tableSearch.url	=	parentApplication.getPath()	+	"sync.php";
+        		tableSearch.send(parameters); 
+        		
+        	}  
+		}
+
+		private function reset():void {
+			 				
+        	dgList1.dataProvider = null;
+        	oneEnabled = false;
+        	toggleExpandedList(dgList1,true);
+      		dgList2.dataProvider = null;
+      		twoEnabled = false;
+        	toggleExpandedList(dgList2,true);
+  		}
+  
+		private function tableChange():void {
+			
+			if (tableCombo.selectedIndex > 0) {
+				
+				parentApplication.searching = true;
+				var parameters:Object=new Object();  
+				parameters.fileroot = tableCombo.value;
+				parameters.action = "Show";
+				trace("table combo ("+tableCombo.selectedIndex+") "+ parameters.fileroot);
+				showSearch.url	=	parentApplication.getPath()	+	"sync.php";
+        		showSearch.send(parameters); 
+        		 				
+			}
+			else {
+				reset();
+			}
+		}
+
+        ////***************default fault function***************////
+        private function defaultFault(event:FaultEvent):void {
+         	
+            var faultstring:String = event.fault.faultString;
+            Alert.show(faultstring);               
+        }
+        
+        private function tableResult(event:ResultEvent):void {	
+			
+        	tableCombo.dataProvider = tableSearch.lastResult.tablelist.table; 
+			tableCombo.selectedIndex = 0;
+			reset();
+			
+			if (tableCombo.dataProvider.length > 1) {
+				tableEnabled = true;
+				this.focusManager.setFocus(tableCombo);
+				this.focusManager.getFocus().drawFocus(true);
+			}
+        	
+        	parentApplication.searching = false;  			 		
+        }
+
+        private function defaultResult(event:ResultEvent):void {	
+			
+        	dgList1.dataProvider = showSearch.lastResult.rootTag.subTagNew.changerecord; 
+        	oneEnabled = (dgList1.dataProvider.length > 0); 
+
+        	dgList2.dataProvider = showSearch.lastResult.rootTag.subTagOld.changerecord; 
+        	twoEnabled = (dgList2.dataProvider.length > 0); 
+        	
+        	parentApplication.searching = false;  			 		
+        }
+        
+        private function logResult(event:ResultEvent):void {	
+			
+        	queryCombo.dataProvider = logSearch.lastResult.loglist.logfile; 
+        	queryCombo.selectedIndex = queryCombo.dataProvider.length - 1;
+        	
+        	parentApplication.searching = false;
+        	comboChange();  			 		
+        }
+
+        private function syncResult(event:ResultEvent):void {	
+			
+			parentApplication.searching = false;
+			Alert.show("Sync completed - view sync log to see details","Run Sync");
+        	loadData();  			 		
+        }
+                
+        private function showLogFile():void {
+        	
+        	if(queryCombo.selectedItem != null) {
+        		var filePath:String = parentApplication.getPath()+queryCombo.selectedItem+".txt"
+        		navigateToURL(new URLRequest(filePath));
+        	}
+        }
+        		
+	]]>
+	</mx:Script>
+
+	<mx:FormItem x="10" y="6" label="Choose files:" width="85"/>
+	<packages:ComboBoxNew id="queryCombo" width="230" x="100" y="4" enabled="true" change="comboChange()"/>
+
+	<mx:Button x="335" y="4" icon="@Embed(source='../../../files/images/showDetail.gif')" enabled="{showEnabled}" toolTip="Show sync log file" width="25" height="21" click="showLogFile()"/>
+	<mx:Button x="365" y="4" width="25" height="21" click="loadData()" toolTip="Refresh file list" icon="@Embed(source='../../../files/images/refresh.gif')"/>
+
+	<packages:ComboBoxNew id="tableCombo" width="140" x="395" y="4" enabled="{tableEnabled}" change="tableChange()"/>
+	
+	<mx:Button x="539" id="syncButton" y="2" width="39" height="27" click="syncData()" toolTip="Run sync" icon="@Embed(source='../../../files/images/handshake.gif')"/>
+		
+	<packages:DataGridNew id="dgList1" x="10" y="30" height="{defaultListHeight}" width="530"  visible="true" liveScrolling="true" tabEnabled="false"/>
+
+	<mx:Button id="toggleResultHeight1" enabled="{oneEnabled}" x="539" y="30" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList(dgList1)" toolTip="Toggle expanded list" visible="false"/>
+	<mx:Button id="copyResultToClipboard1" enabled="{oneEnabled}" x="539" y="30" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList1)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')" enabled="{oneEnabled}" x="539" y="60" id="printDG1"   width="23" click="parentApplication.doPrint(dgList1)" height="23" toolTip="Print table data"/>
+	
+	<packages:DataGridNew id="dgList2" x="10" y="200" height="{defaultListHeight}" width="530" visible="true" liveScrolling="true" tabEnabled="false"/>
+
+	<mx:Button id="toggleResultHeight2" enabled="{twoEnabled}" x="539" y="200" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList(dgList2)" toolTip="Toggle expanded list" visible="false"/>
+	<mx:Button id="copyResultToClipboard2" enabled="{twoEnabled}" x="539" y="200" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList2)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')" enabled="{twoEnabled}" x="539" y="230" id="printDG2"   width="23" click="parentApplication.doPrint(dgList2)" height="23" toolTip="Print table data"/>
+	
+	<mx:Label x="35" y="247" width="227" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}" visible="false"/>
+	
+	<mx:HTTPService id="syncRun" useProxy="false" method="POST" fault="defaultFault(event)" result="syncResult(event)"/>
+	<mx:HTTPService id="tableSearch" useProxy="false" method="POST" fault="defaultFault(event)" result="tableResult(event)"/>
+	<mx:HTTPService id="showSearch" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="logSearch" useProxy="false" method="POST" fault="defaultFault(event)" result="logResult(event)"/>
+
+</mx:Canvas>
+

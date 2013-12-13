@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabDocumentationClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="10" y="12" label="Application Form Received:" width="180" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="194" y="11" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateApplicationFormReceived" change="checkValid(dateApplicationFormReceived)" editable="true"/>
+	<mx:Button x="304" y="11" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetApplication" click="displayPopUpDoc('Application Form','application_doc_id',dateApplicationFormReceived)" enabled="{listEnabled}" toolTip="Application details"/>
+
+	<mx:FormItem x="10" y="35" label="Psych Report Received:" width="180"/>
+	<mx:DateField x="194" y="34" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePsychReportReceived" editable="true"/>
+	<mx:Button x="304" y="34" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetPsychReport" click="displayPopUpDoc('Psych Report','psych_doc_id',datePsychReportReceived)" enabled="{listEnabled}" toolTip="Psych details"/>
+ 
+	<mx:FormItem x="10" y="58" label="Psych Report Passed To MO:" width="180"/>
+	<mx:DateField x="194" y="57" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePsychReportPassedToMO" editable="true"/>
+
+	<mx:FormItem x="10" y="81" label="Psych Report Recvd From MO:" width="180"/>
+	<mx:DateField x="194" y="80" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePsychReportReceivedFromMO" editable="true"/>
+
+	<mx:FormItem x="10" y="104" label="Psych Report Passed To PD:" width="180"/>
+	<mx:DateField x="194" y="103" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePsychReportPassedToPD" editable="true"/>
+
+	<mx:FormItem x="10" y="127" label="Psych Report Accepted:" width="180"/>
+	<mx:DateField x="194" y="126" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePsychReportAccepted" editable="true"/>
+
+	<mx:FormItem x="10" y="150" label="Employer Reference Received:" width="180"/>
+	<mx:DateField x="194" y="149" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateEmployerRefReceived" editable="true"/>
+	<mx:Button x="304" y="149" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetEmployerRef" click="displayPopUpDoc('Employer Ref','employer_doc_id',dateEmployerRefReceived)" enabled="{listEnabled}" toolTip="Employer details"/>
+
+	<mx:FormItem x="10" y="173" label="Colleague Reference Received:" width="180"/>
+	<mx:DateField x="194" y="172" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateColleagueRefReceived" editable="true"/>
+	<mx:Button x="304" y="172" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetColleagueRef" click="displayPopUpDoc('Colleague Ref','colleague_doc_id',dateColleagueRefReceived)" enabled="{listEnabled}" toolTip="Colleague details"/>
+
+	<mx:FormItem x="10" y="196" label="Medical Form Received" width="180"/>
+	<mx:DateField x="194" y="195" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateMedicalFormReceived" editable="true"/>
+	<mx:Button x="304" y="195" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetMedicalForm" click="displayPopUpDoc('Medical Form','medical_doc_id',dateMedicalFormReceived)" enabled="{listEnabled}" toolTip="Medical details"/>
+
+	<mx:FormItem x="10" y="219" label="Medical Form Passed To MO:" width="180"/>
+	<mx:DateField x="194" y="218" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateMedicalFormPassedToMO" editable="true"/>
+
+	<mx:FormItem x="10" y="242" label="Medical Accepted:" width="180"/>
+	<mx:DateField x="194" y="241" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateMedicalAccepted" editable="true"/>
+
+	<mx:FormItem x="10" y="265" label="Medical Accepted By:" width="180"/>
+	<packages:ComboBoxNew width="160" x="194" y="265" enabled="{inputEnabled}" id="comboMedicalAcceptedBy"/>
+
+	<mx:FormItem x="10" y="290" label="CV Received:" width="180"/>
+	<mx:DateField x="194" y="289" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateCVReceived" editable="true"/>
+	<mx:Button x="304" y="289" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetCV" click="displayPopUpDoc('CV Document','cv_doc_id',dateCVReceived)" enabled="{listEnabled}" toolTip="CV details"/>
+
+	<mx:FormItem label="Secondment Accepted:" width="180" x="362" y="12"/>
+	<mx:DateField x="546" y="11" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateSecondmentAccepted" editable="true"/>
+
+	<mx:FormItem x="362" y="35" label="Contract Received:" width="180"/>	
+	<mx:DateField x="546" y="34" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateContractReceived" editable="true"/>
+	<mx:Button x="656" y="34" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetContract" click="displayPopUpDoc('Contract Document','contract_doc_id',dateContractReceived)" enabled="{listEnabled}" toolTip="Contract details"/>	
+
+	<mx:FormItem x="362" y="58" label="Certificates Received:" width="180"/>
+	<mx:DateField x="546" y="57" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateCertificatesReceived" editable="true"/>
+	<mx:Button x="656" y="57" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetCertificates" click="displayPopUpDoc('Certificates','certificates_doc_id',dateCertificatesReceived)" enabled="{listEnabled}" toolTip="Certificate details"/>	
+
+	<mx:FormItem x="362" y="81" label="Passport Details Received:" width="180"/>
+	<mx:DateField x="546" y="80" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePassportDetailsReceived" editable="true"/>
+	<mx:Button x="656" y="80" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetPassport" click="displayPopUpDoc('Passport Document','passport_doc_id',datePassportDetailsReceived)" enabled="{listEnabled}" toolTip="Passport details"/>	
+
+	<mx:FormItem x="362" y="104" label="Photos Received:" width="180"/>
+	<mx:DateField x="546" y="103" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePhotosReceived" editable="true"/>
+	<mx:Button x="656" y="103" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetPhotos" click="displayPopUpDoc('Photo Document','photos_doc_id',datePhotosReceived)" enabled="{listEnabled}" toolTip="Photo details"/>	
+
+	<mx:FormItem x="362" y="127" label="Professional Certificate Recvd:" width="180"/>
+	<mx:DateField x="546" y="126" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateProfCertificateReceived" editable="true"/>
+	<mx:Button x="656" y="126" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetProfCertificate" click="displayPopUpDoc('Professional Certificate','professional_doc_id',dateProfCertificateReceived)" enabled="{listEnabled}" toolTip="Professional details"/>	
+
+	<mx:FormItem x="362" y="150" label="Minister Reference Received:" width="180"/>
+	<mx:DateField x="546" y="149" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateMinisterRefReceived" editable="true"/>
+	<mx:Button x="656" y="149" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetMinisterRef" click="displayPopUpDoc('Minister Ref','minister_doc_id',dateMinisterRefReceived)" enabled="{listEnabled}" toolTip="Minister details"/>	
+
+	<mx:FormItem x="362" y="173" label="Christian Friend Ref Received:" width="180"/>
+	<mx:DateField x="546" y="172" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateChristianFriendRefReceived" editable="true"/>
+	<mx:Button x="656" y="172" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetFriendRef" click="displayPopUpDoc('Christian Friend Ref','friend_doc_id',dateChristianFriendRefReceived)" enabled="{listEnabled}" toolTip="Christian friend details"/>	
+
+	<mx:FormItem x="362" y="196" label="INF Role Agreed Date:" width="180"/>
+	<mx:DateField x="546" y="195" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePostAgreed" editable="true"/>
+
+	<mx:FormItem x="362" y="219" label="INF Role Agreed:" width="180"/>
+	<packages:ComboBoxNew width="160" x="546" y="219" enabled="{inputEnabled}" id="comboPostAgreed"/>
+
+	<mx:FormItem x="362" y="244" label="Link Person:" width="180"/>	
+	<packages:ComboBoxNew width="160" x="546" y="244" enabled="{inputEnabled}" id="comboLinkPerson"/>
+
+	<mx:FormItem x="362" y="269" label="Interview Report Received:" width="180"/>
+	<mx:DateField x="546" y="268" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateInterviewReportReceived" editable="true"/>
+	<mx:Button x="656" y="268" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetInterview" click="displayPopUpDoc('Interview Document','interview_doc_id',dateInterviewReportReceived)" enabled="{listEnabled}" toolTip="Interview details"/>	
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Documentation" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Documentation Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgList" x="10" y="103"	height="{defaultListHeight}" width="700" 		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" visible="{showDatagrid}">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="25"/>	
+			<mx:DataGridColumn  headerText="CV Recvd" dataField="cv_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Application Recvd" dataField="application_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Medical Recvd" dataField="medical_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Medical To MO"  visible="false" dataField="medical_to_MO_date" width="25"/>
+			<mx:DataGridColumn  headerText="Medical Accepted" dataField="medical_accepted_date" width="25"/>
+			<mx:DataGridColumn  headerText="Medical Accepted By"  visible="false" dataField="medical_accepted_id" width="25"/>
+			<mx:DataGridColumn  headerText="Psych Recvd" dataField="psych_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Psych To MO" visible="false"  dataField="psych_to_MO_date" width="25"/>
+			<mx:DataGridColumn  headerText="Psych From MO" visible="false"  dataField="psych_from_MO_date" width="25"/>
+			<mx:DataGridColumn  headerText="Psych To PD"  visible="false" dataField="psych_to_PD_date" width="25"/>
+			<mx:DataGridColumn  headerText="Psych Accepted" dataField="psych_accepted_date" width="25"/>
+			<mx:DataGridColumn  headerText="Employer Ref Recvd" dataField="employer_ref_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Colleague Ref Recvd"  visible="false" dataField="colleague_ref_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Friend Ref Recvd"  visible="false" dataField="friend_ref_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Minister Ref Recvd"  visible="false" dataField="minister_ref_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Interview Recvd" dataField="interview_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Secondment Accepted" dataField="secondment_accepted_date" width="25"/>			
+			<mx:DataGridColumn  headerText="INF Role Agreed Date" visible="false"  dataField="INF_role_agreed_date" width="25"/>
+			<mx:DataGridColumn  headerText="INF Role Agreed ID" visible="false" dataField="post_agreed_id" width="25"/>
+			<mx:DataGridColumn  headerText="INF Role" dataField="INF_role" width="25"/>
+			<mx:DataGridColumn  headerText="Contract Recvd" dataField="contract_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Certificates Recvd" visible="false"  dataField="certificates_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Photos Recvd" visible="false"  dataField="photos_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Passport Recvd" visible="false"  dataField="passport_recvd_date" width="25"/>			
+			<mx:DataGridColumn  headerText="Professional Recvd"  visible="false" dataField="professional_recvd_date" width="25"/>
+			<mx:DataGridColumn  headerText="Link Person"  visible="false" dataField="link_person_id" width="25" />						
+			<mx:DataGridColumn  headerText="CV Doc"  dataField="cv_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Application Doc"   dataField="application_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Medical Doc"  dataField="medical_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Psych Doc"  dataField="psych_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Employer Ref Doc"  dataField="employer_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Colleague Ref Doc" dataField="colleague_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Friend Ref Doc" dataField="friend_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Minister Ref Doc" dataField="minister_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Interview Doc" dataField="interview_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Contract Doc" dataField="contract_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Certificates Doc" dataField="certificates_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Photos Doc"  dataField="photos_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Passport Doc"  dataField="passport_doc_id" width="25" visible="false"/>			
+			<mx:DataGridColumn  headerText="Professional Doc"  dataField="professional_doc_id" width="25" visible="false"/>
+		    <mx:DataGridColumn headerText="timestamp" dataField="secondment_timestamp" visible="false" /> 
+		</packages:columns>
+	</packages:DataGridNew>
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="false"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="false"/>
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>	
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="false"/>
+	<mx:Button x="165" y="320" icon="@Embed(source='../../../files/images/showDetail.gif')" toolTip="Toggle History" click="{showDatagrid=!showDatagrid}" width="25" height="21"/>
+	<mx:Button id="toggleResultHeight0" x="711" y="101" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="{showDatagrid}"/>
+	<mx:Button id="copyResultToClipboard0" x="711" y="131" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="{showDatagrid}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="711" y="161" id="printDG0"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="{showDatagrid}"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+</local:tabDocumentationClass>

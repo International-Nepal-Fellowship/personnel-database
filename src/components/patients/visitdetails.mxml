@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabVisitdetailsClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.patients.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="10" y="12" label="Hospital:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboVisitHospital"  x="110" y="9" width="128" enabled="{inputEnabled}"  change="checkValid(comboVisitHospital)"/>
+	<mx:Button x="240" y="9" label="+" width="32" height="22" click="displayPopUpHospital('Hospital')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem x="10" y="36" label="Referred From:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboVisitReferredFrom"  x="110" y="33" width="128" enabled="{inputEnabled}"  change="checkValid(comboVisitReferredFrom)"/>
+	<mx:Button x="240" y="33" label="+" width="32" height="22" click="displayPopUpReferredFrom('Referred From')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem x="10" y="60" label="Date Referred:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="110" y="57" id="dateVisitReferred" editable="true" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateVisitReferred)" formatString="{parentApplication.appDateFormat}"  width="100"/>
+
+	<mx:FormItem x="10" y="84" label="Main Reason:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboVisitMainTreatmentReason"  x="110" y="81" width="128" enabled="{inputEnabled}"  change="checkValid(comboVisitMainTreatmentReason)" doubleClickEnabled="true" doubleClick="displayPopUpReason('Main Reason',comboVisitMainTreatmentReason.text,true)" toolTip="Double-click for details"/>
+	<mx:Button x="240" y="81" label="+" width="32" height="22" click="displayPopUpReason('Main Reason',comboVisitMainTreatmentReason.text)" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:TextInput id="txtVisitPatientNumber" x="110" y="107" enabled="{inputEnabled}" width="100" maxChars="20"/>
+	<mx:FormItem label="Patient Number:" width="97"  x="10" y="110"/>
+
+	<mx:FormItem label="Type:" width="97"  x="10" y="134" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboVisitType"  x="110" y="131" width="128" enabled="{inputEnabled}"/>
+
+	<mx:FormItem x="280" y="12" label="Date Attended:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="380" y="9" id="dateVisitAttended" editable="true" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateVisitAttended)" formatString="{parentApplication.appDateFormat}"  width="100"/>
+
+	<mx:FormItem x="280" y="36" label="Date Discharged:" width="97"/>
+	<mx:DateField x="380" y="33" id="dateVisitDischarged" editable="true" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}"  width="100" change="checkValid(dateVisitDischarged)"/>
+
+	<mx:FormItem x="280" y="60" label="Discharged To:" width="97"/>
+	<packages:ComboBoxNew id="comboVisitDischargedTo"  x="380" y="57" width="112" enabled="{inputEnabled}"/>
+
+	<mx:CheckBox x="280" y="84" id="chkVisitAffected" label="Self Affected" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	<mx:CheckBox x="404" y="84" id="chkPIPal" label="PAL" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	<mx:CheckBox x="280" y="108" id="chkPICAC" label="Care After Cure" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	<mx:CheckBox x="404" y="108" id="chkNewCase" label="New Case" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	<mx:CheckBox x="280" y="132" id="chkPIFootwearNeeded" label="Footwear Needed" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	<mx:CheckBox x="404" y="132" id="chkVisitPWD" label="PWD" enabled="{inputEnabled}" visible="{patientInfAddable}"/>
+	
+	<mx:DataGrid id="dgDetailTreatmentReasons" change="checkValid(null)" x="494" y="10" height="145" minWidth="230" width="238" variableRowHeight="true" itemDoubleClick="displayPopUpDetailReason('Detail Reason',true)" doubleClickEnabled="true">
+		<mx:columns>		
+			<mx:DataGridColumn dataField="id" width="20" visible="false"  />
+			<mx:DataGridColumn dataField="name"  width="100" headerText="Detail Reason"/>  
+		   	<mx:DataGridColumn dataField="check" editable="false" headerText="Select" width="25">
+		   		<mx:itemRenderer>
+		   		<mx:Component >
+		   			<mx:HBox  enabled = "{outerDocument.enableDisableCheckBox}" horizontalAlign="center" verticalAlign="middle"> 
+		   				<mx:CheckBox   click="data.check=!data.check" selected="{data.check}"/>		
+		   			</mx:HBox>	
+		   		</mx:Component>						
+		   		</mx:itemRenderer>
+		   	</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid>
+	<mx:Button x="460" y="132" label="+" width="32" height="22" click="displayPopUpDetailReason('Detail Reason')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Education" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/AddDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Education Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="160" height="{defaultListHeight}" width="700"		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn headerText="Hospital" dataField="hospital"/>		
+			<mx:DataGridColumn headerText="Hospital ID" dataField="hospital_id" visible="false" />								
+			<mx:DataGridColumn headerText="ID" visible="false" dataField="__id" width="25"/>
+			<mx:DataGridColumn headerText="Patient ID" dataField="patient_id" width="70" visible="false" />
+			<mx:DataGridColumn headerText="Date Referred" dataField="date_referred"  visible="false"/>		
+			<mx:DataGridColumn headerText="referred from id" dataField="referred_from_id" visible="false" />
+			<mx:DataGridColumn headerText="Referred From" dataField="referred_from"  visible="false"/>
+			<mx:DataGridColumn headerText="Main Reason ID" dataField="main_treatment_reason_id" visible="false" />	
+			<mx:DataGridColumn headerText="Main Reason" dataField="main_treatment_reason"/>	
+			<mx:DataGridColumn headerText="Detail Reason ID" dataField="detail_treatment_reason_id" visible="false" />	
+			<mx:DataGridColumn headerText="Detail Reason" dataField="detail_treatment_reason" visible="true"/>				
+			<mx:DataGridColumn headerText="Number" dataField="patient_number" />
+			<mx:DataGridColumn headerText="Type" dataField="type" />	
+			<mx:DataGridColumn headerText="Attended" dataField="date_attended"/>		
+			<mx:DataGridColumn headerText="Discharged" dataField="date_discharged"/>		
+			<mx:DataGridColumn headerText="Discharged To" dataField="discharged_to"/>					
+			<mx:DataGridColumn headerText="Affected" dataField="affected" visible="false"/>	
+			<mx:DataGridColumn headerText="New Case" dataField="new_case" visible="false"/>		
+			<mx:DataGridColumn headerText="PAL" dataField="PAL" visible="false"/>
+			<mx:DataGridColumn headerText="PWD" dataField="PWD" visible="false"/>		
+			<mx:DataGridColumn headerText="Care" dataField="care_after_cure" visible="false"/>
+			<mx:DataGridColumn headerText="Footwear" dataField="footwear_needed" visible="false"/>			
+			<mx:DataGridColumn headerText="PI_ID" dataField="patient_inf_id" visible="false" /> 
+			<mx:DataGridColumn headerText="PV_timestamp" dataField="patient_visit_timestamp" visible="false" /> 	
+			<mx:DataGridColumn headerText="PI_timestamp" dataField="patient_inf_timestamp"  visible="false"/> 	
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="160" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="190" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="220" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+
+	<mx:Label x="35" y="367" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+	
+</local:tabVisitdetailsClass>

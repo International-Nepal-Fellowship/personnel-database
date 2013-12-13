@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabPhoneClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.biodata.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Type:" x="10" y="12" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboPhoneType" width="128" x="115" y="9" enabled="{inputEnabled}" change="checkValid(comboPhoneType)"/>
+
+	<mx:CheckBox x="10" y="33" id="chkCurrent" change="setResetFlag()" label="Current Phone Number" enabled="{inputEnabled}"/>
+
+	<mx:FormItem label="Phone:" x="10" y="60" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textPhonePhone"  x="115" y="57" change="checkValid(textPhonePhone)" enabled="{inputEnabled}" maxChars="16" restrict="_0123456789()+ \-" toolTip="16 chars"/>
+	
+	<mx:FormItem label="Extension:" y="60" x="302" width="97"/>
+	<mx:TextInput id="textPhoneExtension" x="407" y="57" enabled="{inputEnabled}" width="93" maxChars="4" toolTip="4 chars"/>
+
+	<mx:TextInput id="textPhoneIstd" x="315" y="105" enabled="{inputEnabled}" width="128" maxChars="4" toolTip="4 chars" visible="false"/>
+	<packages:ComboBoxNew id="comboPhoneIstd" width="128" x="315" y="86" enabled="{inputEnabled}"   visible="false"/>
+	
+	<mx:FormItem label="Shared:"  y="84" x="10" width="97"/>
+	<packages:ComboBoxNew id="comboPhoneShared" width="93" x="115" y="81" enabled="{inputEnabled}"/>
+
+	<mx:FormItem label="Mobile:"  y="82" x="302" width="60"/>
+	<packages:ComboBoxNew id="comboPhoneMobile" width="93" x="407" y="81" enabled="{inputEnabled}"/>
+
+	<mx:FormItem label="Fax:"  y="108" x="302" width="33"/>
+	<packages:ComboBoxNew id="comboPhoneFax" width="93" x="407" y="105" enabled="{inputEnabled}"/>
+	
+	<mx:FormItem label="Country:"  x="10" y="108" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboPhoneCountry" width="128" x="115" y="105" enabled="{inputEnabled}"  change="{checkValid(comboPhoneCountry)}" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country',true)" toolTip="Double-click for details"/>
+	<mx:Button x="251" y="105" label="+" width="32" height="22" click="displayPopUpCountry('Country')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="520" y="105" id="chkShowAll" label="Include Family Numbers" click="showAll()" enabled="{!inputEnabled}"/>
+
+	<mx:Button id="copyPhoneToClipboard" x="690" y="105" icon="@Embed(source='../../../files/images/copyFieldsToClipBoard.gif')" click="{updateIstdCode(comboPhoneCountry),copyTabFieldsToClipBoard(copyTabFields)}" toolTip="Copy full phone number to clipboard" width="23" height="22"/>
+
+	<mx:Button id="copyResultToClipboard" x="709" y="166" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Phone Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>			
+	
+	<packages:DataGridNew id="dgList" x="10" y="136"	height="{defaultListHeight}" width="700" keyDown="moveTo(event)" visible="true" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>			
+			<mx:DataGridColumn headerText="Type" width="70" dataField="type" />	
+			<mx:DataGridColumn headerText="Phone" width="70" dataField="phone" />	
+			<mx:DataGridColumn headerText="Extn" width="50" dataField="extn" />	
+			<mx:DataGridColumn headerText="Shared" width="50" dataField="shared" />
+			<mx:DataGridColumn headerText="Fax" width="50" dataField="fax" />
+			<mx:DataGridColumn headerText="Mobile" width="50" dataField="mobile" />
+			<mx:DataGridColumn headerText="Country" width="70" dataField="country_id" />
+			<mx:DataGridColumn visible="false" headerText="ID" width="50" dataField="__id" />
+			<mx:DataGridColumn headerText="Current" visible="false" dataField="current" width="30" />
+			<mx:DataGridColumn headerText="Own" visible="false" dataField="own" width="30" />
+			<mx:DataGridColumn headerText="timestamp" visible="false" dataField="phone_timestamp" width="30" />				
+		</packages:columns>
+	</packages:DataGridNew>	
+	
+	<mx:Button id="toggleResultHeight" x="709" y="136" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+	<mx:HTTPService id="userRequestSaveTab" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="196" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+</local:tabPhoneClass>

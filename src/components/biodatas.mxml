@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  width="100%" height="100%" creationComplete="createdOk()" xmlns:comp="components.biodata.*" xmlns:comp1="components.application.*">
+	<mx:Script>
+    <![CDATA[
+    	import mx.messaging.channels.StreamingAMFChannel;
+    	import mx.collections.ArrayCollection;
+          
+        import mx.rpc.soap.SOAPFault;         
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import flash.net.navigateToURL;
+	    import flash.net.URLRequest;
+		
+		private var currentIndex:uint = 0;
+		
+		public function getChildLabels():String {
+			if (parentApplication.patientSystem)
+				return "personal,address,phone,email";
+			else 
+				if (parentApplication.personnelNepalSystem)
+					return "personal,address,phone,email,photo,education,work_experience";
+				else
+					return "personal,address,phone,email,photo,passport,visa_history";
+		}
+			
+		private function createdOk():void {	
+
+		  	if (portals.numChildren>8) {
+
+		  		if (parentApplication.patientSystem) { // remove tabs beyond email if not already done
+       				portals.removeChildAt(8);
+       				portals.removeChildAt(7);
+       				portals.removeChildAt(6);
+					portals.removeChildAt(5);
+					portals.removeChildAt(4);
+       			}
+       			if (parentApplication.personnelNepalSystem) { // remove passport/visa tabs if not already done
+       				portals.removeChildAt(8);
+					portals.removeChildAt(7);
+       			}
+       			if (parentApplication.personnelWorldwideSystem) { // remove education tab if not already done
+       				portals.removeChildAt(6);
+       				portals.removeChildAt(5);
+       			}
+     		}		
+		}
+		
+		private function defaultFault(event:FaultEvent):void {			
+		    // Handle service fault.
+		    if (event.fault is SOAPFault) {
+		    	
+		         var fault:SOAPFault	=	event.fault as SOAPFault;
+		         var faultElement:XML	=	fault.element;
+		    }
+		    
+		    Alert.show(event.fault.faultString, "Error");		            
+		}		
+          
+      
+       ////*************************Search the related records of the selected staff********************////
+       ////***********it is called in the click event of the tabs********************////
+       //*********it finds out the tab click and search the related records accordingly*************///
+       public function refreshList(selIndex:uint,otherList:Boolean=false):void{
+         
+         	trace("biodatas.refreshList("+selIndex+")");
+         	navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+         	
+         	var parameters:Object=new Object();
+         	
+   			parameters.fieldValue	=	parentApplication.getCurrentID(); 
+   			parameters.action		=	"Search List";
+   			parameters.fieldName	=	"name_id";
+         	parameters.showAll		=	parentApplication.isFamilyIncluded();
+         	
+         	var selectedTable:String;
+       		
+       		if (portals == null)
+       			selectedTable = parentApplication.firstEnabledTable(getChildLabels());
+       		else
+       			selectedTable = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			trace("biodatas.refreshList("+selectedTable+")");
+			
+			switch(selectedTable){
+				
+				case 'name':
+	         		
+	         		general.activate();
+	         		break;
+	         		
+	         	case 'address':
+	         	case 'email':
+	         	case 'phone':
+	         		
+	         		parameters.fieldNames	=	parentApplication.getTabFieldNames(selectedTable);
+         			parameters.table1		=	selectedTable;
+         			parameters.table2		=	"name_"+selectedTable;
+         			parameters.subQField	=	selectedTable+"_id";
+         			break;
+         			
+         		case 'photo':
+         		case 'education':
+         		case 'passport':
+         		case 'visa_history':
+         		case 'work_experience':
+         		
+         			parameters.fieldNames	=	parentApplication.getTabFieldNames(selectedTable);       		
+         			parameters.action		=	"Search Others";
+         			parameters.table1		=	selectedTable;
+         			parameters.requester	=	selectedTable;         			  
+          			break;
+         	}      		  		       		  		
+      		
+      		var noRecord:Boolean	= parentApplication.isNoRecord();
+      		if (noRecord) return;
+      			
+      		if (otherList) {
+	        	userRequestGetOtherList.useProxy	=	false;
+    	    	userRequestGetOtherList.url	=	parentApplication.getPath()	+	"search.php";
+        		userRequestGetOtherList.send(parameters);    
+        	}
+        	else {
+        		userRequestGetList.useProxy	=	false;
+    	    	userRequestGetList.url	=	parentApplication.getPath()	+	"search.php";
+        		userRequestGetList.send(parameters);
+        	}
+       }
+       
+       private function defaultResult(event:ResultEvent,otherList:Boolean=false):void{
+        	
+			var noRecord:Boolean	= parentApplication.isNoRecord();
+			
+			if (portals == null) return;
+	
+         	var selectedTable:String = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){
+				
+				case 'name':// general tab		
+					
+					//if(noRecord)
+					//	break;
+											
+		     		general.boundField();		     			
+					break;
+					
+				case 'address':
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			address.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			address.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     			
+		     		break;
+		     		
+		     	case 'phone':
+		     		
+		     		if(noRecord)
+						break;
+									
+		     		if (otherList)
+		     			phone.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			phone.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     			
+		     		break;
+		     				     		
+		     	case 'email':
+					
+					if(noRecord)
+						break;
+					
+					if (otherList) {			
+		     			email.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     			email.textEmailOfficialEmail.text=userRequestGetOtherList.lastResult.officialEmail;
+		   			}
+		     		else {
+		     			email.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     			email.textEmailOfficialEmail.text=userRequestGetList.lastResult.officialEmail;
+		     		}
+		     		break;		     	  
+
+				case 'photo':
+					
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)				
+		     			photo.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			photo.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     			
+		     		break;
+						     	
+		     	case 'education':
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			education.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			education.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     		
+		     	case 'passport':
+					
+					if(noRecord)
+						break;				
+		     		
+					if (otherList)				
+		     			passport.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			passport.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     					
+		     		break;
+		     	
+		     	case 'visa_history':
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			visahistory.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			visahistory.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	
+		     		
+		     	case 'work_experience':
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			workExperience.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			workExperience.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	     		
+			}
+       }
+       
+       private function activate():void{
+        //trace("bio activate ("+portals.selectedIndex+")");
+        navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+       	//parentApplication.refreshListTab();
+       }
+       
+       private function itemclick():void{
+       	//trace("bio itemclick ("+portals.selectedIndex+")");
+       	//refreshList(portals.selectedIndex);
+       }
+       
+       private function render():void{
+       		
+       		if (!parentApplication.isLoggedIn()) {
+       			portals.selectedIndex = 0;
+       			currentIndex = 0;
+       		}
+       		if (currentIndex == portals.selectedIndex) return;
+       		currentIndex = portals.selectedIndex;
+       		trace("bio render ("+portals.selectedIndex+")");
+       		refreshList(portals.selectedIndex);
+       }
+
+       ////********************************************************************************************//// 
+    ]]>	
+	</mx:Script>
+	
+	<mx:TabBar x="0" y="0" dataProvider="portals" itemClick="itemclick()" activate="activate()" render="render()">
+	</mx:TabBar>
+
+	<mx:ViewStack id="portals" width="100%" height="100%" x="0" y="20" historyManagementEnabled="true">	
+		<comp:general id="general" label="Personal" width="100%" height="100%" x="0" y="0"/>
+	<!--	<comp:relatives id="relatives"  enabled="{parentApplication.biodataEnabled}" label="Relatives" width="100%" height="100%" />-->
+		<comp:address id="address" label="Address" width="100%" height="100%" />
+		<comp:phone id="phone" label="Phone" width="100%" height="100%" />
+		<comp:email id="email" label="Email" width="100%" height="100%" />
+		<comp:photos id="photo" label="Photo" width="100%" height="100%" />		
+		<comp1:education id="education" label="Education" width="100%" height="100%"/>
+		<comp1:workExperience id="workExperience" label="Work_Experience" width="100%" height="100%" />
+		<comp:passport id="passport" label="Passport" width="100%" height="100%" />
+		<comp:visahistory id="visahistory" label="Visa_History" width="100%" height="100%" />
+	</mx:ViewStack>
+	
+	<mx:HTTPService id="userRequestGetList"  useProxy="false" method="POST" result="defaultResult(event)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="userRequestGetOtherList"  useProxy="false" method="POST" result="defaultResult(event,true)" fault="defaultFault(event)"/>
+
+</mx:Canvas>

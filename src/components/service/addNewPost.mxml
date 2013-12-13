@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" showCloseButton="true" width="550" close="removeMe();" borderAlpha="1" height="370" backgroundColor="{parentApplication.lightBackgroundColour}">
+<mx:Canvas id="myCanvas" height="324" width="517">
+	 <mx:Script>
+        <![CDATA[
+           // import mx.controls.TextInput;
+            import mx.managers.PopUpManager;
+           // import mx.collections.ArrayCollection;
+            
+            
+            public var targetComponent:ComboBoxNew;
+
+            
+           	
+            private function submitData():void {
+                targetComponent.text = String(textPopTitle.text);
+                
+                
+                
+                removeMe();
+            }
+
+            // Cancel button click event listener.
+            private function removeMe():void {
+                PopUpManager.removePopUp(this);
+            }
+                       
+            
+        ]]>
+    </mx:Script>
+
+	 <mx:Button label="OK" click="submitData();" x="221" y="260"/>
+	 <mx:Button label="Cancel" click="removeMe();" x="281" y="260"/>
+	
+	
+	<mx:FormItem x="15" y="80" label="Name:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold">
+	</mx:FormItem>
+	<mx:TextInput x="91" y="76" height="20" width="160" editable="false" id="textPopName"/>
+	<mx:TextInput x="344" y="76" height="20" width="160" editable="true" id="textPopTitle"/>
+	<mx:FormItem label="Title:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="268" y="80">
+	</mx:FormItem>
+	<mx:FormItem label="Status:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="15" y="102">
+	</mx:FormItem>
+	<mx:FormItem label="Programme:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="268" y="126"/>
+	<mx:FormItem label="Type:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="268" y="102">
+	</mx:FormItem>
+	<mx:FormItem label="Hours:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="15" y="126"/>
+	<mx:FormItem label="Description:" width="68" backgroundColor="#EDE8E8" height="16" fontSize="11" fontWeight="bold" x="15" y="149"/>
+	<mx:TextArea x="91" y="149" width="413" height="102" id="comboPopDescription" />
+	<packages:ComboBoxNew x="91" y="100" height="20" width="160" id="comboPopStatus" />
+	<packages:ComboBoxNew x="91" y="124" height="20" width="160" id="comboPopHours"/>
+	<packages:ComboBoxNew x="344" y="100" height="20" width="160" id="comboPopType" />
+	<packages:ComboBoxNew x="344" y="124" height="20" width="160" id="comboPopProgramme" />
+	<mx:Label x="10" y="10" width="497" height="58" id="status_txt" enabled="false"  disabledColor="{parentApplication.statusDisabledColour}"/>
+
+</mx:Canvas>
+
+</mx:TitleWindow>

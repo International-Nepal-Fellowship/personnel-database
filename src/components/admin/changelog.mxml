@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<local:changeLogClass initialize="loadData()" backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:packages="packages.*" xmlns:mx="http://www.adobe.com/2006/mxml" height="417" width="642" xmlns:local="components.admin.*">
+
+	<mx:Button x="241" y="6" height="25" click="sortChangeLogDataGrid(dgList)" id="sortDG" icon="@Embed(source='../../../files/images/sort.gif')" width="30" toolTip="Sort first four columns"/>
+
+	<mx:Button x="294" y="6" width="30" height="25" click="getChangeLogData()" toolTip="Refresh log">
+		<mx:icon>@Embed(source='../../../files/images/refresh.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew x="10" y="31" width="560" height="340" id="dgList">
+		<packages:columns>			
+			<mx:DataGridColumn headerText="User" dataField="User"/>
+			<mx:DataGridColumn headerText="Table" dataField="Table"/>		
+			<mx:DataGridColumn headerText="Type" dataField="Type"/>
+			<mx:DataGridColumn headerText="Comments" dataField="Comments"/>
+			<mx:DataGridColumn headerText="Site" dataField="Site"/>
+			<mx:DataGridColumn headerText="Timestamp" dataField="Timestamp"/>
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button x="67" y="303" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click=" editMode()" enabled="{editEnabled}" width="75" height="25" visible="false">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="303"   width="75" height="25"  visible="false">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="303"  width="75" height="25" visible="false">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="303" click="viewMode()" enabled="{inputEnabled}" width="75" height="25" visible="false">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Label x="66" y="340" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+
+	<mx:HTTPService id="requestChangeLogData" method="POST" fault="defaultFault(event)" result="changeLogResult(event)" />
+	
+</local:changeLogClass>

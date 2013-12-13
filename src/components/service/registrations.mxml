@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabRegistrationsClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+
+	<mx:FormItem label="Type:"  x="10" y="12" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="110" y="9" width="128" id="comboRegistrationType" enabled="{inputEnabled}" change="checkValid(comboRegistrationType)" doubleClickEnabled="true" doubleClick="displayPopUpRegistrationType('Registration Type',true)" toolTip="Double-click for details"/>
+	<mx:Button visible="{addAdminEnabled}" x="246" y="9" label="+" width="32" height="22" click="displayPopUpRegistrationType('Registration Type')" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Organisation:" x="10" y="36" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew enabled="{inputEnabled}" id="comboRegistrationOrganisation" width="160" x="110" y="33" change="checkValid(comboRegistrationOrganisation)" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Registration',comboRegistrationOrganisation,true)" toolTip="Double-click for details"/>
+	<mx:Button visible="{addAdminEnabled}" x="278" y="33" label="+" width="32" height="22" click="displayPopUpOrganisation('Registration',comboRegistrationOrganisation)" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Reference:" x="10" y="60" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textRegistrationReference"  x="110" y="57" width="160" maxChars="30" change="checkValid(textRegistrationReference)" enabled="{inputEnabled}" toolTip="30 chars"/>
+	<mx:Button x="278" y="58" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetRegistration" click="displayPopUpDoc()" enabled="{listEnabled}" toolTip="Registration details"/>
+	
+	<mx:FormItem label="Start Date:" width="90" x="10" y="84" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="110" y="81" id="dateRegistrationStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" editable="true" change="checkValid(dateRegistrationStartDate)"/>
+
+	<mx:FormItem label="End Date:" x="10" y="108" width="90"/>
+	<mx:DateField x="110" y="105" id="dateRegistrationEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" editable="true" change="checkValid(dateRegistrationEndDate)"/>
+
+	<mx:CheckBox x="530" y="333" id="chkShowAll" label="Include Family Staff" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Staff Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+	<packages:DataGridNew id="dgList" x="10" y="156" height="{defaultListHeight}" width="700" keyDown="moveTo(event)" enabled="{!inputEnabled}" >
+		<packages:columns>	
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>	
+			<mx:DataGridColumn  headerText="Type" dataField="registration_type"  width="80"/>
+			<mx:DataGridColumn  headerText="Type ID" dataField="registration_type_id"  width="80" visible="false"/>	
+			<mx:DataGridColumn  headerText="Organisation" dataField="organisation"  width="80"/>
+			<mx:DataGridColumn  headerText="Organisation ID" dataField="organisation_id"  width="80" visible="false"/>
+			<mx:DataGridColumn  headerText="Reference" dataField="reference"  width="80"/>	
+			<mx:DataGridColumn  headerText="Start" dataField="start_date"  width="80"/>	
+			<mx:DataGridColumn  headerText="End" dataField="end_date"  width="80"/>
+			<mx:DataGridColumn  headerText="Doc ID" dataField="registration_doc_id"  width="80" visible="false"/>					
+			<mx:DataGridColumn  headerText="timestamp" dataField="staff_timestamp" width="120"  visible="false"/>									
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" />
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+		
+</local:tabRegistrationsClass>

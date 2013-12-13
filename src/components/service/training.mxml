@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabTrainingClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Course:"  x="10" y="12" width="77"/>
+	<packages:ComboBoxNew x="96" y="9" width="160" id="comboTrainingCourse" enabled="{inputEnabled}" doubleClickEnabled="true"  change="checkValid(comboTrainingCourse)" doubleClick="displayPopUpCourse('Course',true)" toolTip="Double-click for details"/>
+	<mx:Button x="263" y="9" label="+" width="32" height="22" click="displayPopUpCourse('Course')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	<mx:Button x="304" y="8" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetTraining" click="displayPopUpDoc()" enabled="{listEnabled}" toolTip="Training details"/>
+
+	<mx:FormItem label="Start Date:" x="10" y="36" width="77"/>
+	<mx:DateField id="dateTrainingStartDate" x="96" y="33" yearNavigationEnabled="true" formatString="{parentApplication.appDateFormat}" enabled="false"/>
+
+	<mx:FormItem label="End Date:" x="240" y="36" width="77"/>
+	<mx:DateField id="dateTrainingEndDate" x="326" y="33" yearNavigationEnabled="true" formatString="{parentApplication.appDateFormat}" enabled="false"/>
+
+	<mx:FormItem label="Career Aspirations:" x="10" y="60" width="120"/>
+	<mx:TextArea id="textAspirations" enabled="{inputEnabled}" x="10" y="84" height="64" width="220"/>
+
+	<mx:FormItem label="Career Development:" x="240" y="60" width="120"/>
+	<mx:TextArea id="textDevelopment" enabled="{inputEnabled}" x="240" y="84" height="64" width="220"/>
+
+	<mx:DataGrid id="dgTrainingNeeds" change="checkValid(null)" x="472" y="10" height="140" minWidth="230" width="260" variableRowHeight="true" itemDoubleClick="displayPopUpNeeds('Training Need',true)" doubleClickEnabled="true">
+		<mx:columns>		
+			<mx:DataGridColumn dataField="id" width="20" visible="false"  />
+			<mx:DataGridColumn dataField="name"  width="100" headerText="Needs"/>  
+		   	<mx:DataGridColumn dataField="check" editable="false" headerText="Select" width="25">
+        		<mx:itemRenderer>
+					<mx:Component >
+						<mx:HBox  enabled = "{outerDocument.enableDisableCheckBox}" horizontalAlign="center" verticalAlign="middle"> 
+							<mx:CheckBox   click="data.check=!data.check" selected="{data.check}"/>		
+						</mx:HBox>	
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid>
+	<mx:Button x="432" y="11" label="+" width="32" height="22" click="displayPopUpNeeds('Training Need')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Training" click="showAll()" enabled="{!inputEnabled}"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Training Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgList" x="10" y="156"	height="{defaultListHeight}" width="700" visible="true"		
+		keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="25"/>	
+    		<mx:DataGridColumn  headerText="Course" dataField="course"  width="120"/>
+    		<mx:DataGridColumn  headerText="Course ID" visible="false" dataField="course_id"  width="40"/>	
+    		<mx:DataGridColumn  headerText="From" dataField="date_from"  width="80"/>		
+    		<mx:DataGridColumn  headerText="Until" dataField="date_until"  width="80"/>
+    		<mx:DataGridColumn  headerText="Needs" dataField="training_need"  width="80"/>		
+    		<mx:DataGridColumn  headerText="Needs ID" dataField="training_need_id"  width="80" visible="false"/>
+    		<mx:DataGridColumn  headerText="Aspirations" dataField="career_aspirations"  width="80"/>
+    		<mx:DataGridColumn  headerText="Development" dataField="career_development"  width="80"/>
+    		<mx:DataGridColumn  headerText="Doc ID" dataField="training_doc_id"  width="80" visible="false"/>		
+			<mx:DataGridColumn  headerText="timestamp"  dataField="training_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+			
+</local:tabTrainingClass>

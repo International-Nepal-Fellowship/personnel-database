@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="createdOk()" xmlns:comp="components.service.*" xmlns:comp1="components.application.*" width="100%" height="100%">
+	<mx:Script>
+    <![CDATA[
+    	import mx.collections.ArrayCollection;
+          
+        import mx.rpc.soap.SOAPFault;         
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import flash.net.navigateToURL;
+	    import flash.net.URLRequest;
+		
+		private var currentIndex:uint = 0;
+		
+		public function getChildLabels():String {
+			if (parentApplication.personnelNepalSystem)
+				return "staff,service,movement,leave,training,hospitalisation,annual_review,insurance,registrations";
+			else
+				return "staff,service,movement,leave,training,hospitalisation,annual_review,home_assignment,insurance,registrations"; //,secondment";
+		}
+
+		private function createdOk():void {	
+
+			if (portals.numChildren>10) {
+				
+		  		if (parentApplication.personnelNepalSystem) { // remove HA/secondment tabs if not already done
+       				portals.removeChildAt(8);
+					portals.removeChildAt(7);
+       			}
+       			if (parentApplication.personnelWorldwideSystem) {
+       				portals.removeChildAt(8); //Don't need secondment here as well as in Applications
+       			}	
+   			}	
+		}
+	
+		private function defaultFault(event:FaultEvent):void {			
+		    // Handle service fault.
+		    if (event.fault is SOAPFault) {
+		    	
+		         var fault:SOAPFault	=	event.fault as SOAPFault;
+		         var faultElement:XML	=	fault.element;
+		    }
+		    
+		    Alert.show(event.fault.faultString, "Error");		            
+		}
+		
+        public function refreshList(selIndex:uint,otherList:Boolean=false):void{
+        	
+        	//trace("tests.refreshList("+selIndex+"): "+parentApplication.getCurrentID());
+        	
+         	var parameters:Object=new Object();
+         	
+   			parameters.fieldValue	=	parentApplication.getCurrentID(); 
+   			parameters.action		=	"Search Others";	
+        	navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+         	
+       		var selectedTable:String;
+       		
+       		if (portals == null)
+       			selectedTable = parentApplication.firstEnabledTable(getChildLabels());
+       		else
+       			selectedTable = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){	
+   			
+   			     case 'staff':   			      
+          		 case 'service':
+          		 case 'movement':
+          		 case 'leave':
+          		 case 'training':
+          		 case 'home_assignment':
+          		 case 'secondment':
+          		 case 'hospitalisation':
+          		 case 'review':
+          		 case 'insurance':
+          		 case 'registrations':
+   			          
+         			parameters.fieldNames	=	parentApplication.getTabFieldNames(selectedTable);       		
+         			parameters.table1		=	selectedTable;
+         			parameters.requester	=	selectedTable;     			  
+          			break;    			             			
+      		}
+      		
+      		if (otherList) {
+	         	userRequestGetOtherList.useProxy	=	false;
+    	     	userRequestGetOtherList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetOtherList.send(parameters);    
+        	}
+        	else {
+        		userRequestGetList.useProxy	=	false;
+    	     	userRequestGetList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetList.send(parameters);
+        	}
+       }
+       
+       private function defaultResult(event:ResultEvent,otherList:Boolean=false):void{
+        	
+			var noRecord:Boolean	= parentApplication.isNoRecord();
+			
+			if (portals == null) return;
+	
+         	var selectedTable:String = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){
+				
+				case 'staff': //For detail(displayed as Staff tab in Service)
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			staff.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			staff.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+
+		     		break;	
+		     		
+		     	case 'service': //For sservice(displayed as service tab in Service)
+				
+					if(noRecord)
+						break;
+								     	
+		     		if (otherList)
+		     			sservice.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			sservice.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+
+		     		break;	
+		     		
+		     	case 'movement': //For movement
+		     	
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			movement.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			movement.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		
+		     		break;	
+			
+		     	case 'leave':
+				
+					if(noRecord)
+						break;
+						
+		     		if (otherList)
+		     			leave.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			leave.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	
+
+		     	case 'training':		 
+				
+					if(noRecord)
+						break;
+
+		     		if (otherList)
+		     			training.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			training.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;		     		
+		     		
+		     	case 'hospitalisation':	
+				
+					if(noRecord)
+						break;
+		     		
+		     		if (otherList)
+		     			hospitalization.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			hospitalization.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     		
+		     	case 'review':
+				
+					if(noRecord)
+						break;
+		     		
+		     		if (otherList)
+		     			review.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			review.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	     		
+		     		
+		     	case 'home_assignment':
+
+					if(noRecord)
+						break;
+		     		
+		     		if (otherList)
+		     			homeassignment.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			homeassignment.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;		     		
+
+		     	case 'secondment':
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			secondment.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			secondment.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     		
+		     	case 'insurance':
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			insurance.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			insurance.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     		
+		     	case 'registrations':
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			registrations.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			registrations.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		  	}  
+       	}
+
+       private function activate():void{
+       	//trace("serv activate ("+portals.selectedIndex+")");
+		navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+       	//parentApplication.refreshListTab();
+       }
+       
+       private function itemclick():void{
+       	//trace("serv itemclick ("+portals.selectedIndex+")");
+       	//refreshList(portals.selectedIndex);
+       }
+       
+       private function render():void{
+       	
+       		if (!parentApplication.isLoggedIn()) {
+       			portals.selectedIndex = 0;
+       			currentIndex = 0;
+       		}
+       		if (currentIndex == portals.selectedIndex) return;
+       		currentIndex = portals.selectedIndex;
+       		//trace("service render ("+portals.selectedIndex+")");
+       		refreshList(portals.selectedIndex);
+       }       		
+       ////********************************************************************************************//// 
+    ]]>	
+	</mx:Script>
+
+	<mx:TabBar x="0" y="0" dataProvider="portals" itemClick="itemclick()" activate="activate()" render="render()">
+	</mx:TabBar>
+
+	<mx:ViewStack id="portals" width="100%" height="100%" x="0" y="21" historyManagementEnabled="true">
+		<comp:detail id="staff"  label="Staff" height="100%" width="100%"/>		
+		<comp:sservice id="sservice" label="Service" width="100%" height="100%"/>
+		<comp:movement id="movement" label="Movement" width="100%" height="100%"/>
+		<comp:leave id="leave"  label="Leave" width="100%" height="100%"/>
+		<comp:training id="training" label="Training"  width="100%" height="100%"/>
+		<comp:hospitalization id="hospitalization" label="Hospitalisation" width="100%" height="100%"/>
+		<comp:review id="review" label="Annual_Review" width="100%" height="100%"/>	
+		<comp:homeassignment id="homeassignment" label="Home_Assignment" width="100%" height="100%"/>
+		<comp1:secondment id="secondment" label="Secondment" width="100%" height="100%"/>
+		<comp:insurance id="insurance" label="Insurance" width="100%" height="100%"/>
+		<comp:registrations id="registrations" label="Registrations" width="100%" height="100%"/>
+	</mx:ViewStack>
+	
+	<mx:HTTPService id="userRequestGetList"  useProxy="false" method="POST" result="defaultResult(event)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="userRequestGetOtherList"  useProxy="false" method="POST" result="defaultResult(event,true)" fault="defaultFault(event)"/>
+
+</mx:Canvas>

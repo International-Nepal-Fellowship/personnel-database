@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabOrientationClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="10" y="12" label="Email Address Requested:" width="156" />
+	<mx:DateField x="169" y="11" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateEmailAddressRequested" change="checkValid(dateEmailAddressRequested)" editable="true"/>
+	
+	<mx:FormItem x="10" y="36" label="Email Address Created:" width="156"/>
+	<mx:DateField x="169" y="35" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateEmailAddressCreated" editable="true"/>
+	
+	<mx:FormItem x="10" y="60" label="Email Installed:" width="156"/>
+	<mx:DateField x="169" y="59" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateEmailInstalled" editable="true"/>
+	
+	<mx:FormItem x="10" y="84" label="LOT Duration Discussed:" width="156"/>
+	<mx:DateField x="169" y="83" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateLOTDurationDiscussed" editable="true"/>
+	
+	<mx:FormItem x="10" y="108" label="LOT Requested:" width="156"/>
+	<mx:DateField x="169" y="107" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateLOTRequested" editable="true"/>
+	
+	<mx:FormItem x="10" y="132" label="LOT Confirmed:" width="156"/>
+	<mx:DateField x="169" y="131" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateLOTConfirmed" editable="true"/>
+	<mx:Button x="269" y="132" height="23"  icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" click="displayPopUpDoc('LOT Details','LOT_confirmed_doc_id',dateLOTConfirmed)" toolTip="LOT details" id="btnLOTConfirmed"/>
+
+	<mx:FormItem x="10" y="156" label="KTM LOT Scheduled:" width="156"/>	
+	<mx:DateField x="169" y="155" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateKTMLOTScheduled" editable="true"/>
+
+	<mx:FormItem x="10" y="180" label="KTM LOT Confirmed:" width="156"/>	
+	<mx:DateField x="169" y="179" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateKTMLOTConfirmed" editable="true"/>
+
+	<mx:FormItem x="10" y="204" label="KTM LOT Start Date:" width="156"/>	
+	<mx:DateField x="169" y="203" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateDatesOfKTMLOT" editable="true"/>
+
+	<mx:FormItem x="10" y="228" label="Housing Preferences:" width="156"/>	
+	<mx:DateField x="169" y="227" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateHousingPreferences" editable="true"/>
+
+	<mx:FormItem x="379" y="12" label="PKR LOT Housing Arranged:" width="156"/>	
+	<mx:DateField x="538" y="11" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePKRLOTHousingArranged" editable="true"/>
+	<mx:Button x="640" y="11" height="23" click="displayPopUpDoc('PKR LOT Housing Details','pkr_LOT_housing_arranged_doc_id',datePKRLOTHousingArranged)" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" toolTip="PKR LOT housing details" id="btnPKRLOTHousingArranged"/>
+	
+	<mx:FormItem label="Housing Requested:" width="156" x="379" y="36"/>
+	<mx:DateField x="538" y="35" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateHousingRequested" editable="true"/>
+	
+	<mx:FormItem x="379" y="60" label="Housing Arranged:" width="156"/>
+	<mx:DateField x="538" y="59" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateHousingArranged" editable="true"/>
+	
+	<mx:FormItem x="379" y="84" label="Housing Confirmed:" width="156" />
+	<mx:DateField x="538" y="83" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateHousingConfirmed" editable="true"/>
+	<mx:Button x="640" y="83" height="23" click="displayPopUpDoc('Housing Details','housing_confirmed_doc_id',dateHousingConfirmed)" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" toolTip="Housing details" id="btnHousingConfirmed"/>
+	<mx:DateField x="538" y="227" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateLinkNamesSent" editable="true"/>
+	
+	<mx:FormItem label="Housing Link Person:" width="125" x="379" y="108"/>
+	<packages:ComboBoxNew width="160" x="538" y="107" enabled="{inputEnabled}" id="comboHousingLinkPerson"/>
+	
+	<mx:FormItem label="Ktm Link Person:" width="125" x="379" y="132"/>
+	<packages:ComboBoxNew width="160" x="538" y="131" enabled="{inputEnabled}" id="comboKtmLinkPerson"/>
+	
+	<mx:FormItem label="Pkr Link Person:" width="125" x="379" y="156"/>
+	<packages:ComboBoxNew width="160" x="538" y="155" enabled="{inputEnabled}" id="comboPkrLinkPerson"/>
+	
+	<mx:FormItem label="School/children Link Person:" width="151" x="379" y="180"/>
+	<packages:ComboBoxNew width="160" x="538" y="179" enabled="{inputEnabled}" id="comboSchoolChildrenLinkPerson"/>
+	
+	<mx:FormItem label="Work Link Person:" width="151" x="379" y="204"/>
+	<packages:ComboBoxNew width="160" x="538" y="203" enabled="{inputEnabled}" id="comboWorkLinkPerson"/>
+	
+	<mx:FormItem label="Link Names Sent:" width="125" x="379" y="228"/>
+
+	<mx:CheckBox x="524" y="288" id="chkShowAll" label="Include all" click="showAll()" visible="false"/>
+				
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Orientation Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Button x="317" y="70" icon="@Embed(source='../../../files/images/showDetail.gif')" toolTip="Toggle History" click="{showDatagrid=!showDatagrid}" width="25" height="21" visible="false"/>
+
+	<packages:DataGridNew id="dgList" x="10" y="251"	height="{defaultListHeight}" width="700" 		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" visible="{showDatagrid}">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="ID"  dataField="__id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Email Req"  dataField="email_address_requested_date" width="25" visible="false"/>	
+			<mx:DataGridColumn  headerText="Email Crt"  dataField="email_address_created_date" width="25"/>	
+			<mx:DataGridColumn  headerText="Email Inst"  dataField="email_installed_date" width="25"/>
+			<mx:DataGridColumn  headerText="LOT Disc"  dataField="LOT_duration_discussed_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="LOT Req"  dataField="LOT_requested_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="LOT Cnf"  dataField="LOT_confirmed_date" width="25"/>
+			<mx:DataGridColumn  headerText="Ktm LOT Sch"  dataField="ktm_LOT_scheduled_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Ktm LOT Cnf"  dataField="ktm_LOT_Confirmed_date" width="25"/>
+			<mx:DataGridColumn  headerText="Ktm LOT"  dataField="Dates_of_ktm_LOT" width="25"/>
+			<mx:DataGridColumn  headerText="House Pref"  dataField="Housing_preferences_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Pkr LOT Arr"  dataField="pkr_LOT_housing_arranged_date" width="25"/>
+			<mx:DataGridColumn  headerText="House Req"  dataField="housing_requested_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="House Arr"  dataField="housing_arranged_date" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="House Cnf"  dataField="housing_confirmed_date" width="25"/>
+			<mx:DataGridColumn  headerText="House Link"  dataField="housing_link_person_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Ktm Link"  dataField="ktm_link_person_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Pkr Link"  dataField="pkr_link_person_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Sch Link"  dataField="school_children_link_person_id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Work Link"  dataField="work_link_person_id" width="25" visible="false"/>				
+			<mx:DataGridColumn  headerText="Links Sent"  dataField="link_names_sent_date" width="25"/>
+			<mx:DataGridColumn  headerText="LOT Conf Doc" dataField="LOT_confirmed_doc_id" width="25" visible="false" />
+			<mx:DataGridColumn  headerText="Pkr LOT Hus Doc" dataField="pkr_LOT_housing_arranged_doc_id" width="25" visible="false" />
+			<mx:DataGridColumn  headerText="Hus Conf Doc" dataField="housing_confirmed_doc_id" width="25" visible="false"/>
+			<mx:DataGridColumn headerText="timestamp" dataField="orientation_timestamp" visible="false" /> 
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="251" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="{showDatagrid}"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="281" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="{showDatagrid}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="311" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="{showDatagrid}"/>
+	
+	<mx:Label x="39" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>	
+
+	<mx:HTTPService id="userRequestSaveTab"  useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>	
+	
+</local:tabOrientationClass>

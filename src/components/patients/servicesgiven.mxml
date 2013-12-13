@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabServicesgivenClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.patients.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="10" y="12" label="Date Given:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="110" y="9" id="dateGivenDate" editable="true" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateGivenDate)" formatString="{parentApplication.appDateFormat}"  width="84"/>
+
+	<mx:FormItem x="10" y="36" label="Service:" width="97" color="{parentApplication.mandatoryLabelColour}"/>	
+	<packages:ComboBoxNew id="comboService"  x="110" y="33" width="128" enabled="{inputEnabled}"  change="checkValid(comboService)"/>
+	<mx:Button x="240" y="33" label="+" width="32" height="22" click="displayPopUpService('Service Type')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="580" y="60" id="chkShowAll" label="Include Previous Visits" click="toggleRecentVisit()" enabled="{!inputEnabled}"/>
+	
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Education Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="96"	height="{defaultListHeight}" width="700"		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" dataField="__id" width="25"/>
+			<mx:DataGridColumn headerText="Patient ID" dataField="patient_id" width="70" visible="false" />
+			<mx:DataGridColumn headerText="Date Given" dataField="date_given" />			
+			<mx:DataGridColumn headerText="Service Type" dataField="service_type"/>		
+			<mx:DataGridColumn headerText="Service Type ID" dataField="service_type_id" visible="false" />		
+			<mx:DataGridColumn headerText="timestamp" dataField="patient_service_timestamp" visible="false" /> 		
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="96" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="126" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="156" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	<mx:HTTPService id="userRequestToggleVisitData"   useProxy="false" method="POST" fault="defaultFault(event)" result="toggleVisitDataResult(event)"/>
+	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+</local:tabServicesgivenClass>

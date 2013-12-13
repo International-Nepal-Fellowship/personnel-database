@@ -1,0 +1,119 @@
+  /* CSS file */
+Application {
+	backgroundColor: #e8e8e8;
+	disabledBackgroundColor: #a8a8a8;
+	borderStyle: solid;
+	borderThickness: 2;
+	disabledColor: #464646;
+	errorColor: #ba4b4b;
+	themeColor: #fd3b3b;
+}
+ TabBar { 
+   tabStyleName: myTabs;
+	selectedTabTextStyleName: mySelTabs;
+}
+.myTabs {
+   textRollOverColor: #fd9494;
+   textSelectedColor: #fd6b6b;
+}
+.mySelTabs {
+   textRollOverColor: #fd9494;
+   textSelectedColor: #fd6b6b;
+}
+ DataGrid {
+   backgroundAlpha: 1;
+   backgroundColor: #f7f1f1;
+   alternatingItemColors: #ffffff, #e8e8e8;
+   headerColors: #cccccc, #999999;
+   horizontalGridLines: false;
+   letterSpacing: 0;
+   verticalGridLines: true;
+   verticalGridLineColor: #cccccc;
+   useRollOver: true;
+   rollOverColor: #fd9494;
+   selectionColor: #fd6b6b;
+   textRollOverColor: #330033;
+   borderThickness: 0;
+   textIndent: 0;
+   textAlign: left;
+}
+Button {
+   cornerRadius: 8;
+   textIndent: 0;
+   paddingLeft: 0;
+   paddingRight: 0;
+   paddingTop: 0;
+   highlightAlphas: 0, 0;
+   fillAlphas: 0.52, 0.45, 0.48, 0.51;
+   textRollOverColor: #663366;
+   borderColor: #ffffff;
+   fontFamily: Verdana;
+   fontSize: 10;
+   fontWeight: bold;
+   color: #000000;
+}
+Accordion {
+   borderStyle: none;
+   headerHeight: 22;
+   backgroundAlpha: 0.32;
+   textIndent: 0;
+   openDuration: 126;
+   highlightAlphas: 0.33, 0.34;
+   fillAlphas: 0.61, 0.52, 0.54, 0.45;
+   fillColors: #cccccc, #cccccc, #ffffff, #eeeeee;
+   selectedFillColors: #e3bbbb, #cccccc;
+   backgroundColor: #fadcdc;
+   borderColor: #c2a1da;
+   textRollOverColor: #fd6b6b;
+   textSelectedColor: #000000;
+   fontFamily: Arial;
+   fontSize: 11;
+   color: #000000;
+   fontWeight: normal;
+   textAlign: left;
+}
+TextInput {
+	backgroundColor: #e8e8e8;
+	disabledBackgroundColor: #a8a8a8;
+	borderStyle: solid;
+	borderThickness: 2;
+	disabledColor: #464646;
+	errorColor: #ba4b4b;
+	fontFamily: Arial;
+	fontSize: 11;
+}
+ComboBox {
+	borderColor: #ede8e8;
+	borderThickness: 2;
+	disabledColor: #464646;
+	errorColor: #ba4b4b;
+	fontFamily: Arial;
+	fontSize: 11;
+	fontWeight: normal;
+}
+TextArea {
+	backgroundColor: #e8e8e8;
+	disabledBackgroundColor: #a8a8a8;
+	borderStyle: solid;
+	borderThickness: 2;
+	disabledColor: #464646;
+	errorColor: #ba4b4b;
+	fontFamily: Arial;
+	fontSize: 11;
+}
+FormItem {
+	fontFamily: Arial;
+	fontSize: 11;
+	fontWeight: bold;
+}
+CheckBox {
+	fontFamily: Arial;
+	fontSize: 11;
+	fontWeight: bold;
+	disabledColor: #464646;
+}
+Label {
+	fontFamily: Arial;
+	fontSize: 11;
+	disabledColor: #464646;
+}

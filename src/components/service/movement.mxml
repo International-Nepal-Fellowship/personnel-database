@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabMovementClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="To:" x="10" y="12" width="47" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="65" y="9" id="comboMovementTo" width="160" enabled="{inputEnabled}" change="checkValid(comboMovementTo)"/>
+
+	<mx:FormItem label="From:" x="10" y="36" width="47" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="65" y="33" id="comboMovementFrom" width="160" enabled="{inputEnabled}" change="checkValid(comboMovementFrom)"/>
+
+	<mx:FormItem label="Reason:" x="10" y="60" width="47" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="65" y="57" id="comboMovementReason" width="160" enabled="{inputEnabled}" change="checkValid(comboMovementReason)"/>
+	
+	<mx:FormItem label="Start Date:" x="10" y="84" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="95" y="81" id="dateMovementStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateMovementStartDate)" editable="true"/>
+
+	<mx:FormItem label="End Date:" x="10" y="108" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="95" y="105" id="dateMovementEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateMovementEndDate)" editable="true"/>
+
+	<mx:FormItem label="Fixed Dates:" x="10" y="132" width="77" />
+	<packages:ComboBoxNew x="95" y="129" id="comboMovementFixedDates" width="93" enabled="{inputEnabled}"/>
+
+	<mx:Label id="notesLabel" text="Notes:" x="210" y="84" width="47" disabledColor="{parentApplication.mandatoryLabelColour}" fontSize="11" fontWeight="bold" fontFamily="Arial"/>
+	<mx:TextArea x="267" y="9" width="430" height="94" id="textMovementNotes" enabled="{inputEnabled}" change="checkValid(textMovementNotes)"/>
+
+	<mx:FormItem label="Address:"  x="210" y="108"  width="52"/>
+	<packages:ComboBoxNew x="267" y="105" id="comboMovementAddress" width="370" enabled="{!fixAddEmailPhone}" doubleClickEnabled="true" doubleClick="displayPopUpAddress('Address',true)" toolTip="Double-click for details"/>
+	<mx:Button x="647" y="105" label="+" width="32" height="22" click="displayPopUpAddress('Address')"  enabled="{!inputEnabled}" />
+
+	<mx:FormItem label="Email:" x="210" y="132"  width="47"/>
+	<packages:ComboBoxNew x="267" y="129" id="comboMovementEmail" width="128" enabled="{!fixAddEmailPhone}" doubleClickEnabled="true" doubleClick="displayPopUpEmail('Email Address',true)" toolTip="Double-click for details"/>
+	<mx:Button x="405" y="129" label="+" width="32" height="22" click="displayPopUpEmail('Email Address')"  enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Phone:" x="454" y="132" width="47"/>
+	<packages:ComboBoxNew x="509" y="129" id="comboMovementPhone" width="128" enabled="{!fixAddEmailPhone}" doubleClickEnabled="true" doubleClick="displayPopUpPhone('Phone Number',true)" toolTip="Double-click for details"/>
+	<mx:Button x="647" y="129" label="+" width="32" height="22" click="displayPopUpPhone('Phone Number')"  enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="530" y="153" id="chkShowAll" label="Include Family Movements" click="showAll()" enabled="{!inputEnabled}"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Movement Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgList" x="10" y="156"	height="{defaultListHeight}" width="700" visible="true"		
+		keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="To"  dataField="travel_to" width="120" />
+			<mx:DataGridColumn  headerText="From"  dataField="travel_from" width="120" />	
+			<mx:DataGridColumn  headerText="Reason" dataField="reason"  width="70"/>
+			<mx:DataGridColumn  headerText="Reason ID" dataField="reason_id"  width="70" visible="false"/>
+			<mx:DataGridColumn  headerText="Start"  dataField="date_from" width="100" />	
+			<mx:DataGridColumn  headerText="End"  dataField="date_until" width="100" />				
+			<mx:DataGridColumn  headerText="Fixed"  dataField="dates_fixed" visible="false" width="70"/>
+			<mx:DataGridColumn  headerText="Notes" dataField="notes"  width="240"/>				
+			<mx:DataGridColumn  headerText="address_id" visible="false" dataField="address_id" width="30" />
+			<mx:DataGridColumn  headerText="Address" dataField="address" visible="false" width="120"/>	
+			<mx:DataGridColumn  headerText="email_id" visible="false" dataField="email_id" width="30" />
+			<mx:DataGridColumn  headerText="Email" dataField="email" visible="false" width="70"/>	
+			<mx:DataGridColumn  headerText="Phone_id" visible="false" dataField="phone_id" width="30" />
+			<mx:DataGridColumn  headerText="Phone" dataField="phone" visible="false" width="70"/>						
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>			
+			<mx:DataGridColumn  headerText="timestamp"  dataField="movement_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<packages:DataGridNew id="dgLoc" x="35" y="11"	height="{defaultListHeight}" width="584" visible="false">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="Loc"  dataField="name" width="120" />
+			<mx:DataGridColumn  headerText="Address"  dataField="address" width="120" />
+			<mx:DataGridColumn  headerText="a_id"  dataField="address_id" width="120" />
+			<mx:DataGridColumn  headerText="Email"  dataField="email" width="120" />
+			<mx:DataGridColumn  headerText="e_id"  dataField="email_id" width="120" />
+			<mx:DataGridColumn  headerText="Phone"  dataField="phone" width="120" />
+			<mx:DataGridColumn  headerText="p_id"  dataField="phone_id" width="120" />
+									
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	
+	<mx:HTTPService id="userRequestGetLocData" method="POST" fault="defaultFault(event)" result="populateLoc(event)"/>	    	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>	
+
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+		
+</local:tabMovementClass>

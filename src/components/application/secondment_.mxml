@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas  xmlns:mx="http://www.adobe.com/2006/mxml" width="{parentApplication.parentApplication.canvasWidth}" height="{parentApplication.parentApplication.canvasHeight}" initialize="LoadData()">
+
+	<mx:Script>
+        <![CDATA[
+         import mx.rpc.soap.SOAPFault; 
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.controls.Alert;
+        
+      
+		        
+        [Bindable] public var validFormData:Boolean = false;
+        
+                 
+        private function sendData():void{    
+        	
+        	userRequestSaveSecondment.url=parentApplication.getPath()+"requestSaveSecondment.php";
+        	parentApplication.sendData(userRequestSaveSecondment);       
+           		
+           		           		
+           	}
+           	
+         private function defaultFault(event:FaultEvent):void {
+            	
+                // Handle service fault.
+                if (event.fault is SOAPFault) {
+                	
+                     var fault:SOAPFault=event.fault as SOAPFault;
+                     var faultElement:XML=fault.element;
+                }
+                
+                Alert.show(event.fault.faultString, "Error");
+                        
+            }
+        
+        private function refresh():void{
+				
+
+				comboSecondmentFrom.selectedIndex=0;
+				comboSecondmentTo.selectedIndex=0;
+				comboChurch.selectedIndex=0;
+				//comboLocalSupportProvider.SelectedIndex=0;
+				comboLocalSupportProvider.selectedIndex=0;
+				dateOSADate.text="";
+				dateFSADate.text="";
+				textFSAStatus.text="";
+				textOSAStatus.text="";
+				validFormData=false;	
+												
+			}       
+        
+        
+        public function LoadData():void{
+           		
+
+           		comboSecondmentTo.dataProvider			=	parentApplication.userRequestName.lastResult.organizations.organization;
+           		comboSecondmentFrom.dataProvider		=	parentApplication.userRequestName.lastResult.organizations.organization;
+           		comboLocalSupportProvider.dataProvider	=	parentApplication.userRequestName.lastResult.organizations.organization;
+           		comboChurch.dataProvider				=	parentApplication.userRequestName.lastResult.organizations.organization;
+
+           		
+           }    
+           
+           private function addNewValue(comboObject:Object):void{				
+			comboObject.editable=!comboObject.editable; 
+			comboObject.focusEnabled="true";
+			}
+           
+           
+           
+             
+        ]]>
+    </mx:Script>
+	
+
+
+
+
+
+
+
+	<mx:FormItem x="17" y="40" label="Seconded From:" width="126" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	<mx:FormItem label="OSA Date:" width="126" backgroundColor="#EDE8E8" x="17" y="142" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	<mx:FormItem x="327" y="143" label="OSA Status:" width="105" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	<mx:TextInput id="textOSAStatus" x="440" y="140" backgroundColor="#E7EBE6" borderStyle="outset" height="20" maxChars="20"/>
+	
+	<mx:FormItem x="17" y="66" label="Seconded To:" width="124" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	<mx:FormItem x="17" y="169" label="FSA Date:" width="124" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+		
+	<mx:FormItem x="327" y="171" label="FSA Status:" width="104" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	
+	<mx:FormItem x="17" y="92" label="Local Support Provider:" width="126" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	
+	<mx:FormItem x="17" y="116" label="Church:" width="125" backgroundColor="#EDE8E8" height="16" fontFamily="Times New Roman" fontSize="11" fontWeight="bold"/>
+	<mx:TextInput id="textFSAStatus" x="439" y="170" backgroundColor="#E7EBE6" borderStyle="outset" height="20" maxChars="20"/>
+	<mx:Label x="10" y="5" text="Enter Secondment Information" width="179.99998" fontSize="12" fontFamily="Arial" fontWeight="bold" color="#850D0D" textDecoration="underline" height="24.015152"/>
+	<mx:ComboBox fontSize="11" id="comboSecondmentFrom" width="160" x="149" y="37" height="20" borderColor="#EDE8E8" fontFamily="Times New Roman"/>
+	<mx:ComboBox fontSize="11" id="comboLocalSupportProvider" width="160" x="149" y="89" height="20" borderColor="#EDE8E8" fontFamily="Times New Roman"/>
+	<mx:ComboBox fontSize="11" id="comboChurch" width="160" x="149" y="114" height="20" borderColor="#EDE8E8" fontFamily="Times New Roman"/>
+	<mx:ComboBox fontSize="11" id="comboSecondmentTo" width="160" x="149" y="63" height="20" borderColor="#EDE8E8" fontFamily="Times New Roman"/>
+	<mx:DateField id="dateOSADate" formatString="YYYY/MM/DD" width="159" x="150" y="140" borderColor="#EDE8E8" height="20" fontFamily="Times New Roman" fontSize="11"/>
+	<mx:DateField id="dateFSADate" formatString="YYYY/MM/DD" width="159" x="150" y="168" borderColor="#EDE8E8" height="20" fontFamily="Times New Roman" fontSize="11"/>
+	
+	
+	<!--server request -->
+	<mx:HTTPService id="userRequestSaveSecondment"  useProxy="false" method="POST" fault="defaultFault(event)" result="refresh()">
+		
+        <mx:request xmlns="">
+            
+            <secondmentFrom>{comboSecondmentFrom.value}</secondmentFrom>          
+            <fsaStatus>{textFSAStatus.text}</fsaStatus>   
+            
+        </mx:request>
+        
+    </mx:HTTPService> 
+	<mx:Button x="327.5" y="37" label="+" width="39" height="19" id="btn" click="addNewValue(comboSecondmentFrom)"/>
+	<mx:Button x="327.5" y="63" label="+" width="39" height="19" id="btn0" click="addNewValue(comboSecondmentTo)"/>
+	<mx:Button x="327.5" y="89" label="+" width="39" height="19" id="btn1" click="addNewValue(comboLocalSupportProvider)"/>
+	<mx:Button x="327.5" y="115" label="+" width="39" height="19" id="btn2" click="addNewValue(comboChurch)"/>
+	<mx:Button x="276" y="218" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" width="75" height="25"/>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" x="359" y="218" borderColor="#EDE8E8" color="#0A6B87" fontWeight="bold" width="75" height="25" />
+	<mx:Button id="btnOk" icon="@Embed(source='../../../files/images/save1.gif')" x="442" y="218" width="75" height="25"/>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="525" y="218" borderColor="#EDE8E8" width="75" height="25"/>
+	
+</mx:Canvas>

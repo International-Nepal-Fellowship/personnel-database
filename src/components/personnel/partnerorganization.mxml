@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:organisationClass xmlns:mx="http://www.adobe.com/2006/mxml" height="391" backgroundColor="{parentApplication.lightBackgroundColour}" width="598" xmlns:local="components.personnel.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="23" y="18" label="Name:" width="52" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="97" y="15" width="300" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="300" x="97" y="15" enabled="{listEnabled}" change="comboChange()"/>
+
+	<mx:FormItem label="Address:"  x="23" y="42"  width="52"/>
+	<packages:ComboBoxNew x="97" y="39" id="comboAdminAddress" width="255" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpAddress('Address',true)" toolTip="Double-click for details"/>
+	<mx:Button x="360" y="39" label="+" width="32" height="22" click="displayPopUpAddress('Address')" enabled="{newAddressEnabled}"/>
+
+	<mx:FormItem label="Email:" x="23" y="66"  width="47"/>
+	<packages:ComboBoxNew x="97" y="63" id="comboAdminEmail" width="160" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpEmail('Email Address',true)" toolTip="Double-click for details"/>
+	<mx:Button x="265" y="63" label="+" width="32" height="22" click="displayPopUpEmail('Email Address')" enabled="{newEmailEnabled}"/>
+
+	<mx:FormItem label="Phone:" x="24" y="90" width="47"/>
+	<packages:ComboBoxNew x="97" y="87" id="comboAdminPhone" width="160" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpPhone('Phone Number',true)" toolTip="Double-click for details"/>
+	<mx:Button x="265" y="87" label="+" width="32" height="22" click="displayPopUpPhone('Phone Number')" enabled="{newPhoneEnabled}"/>
+
+	<mx:DataGrid id="dgOrganisationTypes" x="400" y="13" minWidth="180" width="180" variableRowHeight="true" doubleClickEnabled="false" height="208">
+		<mx:columns>		
+			<mx:DataGridColumn dataField="id" width="20" visible="false"  />
+			<mx:DataGridColumn dataField="name"  width="100" headerText="Type"/>  
+		   	<mx:DataGridColumn dataField="check" editable="false" headerText="Select" width="35">
+		   		<mx:itemRenderer>
+		   		<mx:Component >
+		   			<mx:HBox  enabled = "{outerDocument.enableDisableCheckBox}" horizontalAlign="center" verticalAlign="middle"> 
+		   				<mx:CheckBox   click="data.check=!data.check" selected="{data.check}"/>		
+		   			</mx:HBox>	
+		   		</mx:Component>						
+		   		</mx:itemRenderer>
+		   	</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid>
+
+	<mx:Button x="67" y="148" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="148"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="148"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="148" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+
+	<mx:Label x="1" y="176" width="400" height="19" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+		
+	<packages:DataGridNew id="dgList"  x="10" y="180"	height="87" width="578"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Name" width="150" dataField="name" />
+			<mx:DataGridColumn headerText="From" dataField="secondment_from" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="To" dataField="secondment_to" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Local Support" dataField="local_support_provider" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Church" dataField="church" width="70" />	
+			<mx:DataGridColumn headerText="Embassy" dataField="embassy" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Types" dataField="organisation_types" width="80"/>		
+    		<mx:DataGridColumn headerText="Types ID" dataField="organisation_type_id" width="80" visible="false"/>
+    		<mx:DataGridColumn headerText="Email ID" dataField="email_id" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Address ID" dataField="address_id" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Phone ID" dataField="phone_id" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Email" dataField="email" width="70" />	
+			<mx:DataGridColumn headerText="Address" dataField="address" width="70" />	
+			<mx:DataGridColumn headerText="Phone" dataField="phone" width="70" />	
+            <mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" visible="false"/>
+		</packages:columns>
+	</packages:DataGridNew> 
+
+	<packages:DataGridNew id="dgDual" x="365" y="186" width="223" height="195"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="id"  dataField="__id" width="120" />
+			<mx:DataGridColumn  headerText="Organisation Id"  dataField="organisation_id" width="120" />
+			<mx:DataGridColumn  headerText="Name"  dataField="name" width="120" />
+			<mx:DataGridColumn  headerText="Email"  dataField="email" width="120" />
+			<mx:DataGridColumn  headerText="Known As"  dataField="known_as" width="120" />							
+			<mx:DataGridColumn  headerText="timestamp"  dataField="organisation_rep_timestamp" width="120" visible="false" />            
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:CheckBox x="10" y="200" label="Organisation Rep Info" click="toggleHideDualInfo()" enabled="{dualEnabled}" id="chkShowDualInfo"/>
+	<mx:Button x="332" y="200" icon="@Embed(source='../../../files/images/showDetail.gif')" toolTip="Toggle detail" enabled="{listEnabledDual}" click="{showDatagrid=!showDatagrid}" width="25" height="21" visible="{dualItemVisible}"/>
+			
+	<mx:FormItem x="23" y="232" label="Person:" width="52" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:TextInput id="txtAdminORepPerson" x="127" y="229" width="230" maxChars="50" toolTip="50 chars" visible="{dualItemVisible}" enabled="{inputEnabledDual}" change="checkDualValid(txtAdminORepPerson)"/>
+	
+	<mx:FormItem x="23" y="256" label="Known as:" width="63" visible="{dualItemVisible}"/>
+	<mx:TextInput id="txtAdminORepKnownas" x="127" y="253" width="230" maxChars="60" toolTip="60 chars" visible="{dualItemVisible}" enabled="{inputEnabledDual}" change="checkDualValid(txtAdminORepKnownas)"/>
+
+	<mx:FormItem x="23" y="280" label="Email:" width="52" height="21" visible="{dualItemVisible}"/>	
+	<mx:TextInput id="txtAdminORepEmail" x="127" y="277" width="230" maxChars="60" toolTip="60 chars" visible="{dualItemVisible}" enabled="{inputEnabledDual}" change="checkDualValid(txtAdminORepEmail)"/>		
+		
+	<mx:Button x="67" y="323" id="btnEditDual" icon="@Embed(source='../../../files/images/edit.gif')" click="editDualMode()" width="75" height="25" visible="{dualItemVisible}" enabled="{editEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNewDual"  icon="@Embed(source='../../../files/images/add.gif')" click="addDualMode()" x="150" y="323"   width="75" height="25"  visible="{dualItemVisible}" enabled="{addEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOkDual" click="sendDualData()" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="323"  width="75" height="25" visible="{dualItemVisible}" enabled="{saveEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancelDual" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="323" click="viewDualMode()" width="75" height="25" visible="{dualItemVisible}" enabled="{inputEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Label x="42" y="346" width="400" height="19" id="dual_status" enabled="false" visible="{dualItemVisible}" disabledColor="{parentApplication.statusDisabledColour}"/>
+
+	<packages:DataGridNew id="dgDualList" x="10" y="229" width="570" height="136"  itemClick="fillDualValues()" visible="{showDatagrid}">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="id"  dataField="__id" width="120" visible="false" />
+			<mx:DataGridColumn  headerText="Organisation Id"  dataField="organisation_id" width="120" visible="false" />
+			<mx:DataGridColumn  headerText="Name"  dataField="name" width="120" />
+			<mx:DataGridColumn  headerText="Email"  dataField="email" width="120" />
+			<mx:DataGridColumn  headerText="Known As"  dataField="known_as" width="120" />									
+			<mx:DataGridColumn  headerText="timestamp"  dataField="organisation_rep_timestamp" width="120" visible="false" />
+		</packages:columns>
+	</packages:DataGridNew>
+	     
+	<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+	<mx:HTTPService id="requestNewAdminData" method="POST" fault="defaultFault(event)" result="refreshAdminDataResult(event)"/>
+
+	<mx:HTTPService id="userRequestGetDualData" method="POST" fault="defaultFault(event)" result="populateDual(event)"/>	    	
+	<mx:HTTPService id="userRequestSaveDualData" method="POST" fault="defaultFault(event)" result="requestDualData()"/>	
+	
+</local:organisationClass>

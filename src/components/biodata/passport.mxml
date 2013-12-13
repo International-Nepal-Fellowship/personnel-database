@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabPassportClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.biodata.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Number:" width="97" y="12" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textNumber" x="125" y="9" change="checkValid(textNumber)" enabled="{inputEnabled}" toolTip="12 chars" maxChars="12"/>
+	
+	<mx:FormItem label="Issue Date:" width="97" y="36" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="125" y="33" id="dateIssueDate" change="checkValid(dateIssueDate),CheckSingleDateValidity(dateIssueDate)" formatString="{parentApplication.appDateFormat}"  yearNavigationEnabled="true" enabled="{inputEnabled}" editable="true"/>
+	
+	<mx:FormItem label="Expiry Date:" width="97" y="60" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="125" y="57" id="dateExpiryDate" change="checkValid(dateExpiryDate)" formatString="{parentApplication.appDateFormat}" yearNavigationEnabled="true" enabled="{inputEnabled}" editable="true"/>
+	
+	<mx:FormItem label="Issue Country:" width="97" y="84" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboIssueCountry" x="125" y="81" change="checkValid(comboIssueCountry)" enabled="{inputEnabled}" width="128" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country','issue',true)" toolTip="Double-click for details"/>
+	<mx:Button x="261" y="81" label="+" width="32" height="22" click="displayPopUpCountry('Country','issue')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+		
+	<mx:FormItem label="Issue City:" width="97" y="108" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="125" y="105" id="textIssueCity" change="checkValid(textIssueCity)" enabled="{inputEnabled}" toolTip="20 chars" maxChars="20"/>
+	
+	<mx:FormItem label="Passport Country:" width="107" y="132" x="10" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboPassportCountry" x="125" y="129" change="checkValid(comboPassportCountry)" enabled="{inputEnabled}" width="128" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country','passport',true)" toolTip="Double-click for details"/>
+	<mx:Button x="261" y="129" label="+" width="32" height="22" click="displayPopUpCountry('Country','passport')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	
+	<!--
+	<mx:FormItem label="Visa Post:" width="97" x="10" y="132"/>	
+	<packages:ComboBoxNew id="comboVisa" width="128" x="115" y="129" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpVisa('Visa',true)" toolTip="Double-click for details"/>
+	<mx:Button x="251" y="129" label="+" width="32" height="22" click="displayPopUpVisa('Visa')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	-->
+	
+	<mx:FormItem label="Photo:" width="47" y="12" x="302"/>
+	<mx:TextInput id="textPhoto"  width="141" x="313" y="122" editable="false" enabled="false" visible="false"/>
+	<mx:Button id="photo" icon="@Embed(source='../../../files/images/browse.gif')" click="selectFile(textPhoto,textPhotoName)" x="302" y="33" width="25" enabled="{inputEnabled}" toolTip="Upload passport photo"/>
+	
+	<mx:FormItem label="Scan:" width="47" y="12" x="442"/>
+	<mx:Button id="scan" icon="@Embed(source='../../../files/images/browse.gif')" click="selectFile(textScan,textScanName)" x="442" y="33" width="25" enabled="{inputEnabled}" toolTip="Upload passport scan"/>
+	<mx:TextInput id="textScan"  width="144" x="492" y="118" editable="false" enabled="false" visible="true"/>
+	
+	<mx:TextInput x="276" y="223" id="textScanName" width="97" visible="false" />
+	<mx:TextInput x="381" y="223" id="textPhotoName" width="101" visible="false"/>
+	
+	<mx:Image x="352" y="9" width="81" height="108" id="photoHolder" horizontalAlign="center" toolTip="Click to download">
+		<mx:click ><![CDATA[ if(dgList.selectedItem){navigateToURL(new URLRequest(downloadImage(dgList.selectedItem.photo_link)))};]]></mx:click>
+	</mx:Image>
+	<mx:Image x="492" y="9" width="144" height="108" id="scanHolder" horizontalAlign="center" toolTip="Click to download">
+		<mx:click ><![CDATA[ if(dgList.selectedItem){navigateToURL(new URLRequest(downloadImage(dgList.selectedItem.scan_link)))};]]></mx:click>
+	</mx:Image>
+
+	<mx:CheckBox x="302" y="129" id="chkShowAll" label="Include Family Passports" click="showAll()" enabled="{!inputEnabled}"/>
+		
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Passport Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>	
+	      	
+	<packages:DataGridNew x="10" y="156" width="700" height="{defaultListHeight}" id="dgList" keyDown="moveTo(event)" visible="true" enabled="{!inputEnabled}" liveScrolling="true">
+	   	<packages:columns>        
+	       	<mx:DataGridColumn headerText="ID" dataField="__id" visible="false" />                       
+	        <mx:DataGridColumn headerText="Number" dataField="number" width="60"/>  
+	        <mx:DataGridColumn headerText="Issued" dataField="issue_date" width="100"/>
+	        <mx:DataGridColumn headerText="Expires" dataField="expiry_date" width="100"/>	
+	        <mx:DataGridColumn headerText="City" dataField="issue_city" width="100"/>  
+	        <mx:DataGridColumn headerText="Issue Country" dataField="issue_country" width="100"/> 
+	        <mx:DataGridColumn headerText="Passport Country" dataField="passport_country" width="100"/> 
+	        <mx:DataGridColumn headerText="Country" dataField="issue_country_id" width="100" visible="false"/>
+	        <mx:DataGridColumn headerText="Country" dataField="passport_country_id" width="100" visible="false"/>
+	        <mx:DataGridColumn headerText="timestamp" dataField="passport_timestamp" visible="false" /> 
+
+            <!--HERE IS OUR FIRST ITEMRENDERER FOR THE PREVIEW IMAGE  -->   
+            <mx:DataGridColumn headerText="Photo"  width="150" visible="false">
+            	<mx:itemRenderer>
+	               	<mx:Component>
+	                	<mx:VBox>
+	                  		<mx:Image doubleClickEnabled="true" id="dgPhoto" source="{data.photo_link}" width="100%" height="100" horizontalAlign="center"/>                 
+	                  	</mx:VBox>
+	               	</mx:Component>
+	          	</mx:itemRenderer>
+	        </mx:DataGridColumn>
+	        <mx:DataGridColumn headerText="Scan"  width="150" visible="false">
+	            <mx:itemRenderer>
+	                <mx:Component>
+	                  	<mx:VBox>
+	                  		<mx:Image  doubleClickEnabled="true" id="dgScan" source="{data.scan_link}" width="100%" height="100" horizontalAlign="center"/>
+	                  	</mx:VBox>
+	                </mx:Component>
+	            </mx:itemRenderer>
+	        </mx:DataGridColumn>     	                 
+	        <mx:DataGridColumn headerText="scan_link" dataField="scan_link" visible="false"/>
+	        <mx:DataGridColumn headerText="photo_link" dataField="photo_link" visible="false"/>    
+	        <mx:DataGridColumn headerText="org_scan_link" dataField="org_scan_link"  visible="false"/>
+	        <mx:DataGridColumn headerText="org_photo_link" dataField="org_photo_link" visible="false"/>     
+	  	</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	
+	<!--server request -->
+	<mx:HTTPService id="userRequestSaveTab" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="getPhoto" method="POST"  useProxy="false" fault="defaultFault(event)" result="refresh()"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="711" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+</local:tabPassportClass>

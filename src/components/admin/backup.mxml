@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:backupClass backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:packages="packages.*" xmlns:mx="http://www.adobe.com/2006/mxml" height="343" width="464" xmlns:local="components.admin.*">
+
+
+	<mx:Button id="btnOk" icon="@Embed(source='../../../files/images/ok.gif')" x="108" y="235" label="Ok" labelPlacement="left" width="75" height="25" click="createBackup()">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:FormItem x="36" y="20" label="Select Backup Type:" width="117"/>
+	
+	<mx:HTTPService id="requestCreateBackup"   useProxy="false" method="POST" fault="defaultFault(event)" result="backupResult(event)"/>
+	<packages:DataGridNew width="404" id="dgList" x="28" y="157"  visible="false"/>
+				
+
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" width="75" height="25" visible="false"/>
+	
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" x="150" y="273"   width="75" height="25"  visible="false"/>
+		
+	<mx:Button id="btnOk0" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25" visible="false"/>
+		
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" width="75" height="25" visible="false"/>
+		
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:RadioButtonGroup id="radioBackupType"/>
+	<mx:RadioButton x="108" y="90" id="radioBackupData" label="Backup Data only" groupName="radioBackupType"/>
+	<mx:RadioButton x="108" y="120" id="radioBackupStructure" label="Backup Structure only" groupName="radioBackupType"/>
+	<mx:RadioButton x="108" y="150" id="radioBackupBoth" label="Backup all Data &amp; Structure" groupName="radioBackupType" selected="true"/>
+
+	
+</local:backupClass>

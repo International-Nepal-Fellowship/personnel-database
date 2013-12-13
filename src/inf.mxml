@@ -1,0 +1,5467 @@
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"  initialize="loadData(),initGifPlayer()" creationComplete="complete()" layout="absolute" xmlns:maincomp="components.*" xmlns:packages="packages.*" backgroundColor="#939393">
+<mx:Style source="../files/css/main.css"/>
+
+	<mx:Script>
+	<![CDATA[
+		import mx.messaging.channels.StreamingAMFChannel;
+		import mx.utils.StringUtil;
+		import mx.validators.DateValidator;
+        import mx.validators.ValidationResult;
+		import mx.formatters.DateFormatter;
+		import mx.controls.DateField; 
+		import packages.DateUtils;
+		import mx.controls.DataGrid;		
+		import mx.events.TreeEvent;
+		import mx.events.CloseEvent;
+		import mx.core.ComponentDescriptor;
+		import mx.core.UIComponent;        
+	    import mx.rpc.soap.SOAPFault;         
+	    import mx.rpc.events.ResultEvent;
+	    import mx.rpc.events.FaultEvent;
+	    import mx.controls.Alert;
+	    import packages.ComboBoxNew;
+	    import mx.managers.SystemManager;
+	    import packages.timeOutHandler;
+	    import mx.events.FlexEvent;
+	    import mx.events.DropdownEvent;
+	    import flash.events.FocusEvent;
+        import packages.DataGridFunctionList;   
+        import flash.utils.Timer;
+        import flash.events.TimerEvent;                
+        import mx.rpc.http.HTTPService;  
+        import mx.collections.XMLListCollection;
+        import mx.collections.ArrayCollection;
+        import flash.net.navigateToURL;
+	    import flash.net.URLRequest;
+	    
+		import packages.DataGridDataExporter; //for copying the datagrid's data to clipboard
+		import packages.MD5;
+		import mx.collections.ICollectionView;
+        import mx.events.ListEvent;
+
+        import mx.controls.dataGridClasses.DataGridColumn;//for sorting datagrid columns
+        import mx.events.DataGridEvent;
+        import mx.collections.*;
+        import mx.utils.ObjectUtil;
+        import mx.events.IndexChangedEvent;
+        
+		import mx.validators.EmailValidator; //for e-mail verification
+		import mx.validators.ValidationResult;
+        
+        public var myDPColl:ArrayCollection;
+        private var arrInfStaff:Array= new Array();//array of inf staff's id
+        private var arrRelativeInfStaff:Array= new Array;//associative array of inf_staff's id indexed by relative's ids
+      //  private var onResultSetRelativeMode:Boolean =false;
+
+// AS3 GIFPlayer 0.2 code starts (also uses packages.gif.*)
+			// www.bytearray.org
+			// thibault@bytearray.org
+			
+			import packages.gif.player.GIFPlayer;
+			import packages.gif.decoder.GIFDecoder;
+			import packages.gif.events.GIFPlayerEvent;
+			import packages.gif.events.FileTypeEvent;
+			import packages.gif.events.FrameEvent;
+			import packages.gif.events.TimeoutEvent;
+			// we create the GIFPlayer, GIF is played automatically
+			private var myGIFPlayer:GIFPlayer = new GIFPlayer();
+			private function initGifPlayer():void{
+		//Alert.show('start gif image player');		
+				gifIm.source = myGIFPlayer;
+				myGIFPlayer.load ( new URLRequest ("../files/images/busy.gif"));
+			}		
+			
+			private var imageFilter:FileFilter = new FileFilter("Image Files (*.gif)", "*.gif");
+//code for gif player ends			
+ 
+        [Bindable] private var forceChangeUserPassword:Boolean;
+         
+        private var iconVisibility:Boolean; 
+        
+        private var savedIndex:int = -1;
+		public var storeIndex:int = -1;
+		private var onalert:Boolean = false;
+		
+		public function duringAlert():Boolean {
+			return onalert;
+		}
+		
+		private function addNewDgColumn(dataGrid:DataGridNew,dataField:String):void{
+        	
+        	//dataGrid.dataProvider=null;
+        	var dgc:DataGridColumn = new DataGridColumn(dataField);                
+            var cols:Array = dataGrid.columns;
+            cols.push(dgc);
+            dataGrid.columns = cols;
+        }
+        
+        private function removeDataGridColumn(dataGrid:DataGridNew):void {
+        
+            var cols:Array=new Array();
+            dataGrid.columns = cols;
+        }
+        
+        public function assignDgColumnOrder(allFieldsName:String,myGrid:DataGridNew):void {
+
+			removeDataGridColumn(myGrid); //datagrid is made empty so that it will contain ONLY new columns, which we will add
+			
+			if (allFieldsName != null) {        		
+        		
+        		var arrDgColumns:Array = allFieldsName.split(",");
+                
+                for (var i:int = 0; i < arrDgColumns.length; i++) {               	 	
+               	 	addNewDgColumn(myGrid,arrDgColumns[i]);
+                }
+            }
+        }
+		
+        public function sortDataGrid(myGrid:DataGridNew):void {
+
+       		var sortA:Sort= new Sort();
+
+       		var sortBy0:SortField;
+        	var sortBy1:SortField;
+        	var sortBy2:SortField;
+        	var sortBy3:SortField;
+
+       		var columns:Array = new Array();
+       		var col:DataGridColumn;
+       		        	
+        	for(var i:int=0; i<myGrid.columnCount;i++) {
+        		if(myGrid.columns[i].visible) columns.push(myGrid.columns[i]);
+        	}          	
+            
+            if(columns.length == 0) return;
+            
+            // A true second parameter specifies a case-insensitive sort.
+            // A true third parameter specifies descending sort order.
+            // A true fourth parameter specifies a numeric sort.
+           
+			if(columns.length>=4){
+      
+             	col=columns[0];             
+             	sortBy0 = new SortField(col.headerText, true);   
+             	col=columns[1];              
+             	sortBy1 = new SortField(col.headerText, true);		
+             	col=columns[2];           
+             	sortBy2 = new SortField(col.headerText, true);	
+             	col=columns[3];           
+             	sortBy3 = new SortField(col.headerText, true);		             
+             	sortA.fields=[sortBy0,sortBy1,sortBy2,sortBy3];           
+            }           
+            else if(columns.length==3){
+      	        col=columns[0];             
+             	sortBy0 = new SortField(col.headerText, true);   
+             	col=columns[1];              
+             	sortBy1 = new SortField(col.headerText, true);		
+             	col=columns[2];           
+             	sortBy2 = new SortField(col.headerText, true);		             
+             	sortA.fields=[sortBy0,sortBy1,sortBy2];           
+            }
+            else if(columns.length==2){
+      	        col=columns[0];             
+             	sortBy0 = new SortField(col.headerText, true);   
+             	col=columns[1];              
+             	sortBy1 = new SortField(col.headerText, true);				             
+             	sortA.fields=[sortBy0,sortBy1];           
+            }
+            else{
+             	col=columns[0];
+             	sortBy0 = new SortField(col.headerText, true);  		                         
+             	sortA.fields=[sortBy0];         	
+            }  
+
+			myGrid.dataProvider.sort = sortA;
+			myGrid.dataProvider.refresh();                  
+        }   
+    
+        private var t:Timer;		
+		private const MIN_MASK:String  = "00";
+        private const SEC_MASK:String  = "00";
+        private const MS_MASK:String   = "000";
+        private var TIMER_INTERVAL:int = 1000;        
+		private var baseTimer:int;
+		private const versionText:String = "Version 1.0.13: 16th January 2013"; 
+		
+		private var varIPAddress:String	=	"http://localhost/files/";
+		private var noRecord:Boolean	= false;
+		private var initialised:Boolean = false;
+		private var initialSearchDone:Boolean = false;
+		
+		public function isInitialised():Boolean {
+			return loadTypesDone;
+		}
+		
+		[Bindable]public var searching:Boolean	=	false;
+		[Bindable]private var loggedIn:Boolean	=	false;
+		[Bindable]private var limited:Boolean	=	true;
+				
+		[Bindable]public var biodataEnabled:Boolean = false; // can't use isBiodataEnabled() to enable/disable tabs
+		[Bindable]public var relativeMode:Boolean	=	false; // can't use isRelativeMode() to enable/disable field visibility
+		[Bindable]private var appMode:String	=	"View";
+		private var tempStaffMode:Boolean = false;
+		//private var relativeSearchMode:Boolean = false;
+		private var lastSelectedRelativeIndex:int = -1;
+		[Bindable]public var panelEnabled:Boolean = true; // can't use isPanelEnabled() to enable/disable relative mode 
+		[Bindable]public var bioEnabled:Boolean = false; // for Biodata tab
+		[Bindable]public var initEnabled:Boolean = true; // for Initial login tab
+		[Bindable]public var dashEnabled:Boolean = true; // for Dashboard tab
+		[Bindable]public var appEnabled:Boolean = false; // for Application tab
+		[Bindable]public var servEnabled:Boolean = false; // for Service tab
+		[Bindable]public var patientEnabled:Boolean = false; // for Patient tab		
+		[Bindable]public var staffEnabled:Boolean = false; // for Health Staff tab
+		
+		private var viewBioEnabled:Boolean = false; // for Biodata tab
+		private var viewAppEnabled:Boolean = false; // for Application tab
+		private var viewServEnabled:Boolean = false; // for Service tab
+		private var viewPatientEnabled:Boolean = false; // for Patient tab		
+		private var viewStaffEnabled:Boolean = false; // for Health Staff tab
+		
+		[Bindable]public var patientSystem:Boolean = false; // running Patient system
+		[Bindable]public var personnelWorldwideSystem:Boolean = false; // running personnel INF/W system
+		[Bindable]public var personnelNepalSystem:Boolean = false; // running personnel INF/N system
+		[Bindable]public var embassyEnabled:Boolean = false;
+		[Bindable]public var nationalityEnabled:Boolean = false;
+		[Bindable]public var citizenshipEnabled:Boolean = false;
+		[Bindable]public var siteLocationEnabled:Boolean = false;
+		
+		[Bindable]public var navEnabled:Boolean = false;
+		[Bindable]public var relativeToggleEnabled:Boolean = false; //for relative button
+		private var enableStandardMode:Boolean = true;
+		[Bindable]public var isValid:Boolean = false;
+		[Bindable]private var searchVisible:Boolean = false;
+		[Bindable]private var dashVisible:Boolean = false;
+		
+		[Bindable]public var saveEnabled:Boolean = false;
+		[Bindable]public var editEnabled:Boolean = false;
+		[Bindable]public var cancelEnabled:Boolean = false;
+		[Bindable]public var fieldsEditable:Boolean = false;
+		[Bindable]public var loadTypesDone:Boolean = false;
+		[Bindable]public var enableLoginOK:Boolean = false;
+		[Bindable]public var loadTypeOK:Boolean = false;
+		[Bindable]public var nameResultOK:Boolean = false;
+		
+		private var ctrlKeyPressed:Boolean = false;
+	    private var shiftKeyPressed:Boolean = false;
+	    
+	    public function shiftKeyDown():Boolean
+	    {
+	    	return shiftKeyPressed;
+	    }
+	    
+	   	public function ctrlKeyDown():Boolean
+	    {
+	    	return ctrlKeyPressed;
+	    }
+	    
+		private var userName:String;
+		
+		// store the user access level after user logs in
+		private var userAccess:String	=	"false";
+		//public var sessionExpired:Boolean	=	false;
+		//public var enableTimeout:Boolean	=	true;
+		
+		private var timeOutTotal:Number;	
+		
+		private var currentID:String	=	"";
+		private var currentRelativeID:String	=	"";
+		private var currentStaffID:String	=	"";
+		
+		private var addAllowed:Boolean = false;
+		private var editAllowed:Boolean = false;
+		private var deleteAllowed:Boolean = false;
+		private var includeFamily:Boolean = false;
+		private var staffWorkingDays:String;
+								
+		private var arrCollVisaNames:Object;
+		private var currentPassportID:String;
+		private var currentVisaID:String;
+		private var currentIndex:uint = 0;
+		private var currentSideIndex:uint = 0;
+		
+		public function getSidebarIndex():Number{
+			
+		 	return currentSideIndex;
+		}
+		
+		public var dateFormat:String = "YYYY-MM-DD"; // date format used by MySQL
+		[Bindable]public var appDateFormat:String = "DD/MM/YYYY"; // date format used by application
+		[Bindable]public var mandatoryLabelColour:uint = 0xfd4040; //0xff7200;
+		[Bindable]public var statusDisabledColour:uint = 0xee1717;
+		[Bindable]public var lightBackgroundColour:uint = 0xc8c8c8;
+		[Bindable]public var darkBackgroundColour:uint = 0x939393;
+		[Bindable]public var brightTextColour:uint = 0xfd4040;
+		[Bindable]public var highlightTextColour:uint = 0xfd9494;
+		[Bindable]public var defaultSearchListHeight:uint = 115;
+		[Bindable]public var expandedSearchListHeight:uint = 500;
+		
+		private var lastFamilyDetailsResult:Object;
+		private var lastUserNameResult:Object;
+		private var lastUserTypeResult:Object;
+		private var lastUserResult:Object;
+		private var lastAdminResult:Object;
+		private var lastAdminName:Object;
+		
+		private var userLoginInfo:Array= new Array();
+		 		
+        ////// for printing		
+		import mx.collections.ArrayCollection;
+		import mx.printing.FlexPrintJob;
+		import mx.printing.PrintDataGrid;	
+					
+		private var myPrintDataGrid:PrintDataGrid;
+		private var myPrintJob:FlexPrintJob;
+		
+		private var thresholdTime:Number=600;//maximum idle time allowed for application=600 sec =10 minutes
+		private var dashBoardSearch1:int=0;
+		private var dashBoardSearch2:int=0;
+		private var dashBoardSearch3:int=0;
+		private var dashBoardSearch4:int=0;		
+		
+		public function resetTimeOut():void{
+			//set to 10 minutes=600 seconds= 600 clock ticks
+			//trace("timer reset");
+			thresholdTime= userLoginInfo['timeout'];
+		}
+					      
+		public function doPrint(sourceDatagrid:DataGridNew):void {
+			
+			myPrintJob = new FlexPrintJob();
+		
+			if (myPrintJob.start()) {
+				myPrintDataGrid = new PrintDataGrid();
+		
+				//Set the print view properties.
+				myPrintDataGrid.width = myPrintJob.pageWidth;
+				myPrintDataGrid.height = myPrintJob.pageHeight;
+		
+				// Set the data provider of the FormPrintView component's data grid
+				// to be the data provider of the displayed data grid.
+				myPrintDataGrid.columns = sourceDatagrid.columns; //if this line is omitted then the hidden columns of the sourceDatagrid will also be printed
+				myPrintDataGrid.dataProvider = sourceDatagrid.dataProvider;
+				
+				myPrintDataGrid.visible = false;
+				myPrintDataGrid.includeInLayout = false;
+				Application.application.addChild(myPrintDataGrid);
+				if(!myPrintDataGrid.validNextPage) {
+					myPrintJob.addObject(myPrintDataGrid);
+				} else {
+					myPrintJob.addObject(myPrintDataGrid);
+		
+					while(true) {
+						// Move the next page of data to the top of the print grid.
+						myPrintDataGrid.nextPage();
+		
+						if(!myPrintDataGrid.validNextPage) {
+							// This is the last page; queue it and exit the print loop.
+							myPrintJob.addObject(myPrintDataGrid);
+		
+							break;
+						} else {
+							myPrintJob.addObject(myPrintDataGrid);
+						}
+					}		
+				}
+				Application.application.removeChild(myPrintDataGrid);
+		
+				myPrintJob.send();
+			}
+		}
+
+		private function mouseClickHandler(e:MouseEvent):void{
+			
+			if (loggedIn) {
+				resetTimeOut();
+			}
+		}
+
+		private function keyUpPressHandler( e:KeyboardEvent ):void {
+
+			trace("key up: "+e.charCode+" ("+e.keyCode+")");
+			trace("shift key up: "+shiftKeyPressed+" ctrl key up: "+ctrlKeyPressed);
+			if (e.keyCode == 16) shiftKeyPressed = false;
+			if (e.keyCode == 17) ctrlKeyPressed = false;
+			trace("shift key up: "+shiftKeyPressed+" ctrl key up: "+ctrlKeyPressed);	
+		}
+		
+		private function keyPressHandler( e:KeyboardEvent ):void {
+
+			shiftKeyPressed = (e.shiftKey);
+			ctrlKeyPressed = (e.ctrlKey);			
+			    	
+    	if (loggedIn && (!onalert)) {
+
+			resetTimeOut();
+			
+           	if( e.ctrlKey && (!e.altKey)){   //ctrl key pressed, but not alt  
+
+				trace("ctrl: "+e.charCode+" ("+e.keyCode+") at "+this.focusManager.getFocus());				
+				
+				if(( e.charCode == 13) && searchVisible) {//return
+                    if((searchResult.height == expandedSearchListHeight) && (searchResult.dataProvider.length > 0)) {                    	
+						toggleExpandedSearchList(true);
+                    }    
+                }  	
+                
+                if((( e.charCode == 60)||( e.charCode == 44)) && searchVisible) {// < or ,  
+                    if((searchResult.dataProvider.length > 0) && panelEnabled)
+                    {
+                    	this.focusManager.setFocus( searchResult );
+                    	if (searchResult.selectedIndex > 0) {
+                    		searchResult.selectedIndex =  searchResult.selectedIndex - 1;
+                    			displayRecord();
+                    	}                      
+                    }    
+                }
+                
+                if((( e.charCode == 62)||( e.charCode == 46)) && searchVisible) {// >  or . 
+                   	if((searchResult.dataProvider.length > 0) && panelEnabled)
+                    {
+                    	this.focusManager.setFocus( searchResult );
+                    	if (searchResult.selectedIndex < searchResult.dataProvider.length - 1) {
+                    		searchResult.selectedIndex =  searchResult.selectedIndex + 1;
+                    			displayRecord();
+                    	}                   
+                    }    
+                }
+                
+                if(( e.charCode == 80) && searchVisible) {// P  
+                    if((searchResult.dataProvider.length > 0) && panelEnabled)
+                    	doPrint(searchResult);  
+                }
+                
+                if(( e.charCode == 83) && searchVisible) {// S  
+                    if((searchResult.dataProvider.length > 0) && panelEnabled)
+                    	doSort();   
+                }
+                
+                if(( e.charCode == 88) && searchVisible) {// X  
+                	if ((searchResult.height == expandedSearchListHeight) || ((searchResult.dataProvider.length > 0) && panelEnabled)) {
+                    	toggleExpandedSearchList();  
+                 	}  
+                }
+                
+                if(( e.charCode == 67) && searchVisible) {// C  
+                	if((searchResult.dataProvider.length > 0) && panelEnabled)
+                    	DataGridDataExporter.exportCSV (searchResult);   
+                }
+                             
+                if(( e.charCode == 82) && searchVisible && (searchResult.height == defaultSearchListHeight)) {// R  
+                    if(panelEnabled && relativeToggleEnabled)
+                    	toggleRelativeMode();   
+                }
+
+                if(( e.charCode == 61) || ( e.charCode == 43)){// + or =                
+                	if (portals != null && e.shiftKey) { //special case for home tab
+                		if (portals.selectedIndex == 0) portals.selectedIndex = portals.selectedIndex +1;
+                	}
+                	if( searchVisible && (portals != null) && (searchResult.height == defaultSearchListHeight)) {
+                		
+                		if (e.shiftKey) {
+        					if (portals.selectedIndex < portals.numChildren-1)
+        						portals.selectedIndex = portals.selectedIndex +1;
+                		}
+                		else {
+                			switch(portals.selectedChild.className)
+        					{	       					
+        						case "biodatas":
+        		
+        							if (biodatas.portals != null) {
+        								if (biodatas.portals.selectedIndex < biodatas.portals.numChildren-1)
+        									biodatas.portals.selectedIndex = biodatas.portals.selectedIndex +1;
+        							}
+        							break;
+        						
+        						case "app":
+        		
+        							if (app.portals != null) {
+        								if (app.portals.selectedIndex < app.portals.numChildren-1)
+        									app.portals.selectedIndex = app.portals.selectedIndex +1;
+        							}
+        							break;
+        						
+        						case "test":
+        		
+        							if (tests.portals != null) {
+        								if (tests.portals.selectedIndex < tests.portals.numChildren-1)
+        									tests.portals.selectedIndex = tests.portals.selectedIndex +1;
+        							}
+        							break;
+        						
+        						case "patient":
+        		
+        							if (patient.portals != null) {
+        								if (patient.portals.selectedIndex < patient.portals.numChildren-1)
+        									patient.portals.selectedIndex = patient.portals.selectedIndex +1;
+        							}
+        							break;
+        							
+        						case "staff":
+        		
+        							if (staff.portals != null) {
+        								if (staff.portals.selectedIndex < staff.portals.numChildren-1)
+        									staff.portals.selectedIndex = staff.portals.selectedIndex +1;
+        							}
+        					
+        							break;
+        					}
+        				}               		
+                	}
+                	/*
+                	if( adminDisplay.visible && _admin.portals != null) {
+                		
+                		if (e.shiftKey) {
+        					if (_admin.portals.selectedIndex < 6) {
+        						_admin.portals.selectedIndex = 6;
+        					}
+        					else {
+        						if (_admin.portals.selectedIndex < 15)
+        							_admin.portals.selectedIndex = 15;
+        					} 
+                		}
+                		else {
+                			if (_admin.portals.selectedIndex < 21)
+                				_admin.portals.selectedIndex = _admin.portals.selectedIndex +1;
+        				}               		
+                	}
+                	*/
+                }
+                    			
+                if(( e.charCode == 45) || ( e.charCode == 95)){// - or _
+                	if( searchVisible && (portals != null) && (searchResult.height == defaultSearchListHeight)) {
+            		
+                		if (e.shiftKey) {
+        					if (portals.selectedIndex > 0)
+        						portals.selectedIndex = portals.selectedIndex -1;
+                		}
+                		else {
+                			switch(portals.selectedChild.className)
+        					{	       					
+        						case "biodatas":
+        		
+        							if (biodatas.portals != null) {
+        								if (biodatas.portals.selectedIndex > 0)
+        									biodatas.portals.selectedIndex = biodatas.portals.selectedIndex -1;
+        							}
+        							break;
+        						
+        						case "app":
+        		
+        							if (app.portals != null) {
+        								if (app.portals.selectedIndex > 0)
+        									app.portals.selectedIndex = app.portals.selectedIndex -1;
+        							}
+        							break;
+        						
+        						case "test":
+        		
+        							if (tests.portals != null) {
+        								if (tests.portals.selectedIndex > 0)
+        									tests.portals.selectedIndex = tests.portals.selectedIndex -1;
+        							}
+        							break;
+        						
+        						case "patient":
+        		
+        							if (patient.portals != null) {
+        								if (patient.portals.selectedIndex > 0)
+        									patient.portals.selectedIndex = patient.portals.selectedIndex -1;
+        							}
+        							break;
+        					}
+        				}               		
+                	} 
+                	/*
+                	if( adminDisplay.visible && _admin.portals != null) {
+                		
+                		if (e.shiftKey) {
+        					if (_admin.portals.selectedIndex > 14) {
+        						_admin.portals.selectedIndex = 6;
+        					}
+        					else {
+        						if (_admin.portals.selectedIndex > 5)
+        							_admin.portals.selectedIndex = 0;
+        					} 
+                		}
+                		else {
+                			if (_admin.portals.selectedIndex > 0)
+                				_admin.portals.selectedIndex = _admin.portals.selectedIndex -1;
+        				}               		
+                	} 
+                	*/   
+                }
+ 
+            }//end of if( e.ctrlKey)
+  		}
+  		}
+  		
+        ////****************Fault Event function for allt he httpservice calls**************////
+        private function defaultFault(event:FaultEvent):void {
+        	
+            // Handle service fault.
+            if (event.fault is SOAPFault) {                	
+                 var fault:SOAPFault	=	event.fault as SOAPFault;
+                 var faultElement:XML	=	fault.element;
+            }
+            
+            Alert.show(event.fault.faultString, "Error");
+                    
+        }
+        ////****************************end of fault event********************////
+        
+        
+        ////**************************Start of Admin Part (as)**************************//
+        //***Data provider for the admin tree
+        [Bindable]private var treeDataPatientAdmin:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+          
+			<Pfolder label="Admin" isBranch="true">     
+			
+   				<Pfolder label	=	"Backup" />           			 
+   				<Pfolder label	=	"Change Log" /> 
+                <Pfolder label	=	"Synchronisation" /> 
+                <Pfolder label	=	"User Priviledge" />
+                <Pfolder label	=	"Group Priviledge" />
+                <Pfolder label	=	"Other Settings" />
+                <Pfolder label	=	"Queries"/>
+                <Pfolder label	=	"MySQL Permissions"/>
+                
+            </Pfolder>
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>   	
+   			
+   			<Pfolder label="Patient" isBranch="true"> 
+      		
+      			<Pfolder label	=	"Appliance Type" />
+      			<Pfolder label	=	"Health Staff Type" />
+      			<Pfolder label	=	"Referred From" />
+        		<Pfolder label	=	"Requested From"/>
+        		<Pfolder label	=	"Service Type"/>
+                <Pfolder label	=	"Surgery Type" />
+        		<Pfolder label	=	"Treatment Case" />
+        		<Pfolder label	=	"Treatment Category" />
+        		<Pfolder label	=	"Treatment Reason" /> 
+                <Pfolder label	=	"Treatment Regimen" /> 
+                <Pfolder label	=	"Treatment Result" />	
+        		
+   			</Pfolder>   	
+            		
+          </Pfolder>  ;
+
+        [Bindable]private var treeDataPersonnelAdmin:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+          
+			<Pfolder label="Admin" isBranch="true">     
+			
+   				<Pfolder label	=	"Backup" />           			 
+   				<Pfolder label	=	"Change Log" /> 
+                <Pfolder label	=	"Synchronisation" /> 
+                <Pfolder label	=	"User Priviledge" />
+                <Pfolder label	=	"Group Priviledge" />
+                <Pfolder label	=	"Other Settings" />
+        		<Pfolder label	=	"Queries"/>
+        		<Pfolder label	=	"MySQL Permissions"/>
+        		                
+            </Pfolder>
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>
+   			            
+      		<Pfolder label="Personnel" isBranch="true"> 
+      		
+        		<Pfolder label	=	"Leave Type"/>
+                <Pfolder label	=	"Leaving Reason" />
+        		<Pfolder label	=	"Movement Reason" />
+        		<Pfolder label	=	"Organisation" /> 
+        		<Pfolder label	=	"Organisation Type" />
+                <Pfolder label	=	"Role" /> 
+                <Pfolder label	=	"Programme" />
+        		<Pfolder label	=	"Qualification Type" />
+        		<Pfolder label	=	"Registration Type" />
+        		<Pfolder label	=	"Review Type" />
+        		<Pfolder label	=	"Section"/>
+        		<Pfolder label	=	"Service Grade"/>
+        		<Pfolder label	=	"Service Location" />
+        		<Pfolder label	=	"Speciality Type" />
+        		<Pfolder label	=	"Staff Type"/>
+        		<Pfolder label	=	"Training Needs"/>
+        		<Pfolder label	=	"Unit"/>
+        		<Pfolder label	=	"Visa Agreement Period" />
+        		<Pfolder label	=	"Visa Post" />
+        		
+   			</Pfolder>   	  	
+            		
+          </Pfolder>  ;
+
+        [Bindable]private var treeDataPersonnelNepalAdmin:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+          
+			<Pfolder label="Admin" isBranch="true">     
+			
+   				<Pfolder label	=	"Backup" />           			 
+   				<Pfolder label	=	"Change Log" /> 
+                <Pfolder label	=	"Synchronisation" /> 
+                <Pfolder label	=	"User Priviledge" />
+                <Pfolder label	=	"Group Priviledge" />
+                <Pfolder label	=	"Other Settings" />
+        		<Pfolder label	=	"Queries"/>
+        		<Pfolder label	=	"MySQL Permissions"/>
+        		                
+            </Pfolder>
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>
+   			            
+      		<Pfolder label="Personnel" isBranch="true"> 
+      		
+        		<Pfolder label	=	"Leave Type"/>
+                <Pfolder label	=	"Leaving Reason" />
+        		<Pfolder label	=	"Movement Reason" />
+        		<Pfolder label	=	"Organisation" /> 
+        		<Pfolder label	=	"Organisation Type" />
+                <Pfolder label	=	"Role" /> 
+                <Pfolder label	=	"Programme" />
+        		<Pfolder label	=	"Qualification Type" />
+        		<Pfolder label	=	"Registration Type" />
+        		<Pfolder label	=	"Review Type" />
+        		<Pfolder label	=	"Section"/>
+        		<Pfolder label	=	"Service Grade"/>
+        		<Pfolder label	=	"Service Location" />
+        		<Pfolder label	=	"Speciality Type" />
+        		<Pfolder label	=	"Staff Type"/>
+        		<Pfolder label	=	"Training Needs"/>
+        		<Pfolder label	=	"Unit"/>
+        		
+   			</Pfolder>   	  	
+            		
+          </Pfolder>  ;
+
+        [Bindable]private var treeDataPatient:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>   	
+   			
+   			<Pfolder label="Patient" isBranch="true"> 
+      		
+      			<Pfolder label	=	"Appliance Type" />
+      			<Pfolder label	=	"Health Staff Type" />
+      			<Pfolder label	=	"Referred From" />
+        		<Pfolder label	=	"Requested From"/>
+        		<Pfolder label	=	"Service Type"/>
+                <Pfolder label	=	"Surgery Type" />
+        		<Pfolder label	=	"Treatment Case" />
+        		<Pfolder label	=	"Treatment Category" />
+        		<Pfolder label	=	"Treatment Reason" /> 
+                <Pfolder label	=	"Treatment Regimen" /> 
+                <Pfolder label	=	"Treatment Result" />	
+        		
+   			</Pfolder>   	
+            		
+          </Pfolder>  ;
+
+        [Bindable]private var treeDataPersonnel:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>
+   			            
+      		<Pfolder label="Personnel" isBranch="true"> 
+      		
+        		<Pfolder label	=	"Leave Type"/>
+                <Pfolder label	=	"Leaving Reason" />
+        		<Pfolder label	=	"Movement Reason" />
+        		<Pfolder label	=	"Organisation" />
+        		<Pfolder label	=	"Organisation Type" /> 
+                <Pfolder label	=	"Role" /> 
+                <Pfolder label	=	"Programme" />
+        		<Pfolder label	=	"Qualification Type" />
+        		<Pfolder label	=	"Review Type" />
+        		<Pfolder label	=	"Section"/>
+        		<Pfolder label	=	"Service Grade"/>
+        		<Pfolder label	=	"Service Location" />
+        		<Pfolder label	=	"Speciality Type" />
+        		<Pfolder label	=	"Staff Type"/>
+        		<Pfolder label	=	"Training Needs"/>
+        		<Pfolder label	=	"Unit"/>
+        		<Pfolder label	=	"Visa Post" />
+        		
+   			</Pfolder>   	  	
+            		
+          </Pfolder>  ;
+
+        [Bindable]private var treeDataPersonnelNepal:XML = <Pfolder label="Admin/Settings" isBranch="true">   
+   			  
+  			<Pfolder label="Standard" isBranch="true">  
+  			          				
+       			<Pfolder label	=	"Countries" /> 
+                <Pfolder label	=	"Courses" /> 
+        		<Pfolder label	=	"Course Subject" /> 
+        		<Pfolder label	=	"Course Type" />
+        		<Pfolder label	=	"Ethnicity"/>
+                <Pfolder label	=	"Hospital" />
+        		<Pfolder label	=	"Illness"/>
+        		<Pfolder label	=	"Religion" /> 
+        		          		
+   			</Pfolder>
+   			            
+      		<Pfolder label="Personnel" isBranch="true"> 
+      		
+        		<Pfolder label	=	"Leave Type"/>
+                <Pfolder label	=	"Leaving Reason" />
+        		<Pfolder label	=	"Movement Reason" />
+        		<Pfolder label	=	"Organisation" />
+        		<Pfolder label	=	"Organisation Type" />
+                <Pfolder label	=	"Role" /> 
+                <Pfolder label	=	"Programme" />
+        		<Pfolder label	=	"Qualification Type" />
+        		<Pfolder label	=	"Review Type" />
+        		<Pfolder label	=	"Section"/>
+        		<Pfolder label	=	"Service Grade"/>
+        		<Pfolder label	=	"Service Location" />
+        		<Pfolder label	=	"Speciality Type" />
+        		<Pfolder label	=	"Staff Type"/>
+        		<Pfolder label	=	"Training Needs"/>
+        		<Pfolder label	=	"Unit"/>
+        		
+   			</Pfolder>   	  	
+            		
+          </Pfolder>  ;
+
+          //***
+          
+        //*** search the given table related to admin part
+
+		public function getTabName(tableName:String):String {
+			
+			var tabName:String = tableName;
+			switch (tableName)
+			{
+				case 'name':
+					tabName = 'personal';
+					break;
+				
+				case 'review':
+					tabName = 'annual_review';
+					break;
+				
+				case 'patient_visit':
+					tabName = 'visit';
+					break;
+				
+				case 'patient_service':
+					tabName = 'services';
+					break;
+				
+				case 'patient_surgery':
+					tabName = 'surgery';
+					break;
+					
+				case 'patient_appliance':
+					tabName = 'appliances';
+					break;
+				
+				case 'patient_bill':
+					tabName = 'billing';
+					break;
+			}
+			
+			return tabName;
+		}
+
+		public function getTableName(tabName:String):String {
+			
+			var tableName:String = tabName;
+			switch (tabName)
+			{
+				case 'personal':
+					tableName = 'name';
+					break;
+				
+				case 'annual_review':
+					tableName = 'review';
+					break;
+				
+				case 'visit':
+					tableName = 'patient_visit';
+					break;
+				
+				case 'services':
+					tableName = 'patient_service';
+					break;
+				
+				case 'surgery':
+					tableName = 'patient_surgery';
+					break;
+					
+				case 'appliances':
+					tableName = 'patient_appliance';
+					break;
+				
+				case 'billing':
+					tableName = 'patient_bill';
+					break;
+			}
+			
+			return tableName;
+		}
+				
+		private function getTabTableName():String{
+			
+			var tableName:String="";
+
+        	switch(portals.selectedChild.className)
+        	{	
+        		case "biodatas":
+        		
+        			if (biodatas.portals == null)
+        				return(firstEnabledTable(biodatas.getChildLabels()));
+        		
+        			if (biodatas.portals.selectedChild == null) {
+						biodatas.portals.selectedIndex = 0;
+					}
+					if (biodatas.portals.selectedChild.enabled == false) {
+						biodatas.portals.selectedIndex = firstEnabledTab(biodatas.getChildLabels());
+					}
+					
+					tableName = getTableName(biodatas.portals.selectedChild.label.toLowerCase());
+        			break; 
+      			
+        		case "app":
+        			
+        			if (app.portals == null)
+        				return(firstEnabledTable(app.getChildLabels()));
+        			
+        			if (app.portals.selectedChild == null) {
+						app.portals.selectedIndex = 0;
+					}
+					if (app.portals.selectedChild.enabled == false) {
+						app.portals.selectedIndex = firstEnabledTab(app.getChildLabels());
+					}
+					
+					tableName = getTableName(app.portals.selectedChild.label.toLowerCase());
+        			break;        			
+       			        		
+        		case "test":
+        		
+        			if (tests.portals == null)
+        				return(firstEnabledTable(tests.getChildLabels()));
+
+        			if (tests.portals.selectedChild == null) {
+						tests.portals.selectedIndex = 0;
+					}
+					if (tests.portals.selectedChild.enabled == false) {
+						tests.portals.selectedIndex = firstEnabledTab(tests.getChildLabels());
+					}
+					
+					tableName = getTableName(tests.portals.selectedChild.label.toLowerCase()); 
+					break;	
+        			
+        		case "patient":
+        			
+        			if (patient.portals == null)
+        				return(firstEnabledTable(patient.getChildLabels()));
+
+        			if (patient.portals.selectedChild == null) {
+						patient.portals.selectedIndex = 0;
+					}
+					if (patient.portals.selectedChild.enabled == false) {
+						patient.portals.selectedIndex = firstEnabledTab(patient.getChildLabels());
+					}
+					
+					tableName = getTableName(patient.portals.selectedChild.label.toLowerCase());
+        			break;
+        			
+        		case "staff":
+        		
+        			if (staff.portals == null)
+        				return(firstEnabledTable(staff.getChildLabels()));
+        			
+        			if (staff.portals.selectedChild == null) {
+						staff.portals.selectedIndex = 0;
+					}
+					if (staff.portals.selectedChild.enabled == false) {
+						staff.portals.selectedIndex = firstEnabledTab(staff.getChildLabels());
+					}
+					
+					tableName = getTableName(staff.portals.selectedChild.label.toLowerCase());
+        			break;	
+        									
+			}
+	
+			return tableName;	
+		}
+		
+		public function refreshListTab():void{
+			
+			refreshList(getTabTableName());
+		}
+		
+		private function getAdminTableName():String{
+			
+			var tableName:String="";
+
+        	switch (_admin.portals.selectedChild.className) {
+				
+			case "changelog":
+				tableName = 'change_log';
+				break;
+				
+			case "synchronization":
+				tableName = 'sync';
+				break;
+
+			case "userprivilege":
+				tableName = 'users';
+				break;
+				
+			case "groupprivilege":
+				tableName = 'security_role';
+				break;
+			
+			case "othersettings":
+				tableName = 'site';
+				break;
+
+			case "partnerorganization":
+				tableName = 'organisation';
+				break;
+				
+			case "leavereason":
+				tableName = 'leaving_reason';
+				break;
+
+			case "leavetype":
+				tableName = 'leave_type';
+				break;
+			
+			case "organizationtype":
+				tableName = 'organisation_type';
+				break;
+			
+			case "servicegrade":
+				tableName = 'grade';
+				break;
+				
+			case "servicelocation":
+				tableName = 'location';
+				break;
+
+			case "stafftype":
+				tableName = 'staff_type';
+				break;
+			
+			case "section":
+				tableName = 'section';
+				break;
+			
+			case "unit":
+				tableName = 'unit';
+				break;
+			
+			case "personneltrainingneeds":
+				tableName = 'personnel_training_needs';
+				break;
+			
+			case "movementreason":
+				tableName = 'movement_reason';
+				break;
+				
+			case "specialitytype":
+				tableName = 'speciality_type';
+				break;
+								
+			case "qualificationtype":
+				tableName = 'qualification_type';
+				break;
+				
+			case "registrationtype":
+				tableName = 'registration_type';
+				break;
+			
+			case "reviewtype":
+				tableName = 'review_type';
+				break;
+			
+			case "cast":
+				tableName = 'caste';
+				break;
+								
+			case "countries":
+				tableName = 'country';
+				break;
+				
+			case "queries":
+				tableName = 'search_history';
+				break;
+				
+			case "coursetype":
+				tableName = 'course_type';
+				break;
+				
+			case "courses":
+				tableName = 'course';
+				break;
+				
+			case "subject":
+				tableName = 'course_subject_type'; 
+				//Alert.show('course service type ');
+				break;
+			
+			case "patientservicetype":
+				tableName = 'patient_service_type';
+				//Alert.show('patient service type getAdminTable() '); 
+				break;
+			
+			case "patientsurgerytype":
+				tableName = 'patient_surgery_type';				
+				break;
+				
+			case "patienttreatmentcategory":
+				tableName = 'treatment_category';				
+				break;
+			case "patienttreatmentregimen":
+				tableName = 'treatment_regimen';				
+				break;
+			
+			case "patientreferredfrom":
+				tableName = 'referred_from';
+				break;
+				
+			case "patientrequestedfrom":
+				tableName = 'requested_from';				
+				break;
+				
+			case "patienthealthstafftype":
+				tableName = 'health_staff_type';
+				break;				
+			
+			case "patientappliancetype":
+				tableName = 'patient_appliance_type';
+				break;		
+			
+			case "patienttreatmentresult":
+				tableName = 'treatment_result';
+				break;	
+				
+			case "patienttreatmentcase":
+				tableName = 'treatment_case';
+				break;	
+				
+			case "patienttreatmentreason":
+				tableName = 'treatment_reason';
+				break;	
+				
+			default:
+				tableName = _admin.portals.selectedChild.className;
+				break;					
+			}
+	
+			return tableName;	
+		}
+
+		public function getTabFieldNames(tableName:String):String{
+	
+			var result:String = "";
+			
+        	switch (tableName) {
+								
+			case 'address':
+				result = 'address_timestamp,country_id,type,address,city_town,state_province,postcode_zip,latitude,longitude,id';
+				break;
+
+			case 'phone':
+				result = 'phone_timestamp,phone,extn,type,shared,id,country_id,fax,mobile';
+				break;
+
+			case 'email':
+				result = 'email_timestamp,email,type,id';
+				break;
+				
+			case 'photo':
+				result = 'photo_timestamp,id,description,link,photo';//changing the order of link and photo will effect search.php while generating the temporary photo link and temporary photos
+				break;
+				
+			case 'passport':
+				result = 'passport_timestamp,id,number,issue_date,expiry_date,issue_city,issue_country_id,passport_country_id,scan_link,scan,photo_link,photo';//changing the order of scan_link,scan,photo_link,photo will effect search.php
+				break;
+				
+			case 'visa_history':
+				result = 'visa_history_timestamp,id,status,type,number,issue_date,expiry_date,issue_city,issue_country_id,entry_date,subtype,scan_link,scan,passport_id,post_id,postholder';
+				break;				
+				
+			case 'education':
+				result = 'education_timestamp,id,start_date,end_date,qualification_level,qualification_id,institution_id,speciality_id,second_speciality_id,division_grade,certificate_scan,scan_link';
+				break;
+			
+			case 'work_experience':
+				result = 'work_experience_timestamp,id,start_date,end_date,workplace,job_title,description,country_id,leaving_reason_id,city_town';
+				break;
+				
+			case 'registrations':
+				result = 'registrations_timestamp,id,reference,start_date,end_date,registration_doc_id,registration_type_id,organisation_id';
+				break;
+			
+			case 'documentation':
+				result = 'documentation_timestamp,id,cv_recvd_date,application_recvd_date,medical_recvd_date,medical_to_MO_date,medical_accepted_date,medical_accepted_id,psych_recvd_date,psych_to_MO_date,psych_from_MO_date,psych_to_PD_date,psych_accepted_date,employer_ref_recvd_date,colleague_ref_recvd_date,friend_ref_recvd_date,minister_ref_recvd_date,interview_recvd_date,secondment_accepted_date,post_agreed_date,post_agreed_id,contract_recvd_date,certificates_recvd_date,photos_recvd_date,passport_recvd_date,professional_recvd_date,link_person_id,application_doc_id,cv_doc_id,medical_doc_id,psych_doc_id,employer_doc_id,colleague_doc_id,friend_doc_id,minister_doc_id,contract_doc_id,interview_doc_id,certificates_doc_id,photos_doc_id,passport_doc_id,professional_doc_id';
+				break;
+			
+			case 'orientation':
+				result = 'orientation_timestamp,id,email_address_requested_date,email_address_created_date,email_installed_date,LOT_duration_discussed_date,LOT_requested_date,LOT_confirmed_date,ktm_LOT_scheduled_date,ktm_LOT_Confirmed_date,Dates_of_ktm_LOT,Housing_preferences_date,pkr_LOT_housing_arranged_date,housing_requested_date,housing_arranged_date,housing_confirmed_date,link_names_sent_date,housing_link_person_id,ktm_link_person_id,pkr_link_person_id,school_children_link_person_id,work_link_person_id,LOT_confirmed_doc_id,pkr_LOT_housing_arranged_doc_id,housing_confirmed_doc_id';
+				break;
+				
+			case 'orientation_arrangement':
+				result = 'id,orientation_arrangement_timestamp,accomodation_arranged_doc_id,arrival_flight,arrival_date,arrival_time,pickup_arranged_date,accomodation_arranged_date,bus_ticket_arranged_date,ticket_info_sent_to_pkr_date,survival_orientation_booklet_date,welcome_pack_date,welcome_letter_date';	
+				break;
+				
+			case 'secondment':
+				result = 'secondment_timestamp,id,seconded_from_id,seconded_to_id,local_support_id,church_id,further_seconded_to_id,post_agreed_id,link_person_id,osa_member_sent_date,osa_member_received_date,osa_member_signed_date,osa_member_copy_sent_date,osa_approval_agency_id,osa_agency_sent_date,osa_agency_received_date,osa_agency_signed_date,osa_agency_copy_sent_date,osa_approval_infw_id,osa_infw_sent_date,osa_infw_received_date,osa_infw_signed_date,osa_infw_copy_sent_date,fsa_member_sent_date,fsa_member_received_date,fsa_member_signed_date,fsa_member_copy_sent_date,fsa_approval_agency_id,fsa_agency_sent_date,fsa_agency_received_date,fsa_agency_signed_date,fsa_agency_copy_sent_date,fsa_approval_infw_id,fsa_infw_sent_date,fsa_infw_received_date,fsa_infw_signed_date,fsa_infw_copy_sent_date,invitation_letter_rcvd_date,invitation_letter_id';
+				break;
+			
+			case 'staff':
+				result = 'staff_timestamp,id,staff_number,probation_end_date,start_date,retirement_date,leaving_date,leaving_reason_id,next_review_due,staff_type_id,status,programme_id,comments';
+				break;
+			
+			case 'insurance':
+				result = 'insurance_timestamp,id,company_id,reference,contact,start_date,end_date,insurance_doc_id,insurance_class,premium,terrorism';
+				break;
+				
+			case 'service':
+				result = 'service_timestamp,id,post_id,grade_id,location_id,date_from,date_until,percent_of_time,special_contract,working_week';
+				break;
+				
+			case 'movement':
+				result = 'movement_timestamp,id,address_id,email_id,phone_id,date_from,date_until,dates_fixed,travel_to,travel_from,notes,reason_id';
+				break;
+				
+			case 'leave':
+				result = 'leave_timestamp,id,date_from,date_until,replacement,leave_type_id,half_day_from,half_day_until,leave_days';
+				break;
+				
+			case 'training':
+				result = 'id,training_timestamp,course_id,training_doc_id,training_needs,career_aspirations,career_development';
+				break;
+				
+			case 'hospitalisation':
+				result = 'hospitalisation_timestamp,id,relative_id,date_from,date_until,births,illness_id,hospital_id,cost';
+				break;
+				
+			case 'review':
+				result = 'review_timestamp,id,star_rating,comments,review_date,reviewed_by_id,review_type_id,review_doc_id';
+				break;
+				
+			case 'home_assignment':
+				result = 'home_assignment_timestamp,medical_report_received_id,STV_manager_comments_received_id,invitation_letter_received_id,id,date_from,date_until,infopack_sent,interview_date,report_received,rsent_date_member,rsent_date_agency,medical_arranged,medical_report_received,msent_date_agency,STV_manager_comments_received,invitation_letter_received,notes,interview_by,confirmed_dates';
+				break;
+			
+			case 'patient_visit':
+			//	result='id,patient_id,type,affected,date_referred,referred_from_id,date_attended,date_discharged,main_treatment_reason_id,detail_treatment_reason_id,discharged_to,patient_number,hospital_id,patient_visit_timestamp';
+			
+				result='id,patient_id,type,affected,date_referred,referred_from_id,date_attended,date_discharged,main_treatment_reason_id,detail_treatment_reason_id,discharged_to,patient_number,hospital_id,patient_visit_timestamp,PAL,PWD,care_after_cure,footwear_needed,new_case';							
+			
+			/*	result='patient_visit.id,patient_visit.patient_id,patient_visit.type,patient_visit.affected,' + 
+						'patient_visit.date_referred,patient_visit.referred_from_id,patient_visit.date_attended,' + 
+						'patient_visit.date_discharged,patient_visit.main_treatment_reason_id,patient_visit.detail_treatment_reason_id,' + 
+						'patient_visit.discharged_to,patient_visit.patient_number,patient_visit.hospital_id,' + 
+						'patient_visit.patient_visit_timestamp';
+			*/
+				break;
+			
+			case 'treatment':
+				result='id,patient_id,treatment_timestamp,treatment_category_id,date_from,date_until,treatment_case_id,treatment_regimen_id,treatment_result_id';			
+				break;
+			
+			case 'patient_service':
+				result='id,patient_id,patient_service_timestamp,service_type_id,date_given';
+				break;
+				
+			case 'patient_surgery':
+				result='id,patient_id,patient_surgery_timestamp,surgery_type_id,date_given';
+				break;
+				
+			case 'patient_appliance':
+				result='id,patient_id,patient_appliance_timestamp,appliance_type_id,date_given,requested_from_id';
+				break;
+				
+			case 'patient_bill':
+				result='id,patient_id,date_paid,amount,paid_by,patient_bill_timestamp';
+				break;
+				
+			case 'health_staff':
+				result='id,health_staff_timestamp,health_staff_type_id';
+				break;
+				
+			default:
+				result = 'id'; //default
+				break;		
+			}
+			
+			return result;
+		}
+		
+		public function getAdminFieldNames(tableName:String):String{
+	
+			var result:String = "";
+			
+        	switch (tableName) {
+								
+			case 'leave_type':
+				result = 'id,timestamp,name,entitlement,carry_forward';
+				break;
+
+			case 'location':
+				result = 'id,timestamp,name,dept,address_id,email_id,phone_id';
+				break;
+							
+			case 'country':
+				result = 'id,timestamp,name,istd_code,currency';
+				break;
+			
+			case 'search_history':
+				result = 'id,timestamp,name,query,search_4_all';
+				break;	
+			
+			case 'course':
+				result = 'id,timestamp,name,course_type_id,course_subject_id,location,provider,date_from,date_until,dates_fixed,notes_id';
+				break;
+			
+			case 'agreement':
+				result = 'id,timestamp,name,description,date_from,date_until';
+				break;
+			
+			case 'hospital':
+				result = 'id,timestamp,name,type,country_id';
+				break;
+				
+			case 'post':
+			case 'visapost':
+				result = 'id,timestamp,name,description,email,programme_id,unit_id,section_id,type,hours,status,medical_reviewer,job_reviewer,personnel_reviewer,provisional,manager_id,active,agreement_id';
+				break;
+
+			case 'project':
+				result = 'id,timestamp,name,programme_id,type';
+				break;				
+
+			case 'visa_history':
+				result = 'id,visa_history_timestamp,number,issue_date,expiry_date,entry_date,issue_city,issue_country_id,type,status,subtype';
+				break;				
+										
+			case 'organisation':
+				result = 'id,timestamp,name,secondment_from,secondment_to,local_support_provider,church,embassy,address_id,email_id,phone_id,organisation_types';
+				break;
+				
+			case 'organisation_rep':
+				result = 'id,organisation_rep_timestamp,organisation_id,name,email,known_as';
+				break;	
+				
+			case 'site':
+				result = 'id,timestamp,name,site_specific_id,email_domain,fiscal_year_start,timeout,maintenance,location_id,programme_id,hospitalisation_limit'; //smtp_server,password,user_id';				break;
+				break;
+				
+			case "patient_appliance_type":
+				result = 'id,timestamp,name,type';
+				break;
+				
+			case "treatment_regimen":
+				result = 'id,timestamp,name,treatment_category_id';
+				break;
+				
+			case "treatment_result":
+				result = 'id,timestamp,name,treatment_category_id,success';
+				break;
+				
+			case "treatment_case":
+				result = 'id,timestamp,name,treatment_category_id,positive';
+				break;
+				
+			case "treatment_reason":
+				result = 'id,timestamp,name,treatment_category_id,main,type';
+				break;
+				
+			case "programme":
+				result = 'id,timestamp,name,code';
+				break;
+				
+			//case 'personnel_training_needs':
+			//	result = 'id,name,timestamp,career_aspirations,career_development'; 
+			//	break;
+						
+			default:
+				result = 'id,name,timestamp'; //default
+				break;		
+			}
+			
+			return result;
+		}
+        
+		public function searchAdminList(tableName:String="",other:Boolean=false,givenName:String=""):void{
+			
+        	var parameters:Object=new Object();      	
+        	
+        	parameters.tableName = tableName;			
+			parameters.fieldNames	=	getAdminFieldNames(tableName);
+			parameters.whereName = givenName;
+        	
+        	trace("searchAdminList: "+parameters.tableName+", "+parameters.fieldNames);
+			
+			if (_admin.portals.selectedIndex>4)	{
+				parameters.action	=	'Search Admin';
+			}
+			else { //admin settings
+				parameters.action	=	'Search Settings';
+			}
+			
+			searching=true;
+			if (other) {
+        		searchOtherAdmin.useProxy	=	false;
+           		searchOtherAdmin.url			=	varIPAddress	+	"search.php";
+      			searchOtherAdmin.send(parameters);   
+   			}
+   			else {
+   				searchAdmin.useProxy	=	false;
+           		searchAdmin.url			=	varIPAddress	+	"search.php";
+      			searchAdmin.send(parameters);
+   			}       
+        } 
+        
+        public function getAdminSearchResult():Object{
+        	
+        	return lastAdminResult; 	
+        }
+        
+        public function getAdminSearchName():Object{
+        	
+        	return lastAdminName; 
+        }    	
+        
+      	//*****
+      	
+		private function createPanel(event:Event):void{
+		//	This function displays the components accordingly on the basis of node selected
+		
+			if(event.currentTarget.selectedItem == null) return;
+			
+			//// code to expand and hide the tree branches on click(over the entire row)
+			// if this code is omitted then we need to click the arrows '>'(which is default)	
+			var item:Object = Tree(event.currentTarget).selectedItem;
+    		var eventType:String;
+		    if (tree1.dataDescriptor.isBranch(item)){
+		        tree1.expandItem(item, !tree1.isItemOpen(item), true);
+		    
+		        eventType=(tree1.isItemOpen(item)) ? TreeEvent.ITEM_OPEN : TreeEvent.ITEM_CLOSE;
+		        var event1:TreeEvent = new TreeEvent(eventType);
+		      
+		        event1.item = item;
+		        tree1.dispatchEvent(event1);
+		    }
+			/////
+		
+			var selLabel:String	=	event.currentTarget.selectedItem.@label;//@label gives the label of currently selected node
+			adminDisplay.selectedChild	=	_admin;//_admin is the id of mx tree
+			
+			//it selects the child on the basis of the selected node. It compares the label of
+			//the selected node and load the components accordingly
+		
+			selectAdminTab(selLabel);
+		}
+		
+		public function selectAdminTab(selLabel:String):void{
+			
+			switch(selLabel){
+				
+			case 'Backup':				
+				_admin.portals.selectedIndex	=	0;													
+				break;
+
+			case 'Change Log':
+				_admin.portals.selectedIndex	=	1;	
+				break;
+				
+			case 'Synchronisation':
+				_admin.portals.selectedIndex	=	2;	
+				break;	
+			
+			case 'User Priviledge':
+				_admin.portals.selectedIndex	=	3;	
+				break;
+
+			case 'Group Priviledge':
+				_admin.portals.selectedIndex	=	4;	
+				break;
+								
+			case 'Other Settings':
+				_admin.portals.selectedIndex	=	5;	
+				break;
+				
+			case 'Queries':
+				_admin.portals.selectedIndex	=	6;	
+				break;
+								
+			case 'Ethnicity':
+				_admin.portals.selectedIndex	=	7;	
+				break;
+
+			case 'Countries':
+				_admin.portals.selectedIndex	=	8;	
+				break;
+				
+			case 'Courses':
+				_admin.portals.selectedIndex	=	9;	
+				break;					
+			
+			case 'Course Subject':
+				_admin.portals.selectedIndex	=	10;	
+				break;
+							
+			case 'Course Type':
+				_admin.portals.selectedIndex	=	11;	
+				break;
+				
+			case 'Hospital':
+				_admin.portals.selectedIndex	=	12;	
+				break;
+			
+			case 'Illness':
+				_admin.portals.selectedIndex	=	13;	
+				break;
+			
+			case 'Religion':
+				_admin.portals.selectedIndex	=	14;	
+				break;
+							
+			case 'Leave Type':
+				_admin.portals.selectedIndex	=	15;	
+				break;
+							
+			case 'Leaving Reason':
+				_admin.portals.selectedIndex	=	16;									
+				break;
+
+			case 'Movement Reason':
+				_admin.portals.selectedIndex	=	17;	
+				//Alert.show(_admin.portals.selectedIndex.toString());
+				break;
+			
+			case 'Organisation':
+				_admin.portals.selectedIndex	=	18;	
+				break;
+				
+			case 'Organisation Type':
+				_admin.portals.selectedIndex	=	45;	
+				break;				
+			
+			case 'Role':
+				_admin.portals.selectedIndex	=	19;	
+				break;
+			
+			case 'Programme':
+				_admin.portals.selectedIndex	=	20;	
+				break;
+			
+			case 'Project':
+				_admin.portals.selectedIndex	=	21;	
+				break;
+				
+			case 'Qualification Type':
+				_admin.portals.selectedIndex	=	22;	
+				break;
+			
+			case 'Review Type':
+				_admin.portals.selectedIndex	=	23;	
+				break;
+
+			case 'Section':
+				_admin.portals.selectedIndex	=	24;	
+				break;	
+		
+			case 'Service Grade':
+				_admin.portals.selectedIndex	=	25;	
+				break;
+			
+			case 'Service Location':
+				_admin.portals.selectedIndex	=	26;	
+				break;
+			
+			case 'Speciality Type':
+				_admin.portals.selectedIndex	=	27;	
+				break;
+
+			case 'Staff Type':
+				_admin.portals.selectedIndex	=	28;	
+				break;
+				
+			case 'Training Needs':
+				_admin.portals.selectedIndex	=	29;
+				break;
+			
+			case 'Unit':
+				_admin.portals.selectedIndex	=	30;
+				break;	
+						
+			case 'Visa Post':
+				_admin.portals.selectedIndex	=	31;	
+				break;	
+				
+			case 'Visa Agreement Period':
+				_admin.portals.selectedIndex	=	46;	
+				break;	
+				
+			case 'Registration Type':
+				_admin.portals.selectedIndex	=	47;	
+				break;
+		/*18062009*/		
+				
+			case 'Appliance Type':
+				_admin.portals.selectedIndex	=	32;	
+				//Alert.show('appliance type');
+				break;	
+			
+			case 'Health Staff Type':
+				_admin.portals.selectedIndex	=	33;	
+				//Alert.show('health staff type');
+				break;
+				
+			case 'Referred From':
+				_admin.portals.selectedIndex	=	34;	
+				//Alert.show('Referred From');
+				break;	
+				
+			case 'Requested From':
+				_admin.portals.selectedIndex	=	35;	
+				//Alert.show('Requested From');
+				break;				
+				
+			case 'Service Type':
+				_admin.portals.selectedIndex	=	36;					
+				//Alert.show('service type : '+_admin.portals.selectedIndex);
+				break;	
+				
+			case 'Surgery Type':
+				_admin.portals.selectedIndex	=	37;	
+				//Alert.show('surgery type');
+				break;
+			
+			case 'Treatment Case':
+				_admin.portals.selectedIndex	=	38;	
+				//Alert.show('treatment case');
+				break;
+											
+			case 'Treatment Category':
+				_admin.portals.selectedIndex	=	39;	
+				//Alert.show('treatment category');
+				break;	
+			
+			case 'Treatment Reason':
+				_admin.portals.selectedIndex	=	40;	
+				//Alert.show('treatment reason');
+				break;
+						
+			case 'Treatment Regimen':
+				_admin.portals.selectedIndex	=	41;	
+				//Alert.show('treatment regimen');
+				break;				
+				
+			case 'Treatment Result':
+				_admin.portals.selectedIndex	=	42;	
+				//Alert.show('treatment result');
+				break;		
+			
+		/*18062009*/
+		
+			case 'MySQL Permissions':
+				_admin.portals.selectedIndex	=	44;	
+				break;
+					
+			case 'Blank':
+			default:
+				_admin.portals.selectedIndex = 43; //blank
+				_admin.displayPanel.title = "Select...";
+				break;				
+			}		
+			
+			if (_admin.portals.selectedIndex != 43) {
+				searchAdminList(getAdminTableName());
+				_admin.displayPanel.title	=	selLabel;	
+			}					
+		}
+
+		private function loadNamesResult():void {
+
+			trace("loadnamesresult: "+_admin.portals.selectedChild.className);		
+			switch (_admin.portals.selectedChild.className) {
+				
+				case "backup":
+				case "changelog":
+				case "synchronization":
+				case "mysqlusers":
+				//	_admin.backup.init(table);
+				break;
+
+				case "othersettings":
+					_admin.othersettings.afterPopupClose();
+				break;
+								
+				case "userpriviledge":
+					_admin.userpriviledge.afterPopupClose();
+				break;
+				
+				case "grouppriviledge":
+					_admin.grouppriviledge.afterPopupClose();
+				break;
+				
+				case "partnerorganization":
+					_admin.partnerorganisation.afterPopupClose();
+				break;
+				
+				case "leavereason":
+					_admin.leavereason.afterPopupClose();
+				break;
+				
+				case "leavetype":
+					_admin.leavetype.afterPopupClose();
+				break;								
+				
+				case "organizationtype":
+					_admin.organisationtype.afterPopupClose();
+				break;
+				
+				case "post":
+					_admin.post.afterPopupClose();
+				break;
+				
+				case "programme":
+					_admin.programme.afterPopupClose();
+				break;
+
+				case "project":
+					_admin.project.afterPopupClose();
+				break;
+								
+				case "servicegrade":
+					_admin.servicegrade.afterPopupClose();
+				break;
+				
+				case "servicelocation":
+					_admin.servicelocation.afterPopupClose();
+				break;
+														
+				case "stafftype":
+					_admin.stafftype.afterPopupClose();
+				break;
+				
+				case "section":
+					_admin.section.afterPopupClose();
+				break;
+				
+				case "unit":
+					_admin.unit.afterPopupClose();
+				break;
+
+				case "personneltrainingneeds":
+					_admin.personneltrainingneeds.afterPopupClose();
+				break;
+				
+				case "visapost":
+					_admin.visapost.afterPopupClose();
+				break;
+				
+				case "agreement":
+					_admin.agreement.afterPopupClose();
+				break;
+				
+				case "registrationtype":
+					_admin.registrationtype.afterPopupClose();
+				break;
+				
+				case "movementreason":
+					_admin.movementreason.afterPopupClose(); //Alert.show(table);
+				break;
+				
+				case "specialitytype":
+					_admin.specialitytype.afterPopupClose();
+				break;
+				
+				case "qualificationtype":
+					_admin.qualificationtype.afterPopupClose();
+				break;	
+				
+				case "reviewtype":
+					_admin.reviewtype.afterPopupClose();
+				break;
+				
+				case "cast":
+					_admin.caste.afterPopupClose();
+				break;
+				
+				case "countries":
+					_admin.countries.afterPopupClose();
+				break;	
+				
+				case "queries":
+					_admin.queries.afterPopupClose();
+				break;
+
+				case "courses":
+					_admin.courses.afterPopupClose();
+				break;
+					
+				case "coursetype":
+					_admin.coursetype.afterPopupClose();
+				break;
+				
+				case "hospital":
+					_admin.hospital.afterPopupClose();
+				break;
+		
+				case "illness":
+					_admin.illness.afterPopupClose();
+				break;	
+													
+				case "religion":
+					_admin.religion.afterPopupClose();
+				break;	
+							
+				case "subject":
+					_admin.subject.afterPopupClose();
+				break;			
+				
+				case "patientservicetype":
+					_admin.patientservicetypes.afterPopupClose();
+				break;		
+				
+				case "patientsurgerytype":
+					_admin.patientsurgerytypes.afterPopupClose();
+				break;	
+				
+				case "patienttreatmentcategory":
+					_admin.patienttreatmentcategory.afterPopupClose();			
+				break;
+			
+				case "patientreferredfrom":
+					_admin.patientreferredfrom.afterPopupClose();
+				break;
+					
+				case "patientrequestedfrom":
+					_admin.patientrequestedfrom.afterPopupClose();			
+				break;
+					
+				case "patienthealthstafftype":
+					_admin.patienthealthstafftypes.afterPopupClose();
+				break;	
+			
+				case "patientappliancetype":
+					_admin.patientappliancetypes.afterPopupClose();
+				break;
+				
+				case "patienttreatmentregimen":
+					_admin.patienttreatmentregimen.afterPopupClose();
+				break;
+			
+				case "patienttreatmentresult":
+					_admin.patienttreatmentresult.afterPopupClose();
+				break;
+				
+				case "patienttreatmentcase":
+					_admin.patienttreatmentcase.afterPopupClose();
+				break;
+		
+				case "patienttreatmentreason":
+					_admin.patienttreatmentreason.afterPopupClose();
+				break;								
+			}
+		}
+
+		private function adminResult(event:ResultEvent,other:Boolean=false):void {
+			
+			//trace("adminResult "+other);
+			searching=false;
+		/*	
+			//get the staff_ids in simple array
+			arrInfStaff=searchUserRequest.lastResult.staffIDs.split(',');
+			//get associative array of inf staff id's indexed by the ralative's ids
+			arrRelativeInfStaff	=	buildAssociativeArray(searchUserRequest.lastResult.relativeStaffIDs);
+			*/
+			if (other) {
+				lastAdminResult = searchOtherAdmin.lastResult.rootTag.subTag;
+				lastAdminName = searchOtherAdmin.lastResult.rootTag.nameTag;	
+			}
+			else {
+				lastAdminResult = searchAdmin.lastResult.rootTag.subTag;
+				lastAdminName = searchAdmin.lastResult.rootTag.nameTag;
+			}							 
+
+			// check if logged in first
+			if (loggedIn) {
+				
+				if (!other) refreshData(); // don't need to refresh as called from tab
+				
+				var table:String = getAdminTableName();
+
+				switch (_admin.portals.selectedChild.className) {
+				
+				case "backup":
+				case "changelog":
+				case "synchronization":
+				case "mysqlusers":
+				//	_admin.backup.init(table);
+				break;
+								
+				case "othersettings":
+					_admin.othersettings.initialise(table);
+				break;
+				
+				case "userpriviledge":
+					_admin.userpriviledge.init(table);
+				break;
+				
+				case "grouppriviledge":
+					_admin.grouppriviledge.init(table);
+				break;
+				
+				case "partnerorganization":
+					_admin.partnerorganisation.initialise(table);
+				break;
+				
+				case "leavereason":
+					_admin.leavereason.initialise(table);
+				break;
+				
+				case "leavetype":
+					_admin.leavetype.initialise(table);
+				break;
+				
+				case "organizationtype":
+					_admin.organisationtype.initialise(table);
+				break;
+				
+				case "post":
+					_admin.post.initialise(table);
+				break;
+				
+				case "programme":
+					_admin.programme.initialise(table);
+				break;
+				
+				case "project":
+					_admin.project.initialise(table);
+				break;
+								
+				case "servicegrade":
+					_admin.servicegrade.initialise(table);
+				break;
+				
+				case "servicelocation":
+					_admin.servicelocation.initialise(table);
+				break;
+														
+				case "stafftype":
+					_admin.stafftype.initialise(table);
+				break;
+				
+				case "section":
+					_admin.section.initialise(table);
+				break;
+				
+				case "unit":
+					_admin.unit.initialise(table);
+				break;
+				
+				case "personneltrainingneeds":
+					_admin.personneltrainingneeds.initialise(table);
+				break;
+
+				case "visapost":
+					_admin.visapost.initialise(table);
+				break;
+
+				case "agreement":
+					_admin.agreement.initialise(table);
+				break;
+						
+				case "registrationtype":
+					_admin.registrationtype.initialise(table);
+				break;
+						
+				case "movementreason":
+					_admin.movementreason.initialise(table);
+				break;
+				
+				case "specialitytype":
+					_admin.specialitytype.initialise(table);
+				break;
+				
+				case "qualificationtype":
+					_admin.qualificationtype.initialise(table);
+				break;	
+				
+				case "reviewtype":
+					_admin.reviewtype.initialise(table);
+				break;
+				
+				case "cast":
+					_admin.caste.initialise(table);
+				break;
+				
+				case "countries":
+					_admin.countries.initialise(table);
+				break;
+				
+				case "queries":
+					_admin.queries.initialise(table);
+				break;
+				
+				case "courses":
+					_admin.courses.initialise(table);
+				break;
+					
+				case "coursetype":
+					_admin.coursetype.initialise(table);
+				break;
+				
+				case "hospital":
+					_admin.hospital.initialise(table);
+				break;
+		
+				case "illness":
+					_admin.illness.initialise(table);
+				break;	
+													
+				case "religion":
+					_admin.religion.initialise(table);
+				break;	
+							
+				case "subject":
+					_admin.subject.initialise(table);
+				break;		
+				
+				case "patientservicetype":
+					_admin.patientservicetypes.initialise(table);
+				break; 
+				
+				case "patientsurgerytype":
+					_admin.patientsurgerytypes.initialise(table);
+				break; 			
+				
+				case "patienttreatmentcategory":
+					_admin.patienttreatmentcategory.initialise(table);
+				break;
+			
+				case "patientreferredfrom":
+					_admin.patientreferredfrom.initialise(table);
+				break;
+					
+				case "patientrequestedfrom":
+					_admin.patientrequestedfrom.initialise(table);
+				break;
+					
+				case "patienthealthstafftype":
+					_admin.patienthealthstafftypes.initialise(table);
+				break;	
+				
+				case "patientappliancetype":
+					_admin.patientappliancetypes.initialise(table);
+				break;
+				
+				case "patienttreatmentregimen":
+					_admin.patienttreatmentregimen.initialise(table);
+				break;
+				
+				case "patienttreatmentresult":
+					_admin.patienttreatmentresult.initialise(table);
+				break;
+				
+				case "patienttreatmentcase":
+					_admin.patienttreatmentcase.initialise(table);
+				break;
+				
+				case "patienttreatmentreason":
+					_admin.patienttreatmentreason.initialise(table);
+				break;
+								
+				}
+			}	
+        }
+
+         public function searchFamilyDetails(other:Boolean=false):void{
+         	
+        	var parameters:Object			=	new Object();				
+			
+			parameters.nameID				= 	currentID;
+			
+			//trace("search family details: "+other);
+			searching=true;
+			if (other) {
+				requestOtherFamilyDetails.url		=	varIPAddress +"requestFamilyDetails.php";
+           		requestOtherFamilyDetails.send(parameters);
+			}
+			else {
+				requestFamilyDetails.url		=	varIPAddress +"requestFamilyDetails.php";
+           		requestFamilyDetails.send(parameters);
+			}    
+        }
+       
+        public function getFamilyDetailsResult():Object{
+        	
+        	return lastFamilyDetailsResult;
+        }
+        
+        public function getUserRequestTypeResult():Object{
+        	
+        	return lastUserTypeResult;        	
+        }
+        
+        public function getUserRequestNameResult():Object{
+        	
+        	return lastUserNameResult;        	
+        }
+        
+        public function getUserRequestResult():Object{
+        	
+        	return lastUserResult;        	
+        }        
+
+		private function treeComplete():void {
+			
+			if (tree1 == null) return;
+			
+			if (patientSystem) {
+				if (isSuperAdmin())
+					tree1.dataProvider = treeDataPatientAdmin;	
+				else 
+					tree1.dataProvider = treeDataPatient;
+			}
+			if (personnelNepalSystem) {
+				if (isSuperAdmin())
+					tree1.dataProvider = treeDataPersonnelNepalAdmin;	
+				else
+					tree1.dataProvider = treeDataPersonnelNepal;
+			}
+			if (personnelWorldwideSystem) {
+				if (isSuperAdmin())
+					tree1.dataProvider = treeDataPersonnelAdmin;	
+				else
+					tree1.dataProvider = treeDataPersonnel;
+			}
+			selectAdminTab("Blank");
+		}
+				
+		private function selectDisplayLayout(selIndex:uint	=	1):void{
+			
+			//trace("selIndex "+selIndex+" from "+currentSideIndex);
+			
+			if ((currentSideIndex == selIndex) && (selIndex > 0)) return; //don't need to execute if same tab (unless it's the login tab)
+			
+			trace("selIndex to "+selIndex);
+			
+			loginDisplay.visible = (!loggedIn);
+						
+			if(selIndex == 3){ //admin				
+				searchVisible		=	false;
+				dashVisible	= false;
+				mainTab.visible				=	false; //(!loggedIn);
+				portals.visible				=	false; //(!loggedIn);	
+				//txtNoOfRecords.visible		=	false;		
+				//lblNoOfRecords.visible		=	false;
+				
+				adminDisplay.visible		=	loggedIn;							
+			}
+			else{				
+				toggle();
+				mainTab.visible				=	loggedIn;
+				portals.visible				=	loggedIn;	
+				//txtNoOfRecords.visible		=	loggedIn;		
+				//lblNoOfRecords.visible		=	loggedIn;					
+				adminDisplay.visible		=	false;	     					
+			}
+			//trace("selectDisplayLayout: "+searchVisible+", "+dashVisible);
+			//toggleSearchResultHeight.visible = searchResult.visible;
+			//copySearchResultToClipboard.visible = searchResult.visible;
+			//printDG.visible=searchResult.visible;
+			//sortDG.visible = searchResult.visible;
+			currentSideIndex = selIndex;
+			relIcon.visible = searchVisible && relativeMode;
+
+		}
+      
+		////****************************End of Admin Part (action script)*****************************////
+		
+		////****************************For the title window(as)*****************************////
+		
+		private function startTimer():void{
+			
+			//it starts the timer			
+				t = new Timer(TIMER_INTERVAL);
+                t.addEventListener(TimerEvent.TIMER, onTick);
+                t.start();  
+		}
+		
+        private function onTick(event:TimerEvent):void{  
+ 		
+ 			thresholdTime--;
+ 			if(thresholdTime==0){
+ 				//Alert.show('logout User Inactive');
+ 				logOut('User inactive for timeout period');
+ 				return;
+ 				//resetTimeOut();
+ 			}
+ 			
+        //it displays the current date and time in the title window
+        	  var d:Date = new Date();
+        	  var arrayDay:Array = ["Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        	  var arrayMonth:Array = ["January", "February", "March",
+        	  "April","May","June","July","August","September","October","November","December"];	
+
+              var min:String   	=	d.getMinutes().toString();
+              if (min.length == 1) {
+              		min = "0" + min;
+              }
+              var sec:String   	=	d.getSeconds().toString();
+              if (sec.length == 1) {
+              		sec = "0" + sec;
+              }
+              var hours:String 	=	d.getHours().toString();
+              if (hours.length == 1) {
+              		hours = "0" + hours;
+              }
+              var day:String	=	d.getDate().toString();
+              switch(day) {
+              		case "1":
+              		case "21":
+              		case "31":
+              			day = day + "st";
+              			break;
+              		case "2":
+              		case "22":
+              			day = day + "nd";
+              			break;
+              		case "3":
+              		case "23":
+              			day = day + "rd";
+              			break;
+              		default:
+              			day = day + "th";
+              }
+
+              dashTime.text = String(hours + ":" + min + ":" + sec) + " on " + arrayDay[d.getDay()] + " " + day + " " + arrayMonth[d.getMonth()] + ", " + d.getFullYear().toString();	
+        }
+        
+		////*****************end for the title window(as)************************////
+		
+		////*************It initiates the search by getting the id from the given datagrid***********////
+		public function returnID(dgObject:DataGridNew,forceSelect:Boolean=false):void{
+
+			trace("inf.returnID: "+initialised+ " "+portals.selectedIndex + " "+initialSearchDone+ " "+forceSelect);
+			
+			if (initialSearchDone && (mainTab.selectedIndex == 0)) {
+				mainTab.selectedIndex = 1;
+				render();
+			}
+			
+			initialSearchDone = true;
+       		
+       		if(forceSelect && (biodatas.general != null)) searchResult.height = defaultSearchListHeight;
+			if(searchResult.height == expandedSearchListHeight) return;
+			
+			trace("inf.returnID: "+searchResult.selectedIndex+", "+dgObject.selectedIndex);		
+			if (dgObject.selectedIndex != -1) {	
+				searchResult.scrollToIndex(searchResult.selectedIndex);		
+				currentID	=	dgObject.selectedItem.zzzid;
+				currentStaffID	=	searchResult.selectedItem.zzzid;					
+				dgObject.scrollToIndex(dgObject.selectedIndex);
+				trace("inf.returnID: "+currentID+" ("+currentStaffID+")");
+				if (currentID != null)
+				{				
+					enableStandardMode = (searchResult.selectedItem.zzzstaffid != null);
+					// store relative index
+					if (isRelativeMode()) {
+						lastSelectedRelativeIndex = dgObject.selectedIndex;
+						currentText.text = "Relative: "+dgObject.selectedItem.forenames + " " + dgObject.selectedItem.surname + " ("+ dgObject.selectedItem.relationship+")";
+						//enableStandardMode = (dgObject.selectedItem.relationship == "Self");
+					} else {
+						storeIndex = searchResult.selectedIndex;
+						lastSelectedRelativeIndex = -1;
+						currentText.text = versionText;
+						//enableStandardMode = true;
+					}
+					enableRelativeToggle();
+					trace("inf.returnID: relative index set to: "+lastSelectedRelativeIndex);	
+					requestQueryDetails(currentID,dgObject);
+				}
+			}
+			else {
+				var event:ResultEvent;
+				defaultResult(event); // so that boundField() is called and record refresh()
+			}
+		}
+
+		public function returnSelectedObject ():DataGridNew{
+				
+	  		var dgObject:DataGridNew;
+		
+			if (isRelativeMode() && initialised)
+				dgObject	=	biodatas.general.dgList;	
+			else
+				dgObject	=	searchResult;
+				
+			return dgObject;
+		}		
+		
+		public function runQueryForID(id:String,staffid:String):void {
+			
+			currentID = id;
+			enableStandardMode = (staffid != null);
+			requestQueryDetails(id,returnSelectedObject());
+		}	
+			
+		private function requestQueryDetails(id:String,dgObject:DataGridNew=null):void{
+			//it takes the id as the parameter
+				//and queries the name table and other related table for the details
+/*
+			if((arrInfStaff.length>0) && (arrInfStaff.indexOf(id)<0)){ //if this is a relative then save its id for general.displayRelatives() need to reselect this id			
+				setCurrentRelativeID(id);
+			}		
+		
+			if(searchResult==dgObject) {	
+			//if the id is of the relative then switch to relative mode	
+				//trace("inf.requestQueryDetails: "+arrInfStaff.length+", "+arrInfStaff.indexOf(id));
+				if((arrInfStaff.length>0) && (arrInfStaff.indexOf(id)<0)){
+				//	if(arrInfStaff.length>0)//initially this array is of length Zero (one time in a session).Dont check for relative this time
+				// if(arrInfStaff.indexOf(id)<0) //if the id is not of inf staff i.e. relative's id
+				
+					if(getDatagridIndex(searchResult,arrRelativeInfStaff[id])>=0)	
+						searchResult.selectedIndex=	getDatagridIndex(searchResult,arrRelativeInfStaff[id]);
+
+					setCurrentRelativeID(id);	
+					var relatedInfStaffID:String	=	arrRelativeInfStaff[id];//set to respective inf staff's id
+					setCurrentID(relatedInfStaffID);
+					setCurrentStaffID(relatedInfStaffID);
+					setRelativeMode(true);		
+				}
+			}
+*/
+			trace("inf.requestQueryDetails1: "+id+" - "+relativeMode+" - "+enableStandardMode);	//+" ("+relatedInfStaffID+"), "			
+			if (!isRelativeMode() && !enableStandardMode) setRelativeMode(true);
+						
+			trace("inf.requestQueryDetails2: "+id+" - "+relativeMode+" - "+enableStandardMode);	//+" ("+relatedInfStaffID+"), "			
+			var parameters:Object=new Object();
+		
+			parameters.fieldName	=	"name.id";
+        	parameters.fieldValue	=	id;
+        	if (patientSystem) {
+        		//parameters.fieldNames	=	"name.name_timestamp,patient_inf.patient_inf_timestamp,surname.surname_timestamp,address.address_timestamp,name.birth_town,name.birth_district,name.birth_country_id,surname.surname,name.email_id,name.phone_id,name.forenames,name.blood_group,name.title,name.known_as,name.next_of_kin_id,name.dob,name.gender,name.marital_status,address.city_town,address.state_province,address.latitude,address.longitude,address.postcode_zip,address.address,patient_inf.religion_id,patient_inf.caste_id";
+				parameters.fieldNames	=	"name.name_timestamp,patient_inf.patient_inf_timestamp,surname.surname_timestamp,name.birth_town,name.birth_district,name.birth_country_id,surname.surname,name.email_id,name.phone_id,name.address_id,name.forenames,name.blood_group,name.title,name.known_as,name.next_of_kin_id,name.dob,name.gender,name.marital_status,patient_inf.religion_id,patient_inf.caste_id";
+        	}
+        	else {
+        		//parameters.fieldNames	=	"name.name_timestamp,inf_staff.inf_staff_timestamp,surname.surname_timestamp,address.address_timestamp,name.birth_town,name.birth_district,name.birth_country_id,surname.surname,name.email_id,name.phone_id,name.forenames,name.blood_group,name.title,name.known_as,name.next_of_kin_id,name.dob,name.gender,name.marital_status,address.city_town,address.state_province,address.latitude,address.longitude,address.postcode_zip,address.address,inf_staff.religion_id,inf_staff.caste_id,inf_staff.citizenship,inf_staff.embassy_reg,inf_staff.embassy_id,nationality.nationality,nationality.nationality_timestamp";	
+				parameters.fieldNames	=	"name.name_timestamp,inf_staff.inf_staff_timestamp,surname.surname_timestamp,name.birth_town,name.birth_district,name.birth_country_id,surname.surname,name.email_id,name.phone_id,name.address_id,name.forenames,name.blood_group,name.title,name.known_as,name.next_of_kin_id,name.dob,name.gender,name.marital_status,inf_staff.religion_id,inf_staff.caste_id,inf_staff.citizenship,inf_staff.embassy_reg,inf_staff.embassy_id,nationality.nationality,nationality.nationality_timestamp";	
+        	}
+        	parameters.action	=	"Search One";
+        	parameters.recLimit	=	search.txtLimit.text;
+        	parameters.searchWhom	= (isRelativeMode())?'Relative':'Staff';
+        	//*********the above parameters are sent to the server side*************//
+           	
+           	searching=true;
+           	
+           	if (searchResult==dgObject) {
+        		searchUserRequest.useProxy	=	false;
+        		searchUserRequest.url	=	varIPAddress+"search.php";       	
+        		searchUserRequest.send(parameters);           		
+           	} else {
+        		searchOtherUserRequest.useProxy	=	false;
+        		searchOtherUserRequest.url	=	varIPAddress+"search.php";       	
+        		searchOtherUserRequest.send(parameters);           		
+           	} 
+        	//the result event of the searchUserRequest is set to defaultResult()           				
+		}
+		
+		public function getDatagridIndex(targetDG:DataGrid,searchValue:String):int{
+		//checks searchValue in the id field in the datagrid and  returns the index
+			//var data:String = "";
+			var column:DataGridColumn;
+			var rowCount:int = targetDG.dataProvider.length;
+			var columns:Array = targetDG.columns;
+			var columnCount:int = columns.length;			
+			
+			var cursor:IViewCursor = targetDG.dataProvider.createCursor ();
+			var j:int = 0;
+			
+			//loop through rows
+			while (!cursor.afterLast)
+			{
+				var obj:Object = null;
+				obj = cursor.current;
+				
+				//loop through all columns for the row
+				for(var k:int = 0; k < columnCount; k++)
+				{
+					column = columns[k];
+					
+					//Exclude column  other than id (which is the last column in the datagrid)
+					if(k==columnCount-1)
+					{	
+				//Alert.show('value got: '+column.itemToLabel(obj));			
+						if(column.itemToLabel(obj) == searchValue)
+						return j;//j is the targetDG index which have the needed data											
+					}
+				}	
+				j++;
+				cursor.moveNext ();
+			}
+			return(-1);
+		}
+	
+		public function updateStaffInfo(strInfStaff:String,strRelativeInfStaff:String):void{
+		
+			//if(strInfStaff != '')//get staff_ids in simple array	
+				arrInfStaff			=	strInfStaff.split(',');
+			//if(strRelativeInfStaff != '')//get staff's ids indexed by their relative's ids
+				arrRelativeInfStaff	=	buildAssociativeArray(strRelativeInfStaff);
+		}
+
+		public function getNationalityTimestamp():String{
+			
+			return searchUserRequest.lastResult.nationality_timestamp;
+		}
+			
+		public function getWorkingDays():Number{
+			
+		 	return parseInt(staffWorkingDays);
+		}
+
+		public function getPassportID():Number{
+			
+		 	return parseInt(currentPassportID);
+		}
+
+		public function setPassportID(newID:Number):void{
+			
+		 	currentPassportID = String(newID);
+		 	//trace("Setting passport ID to "+newID);
+		}
+		
+		public function getVisaPostID():Number{
+			
+		 	return parseInt(currentVisaID);
+		}
+
+		public function setVisaPostID(newID:Number):void{
+			
+		 	currentVisaID = String(newID);
+		 	//trace("Setting visa ID to "+newID);
+		}
+
+		public function setVisaNames(visaList:Object):void{
+           	
+           	if (visaList == null) {
+           		setVisaPostID(-1);
+           		return;
+           	}			
+			if (visaList.length > 1) {
+				arrCollVisaNames = visaList;
+			}
+			else {
+				arrCollVisaNames = new ArrayCollection(new Array(visaList));
+			}
+			if (arrCollVisaNames[0].data > 0) {
+				setVisaPostID(arrCollVisaNames[0].data);
+		 	}
+		 	else
+		 		setVisaPostID(-1);
+		}
+				
+		public function getVisaNames():Object{
+			
+		 	return arrCollVisaNames;
+		}	
+		
+		public function defaultResult(event:ResultEvent,other:Boolean=false):void {		
+										 
+			searching=false;
+			// check if logged in first
+			if (loggedIn) {
+				if (other) {
+					if (searchOtherUserRequest.lastResult != null) {
+						lastUserResult = searchOtherUserRequest.lastResult.users.user; 
+						biodatas.general.comboSurnameHistory.dataProvider=searchOtherUserRequest.lastResult.surnames;
+						biodatas.general.comboNationalityHistory.dataProvider=searchOtherUserRequest.lastResult.nationalities;
+						staffWorkingDays=searchOtherUserRequest.lastResult.working_week;
+						setPassportID(searchOtherUserRequest.lastResult.passportID);
+						//setVisaNames(searchOtherUserRequest.lastResult.visaInfos.idTitle);
+						//biodatas.visahistory.comboVisaName.dataProvider = searchOtherUserRequest.lastResult.visaInfos.idTitle;
+						displayQueryResultBiodata(true); 
+						//displayQueryResultService(true); 
+						//displayQueryResultApplication(true); 
+					}
+				} else {
+					if (searchUserRequest.lastResult) {
+						lastUserResult = searchUserRequest.lastResult.users.user; 
+						biodatas.general.comboSurnameHistory.dataProvider=searchUserRequest.lastResult.surnames;
+						biodatas.general.comboNationalityHistory.dataProvider=searchUserRequest.lastResult.nationalities;
+					    //setVisaNames(searchUserRequest.lastResult.visaInfos.idTitle);
+					    //biodatas.visahistory.comboVisaName.dataProvider = searchUserRequest.lastResult.visaInfos.idTitle;
+						searchFamilyDetails(true);		// do full family search 
+					    staffWorkingDays=searchUserRequest.lastResult.working_week;
+					    setPassportID(searchUserRequest.lastResult.passportID);
+					}
+				}
+				if (!initialised) {
+					initialised = true;
+					initialised = !isNoRecord();
+					//trace("Setting initialised to: "+initialised);
+					setAppMode(appMode,true);
+				}	 	
+			}	
+	/*	
+		//get staff_ids in simple array	
+			arrInfStaff			=	searchUserRequest.lastResult.staffIDs.split(',');
+		//get staff's ids indexed by their relative's ids
+			arrRelativeInfStaff	=	buildAssociativeArray(searchUserRequest.lastResult.relativeStaffIDs);
+		
+		*/
+		/*	
+			if(onResultSetRelativeMode){
+				
+				setRelativeMode(true);
+			setCurrentID(id:String)
+				onResultSetRelativeMode=false;	
+			
+				
+        }
+			*/			
+        }
+
+//creates associative array from string in this form "ram=1,23=tom,shyam=3,12312=asdf"
+		public function buildAssociativeArray(commaSeparatedString:String):Array{
+			
+			var resultArray:Array= new Array();
+			var tempArray:Array	=	commaSeparatedString.split(',');
+			
+			for each ( var str:String in tempArray ){
+        		var tempArr:Array=str.split('=');
+        		resultArray[tempArr[0]] = tempArr[1];
+        	}	
+        	return resultArray;	
+		}
+		
+        public function refreshListData(event:ResultEvent,other:Boolean=false):void {
+        	
+        	//trace("refreshlistdata("+portals.selectedIndex+"): "+other);
+        	
+        	searching=false;
+        	if (other) {
+        		lastFamilyDetailsResult = requestOtherFamilyDetails.lastResult;
+        		displayQueryResultBiodata();
+			  	displayQueryResultApplication();
+			  	displayQueryResultService();
+			  	displayQueryResultPatient();
+			  	displayQueryResultStaff();
+        	}
+        	else{
+        		lastFamilyDetailsResult = requestFamilyDetails.lastResult;
+        	}
+        	
+        	refreshData();
+        }
+        
+        public function refreshData():void {
+        	
+        	trace("main refreshdata: ");
+        	updateSearchScrollBar();
+        	
+        	var selectedLabel:String='';
+        	
+        	switch(portals.selectedChild.className)
+        	{	
+        		case "biodatas":
+        		
+        			selectedLabel = biodatas.portals.selectedChild.label.toLowerCase();
+        			
+        			switch(selectedLabel)
+        			{
+         				case 'personal': 
+        					
+        					biodatas.general.refreshData();
+        					break;
+        					
+        				case 'address':
+        				
+        					biodatas.address.refreshData();
+        					break;
+        				
+        				case 'phone':
+        				
+        					biodatas.phone.refreshData();
+        					break;
+        					
+        				case 'email':
+        				
+        					biodatas.email.refreshData();
+        					break;
+        					
+        				case 'photo':
+        				
+        					biodatas.photo.refreshData();
+        					break;
+        					
+        				case 'education':
+        				
+        					biodatas.education.refreshData();
+        					break;
+        					
+        				case 'work_experience':
+        				
+        					biodatas.workExperience.refreshData();
+        					break;
+        					
+        				case 'passport':
+        				
+        					biodatas.passport.refreshData();
+        					break;
+
+        				case 'visa_history':
+        				
+        					biodatas.visahistory.refreshData();
+        					break;
+        			}
+        			break;
+       			
+        		case "app":
+        		
+        			selectedLabel = app.portals.selectedChild.label.toLowerCase();
+        			
+        			switch(selectedLabel)
+        			{
+        				case 'documentation':  
+      				
+        					app.documentation.refreshData();
+        					break;
+        				
+        				case 'education':
+        				
+        					app.education.refreshData();
+        					break;
+        					
+        				case 'work_experience':
+        				
+        					app.workExperience.refreshData();
+        					break;
+        					
+        				case 'secondment':
+        				
+        					app.secondment.refreshData();
+        					break;
+						
+						case 'orientation':
+        				
+        					app.orientation.refreshData();
+        					break;   
+        					
+        				case 'orientation_arrangement':
+        				
+        					app.orientationArrival.refreshData();
+        					break;         				
+        			}
+        			break;
+        			        		
+        		case "test":
+        		
+        			selectedLabel = tests.portals.selectedChild.label.toLowerCase();
+        			
+        			switch(selectedLabel)
+        			{
+        				case 'staff':
+        				
+        					tests.staff.refreshData();
+        					break;
+        					
+        				case 'service':
+        				
+        					tests.sservice.refreshData();
+        					break;
+        					
+        				case 'movement':
+        				
+        					tests.movement.refreshData();
+        					break;
+        				
+        				case 'leave':
+        				
+        					tests.leave.refreshData();
+        					break;
+        				
+        				case 'training':
+        				
+        					tests.training.refreshData();
+        					break;
+        					
+        				case 'hospitalisation':
+        				
+        					tests.hospitalization.refreshData();
+        					break;
+        				
+        				case 'annual_review':
+        				
+        					tests.review.refreshData();
+        					break;
+        				
+        				case 'home_assignment':
+        				
+        					tests.homeassignment.refreshData();
+        					break;
+        				
+        				case 'secondment':
+        				
+        					tests.secondment.refreshData();
+        					break;
+        					
+        				case 'registrations':
+        				
+        					tests.registrations.refreshData();
+        					break; 
+        					
+        				case 'insurance':
+        				
+        					tests.insurance.refreshData();
+        					break;      				
+        			}
+        			break;
+        			
+        		case "patient":
+        		
+        			selectedLabel = patient.portals.selectedChild.label.toLowerCase();
+        			
+        			switch(selectedLabel)
+        			{
+        				case 'visit':  
+      				
+        					patient.visitdetails.refreshData();
+        					break;
+        					
+        				case 'treatment':
+        				
+        					patient.treatmentdetails.refreshData();
+        					break;
+        				
+        				case 'services':
+        				
+        					patient.servicesgiven.refreshData();
+        					break;
+        				
+        				case 'surgery':
+        				
+        					patient.surgerygiven.refreshData();
+        					break;
+        				
+        				case 'appliances':
+        				
+        					patient.appliancesgiven.refreshData();
+        					break;
+        				
+        				case 'billing':
+        				
+        					patient.billingdetails.refreshData();
+        					break;
+        						
+        			}
+        			break;
+        		
+        		case "staff":
+        		
+        			selectedLabel = staff.portals.selectedChild.label.toLowerCase();
+        			
+        			switch(selectedLabel)
+        			{
+        				case 'health_staff':  
+      				
+        					staff.staffdetails.refreshData();
+        					break;
+        					
+        					case 'training':
+        					//tests.training.refreshData();
+        					staff.training.refreshData();
+        					break;       				
+        				
+        			}
+        			break;
+        	}
+        }
+        
+        public function refreshList(tableName:String,otherList:Boolean=false):void{
+      
+        	trace("refreshList("+tableName+")");
+        	
+        	switch(tableName)
+        	{
+        		case 'name':
+        			biodatas.refreshList(0,otherList);
+        			break;
+        			
+        		case 'address':
+        			 
+           			biodatas.refreshList(1,otherList);
+        			searchFamilyDetails(); // no need for full family search again
+        			_admin.partnerorganisation.afterPopupAddresses();
+        			_admin.servicelocation.afterPopupAddresses();
+        			//refreshAdminData("organisation,location");
+        			   			
+        			break;
+        			
+        		case 'phone':
+        			biodatas.refreshList(2,otherList);
+        			searchFamilyDetails();
+        			_admin.partnerorganisation.afterPopupAddresses();
+        			_admin.servicelocation.afterPopupAddresses();
+        			//refreshAdminData("organisation,location");
+        			break;
+        			
+        		case 'email':
+        			
+        			biodatas.refreshList(3,otherList);
+        			searchFamilyDetails();
+        			_admin.partnerorganisation.afterPopupAddresses();
+        			_admin.servicelocation.afterPopupAddresses();
+        			//refreshAdminData("organisation,location");
+        			break;
+        			
+        		case 'photo':
+        			biodatas.refreshList(4,otherList);
+        			break;
+        			
+        		case 'passport':
+        			biodatas.refreshList(7,otherList);
+        			break;
+        			
+        		case 'visa_history':
+        			biodatas.refreshList(8,otherList);
+        			break;       			        		        		
+        			        		        		
+        		case 'staff':
+        			tests.refreshList(0,otherList);
+        			break;
+        		
+        		case 'service':
+        			tests.refreshList(1,otherList);
+        			break;
+        		
+        		case 'movement':
+        			tests.refreshList(2,otherList);
+        			searchFamilyDetails();
+        			break;
+        		
+        		case 'leave':
+        			tests.refreshList(3,otherList);
+        			break;
+        		
+        		case 'training':
+        			if (portals.selectedChild.className == "test"){
+        				tests.refreshList(4,otherList);
+        				searchFamilyDetails();
+        			}
+        			if (portals.selectedChild.className == "staff")
+        				staff.refreshList(1,otherList);        			
+        			break;
+        		
+        		case 'hospitalisation':
+        			tests.refreshList(5,otherList);
+        			searchFamilyDetails();
+        			break;
+        		
+        		case 'review':
+        			tests.refreshList(6,otherList);
+        			break;
+        		
+        		case 'documentation':
+        			app.refreshList(0,otherList);
+        			break;
+        		        		
+        		case 'education':
+        			if (portals.selectedChild.className == "app")
+        				app.refreshList(1,otherList);
+        			if (portals.selectedChild.className == "biodatas")
+						biodatas.refreshList(5,otherList);
+        			break;
+        		
+        		case 'work_experience':
+        			if (portals.selectedChild.className == "app")
+        				app.refreshList(2,otherList);
+        			if (portals.selectedChild.className == "biodatas")
+						biodatas.refreshList(6,otherList);
+        			break;
+        		        		
+        		case 'secondment':
+        			if (portals.selectedChild.className == "app")
+        				app.refreshList(3,otherList);
+        			if (portals.selectedChild.className == "test")
+        				tests.refreshList(8,otherList);
+        			break;
+        			
+        		case 'registrations':
+        			tests.refreshList(10,otherList);
+        			break;
+        			
+        	    case 'orientation':
+        			app.refreshList(4,otherList);
+        			break;
+        		
+        		case 'orientation_arrangement':
+        			app.refreshList(5,otherList);
+        			break;
+        			
+        	    case 'home_assignment':
+        			tests.refreshList(7,otherList);
+        			break;
+        		
+        		case 'insurance':
+        			tests.refreshList(9,otherList);
+        			break;
+        			
+        	//for patient tab		
+        		case 'patient_visit':
+        			patient.refreshList(0,otherList);
+        			break;
+        			
+        		case 'treatment':
+        			patient.refreshList(1,otherList);
+        			break;
+        		
+        		case 'patient_service':
+        			patient.refreshList(2,otherList);
+        			break;
+        			
+        		case 'patient_surgery':
+        			patient.refreshList(3,otherList);
+        			break;
+        		
+        		case 'patient_appliance':
+        			patient.refreshList(4,otherList);
+        			break;
+        			
+        		case 'patient_bill':
+        			patient.refreshList(5,otherList);
+        			break;
+        			
+        		case 'health_staff':
+        			staff.refreshList(0,otherList);
+        			break;
+        	}
+        }
+        
+        private function displayQueryResultBiodata(fromRelative:Boolean=false):void{
+     		//it displays the search result obtained from the 'searchUserRequest' httpservice
+     		
+   			biodatas.general.boundField(fromRelative);
+   			
+   			trace("query result biodata: "+fromRelative);
+   			//if (!fromRelative) 
+   				//biodatas.general.findListOfRelatives();
+        	
+        	if(portals.selectedChild.className == "biodatas")
+       			if (biodatas.portals.selectedIndex > 0)
+       				biodatas.refreshList(biodatas.portals.selectedIndex);      
+        } 
+        
+        private function displayQueryResultService(fromRelative:Boolean=false):void{
+     		//it displays the search result obtained from the 'searchUserRequest' httpservice
+
+			if(portals.selectedChild.className == "test")
+        		tests.refreshList(tests.portals.selectedIndex);
+        } 
+        
+        private function displayQueryResultApplication(fromRelative:Boolean=false):void{
+     		//it displays the search result obtained from the 'searchUserRequest' httpservice
+     		
+     		if(portals.selectedChild.className == "app")
+        		app.refreshList(app.portals.selectedIndex);
+        }
+        
+        private function displayQueryResultPatient(fromRelative:Boolean=false):void{
+     		//it displays the search result obtained from the 'searchUserRequest' httpservice
+     		
+     		if(portals.selectedChild.className == "patient")
+        		patient.refreshList(patient.portals.selectedIndex);
+        }
+     
+         private function displayQueryResultStaff(fromRelative:Boolean=false):void{
+     		//it displays the search result obtained from the 'searchUserRequest' httpservice
+     		
+     		if(portals.selectedChild.className == "staff")
+        		staff.refreshList(staff.portals.selectedIndex);
+        }
+   
+		////*************************************end of search***************************////
+		public function setToInitialStage():void{
+											
+				displayRecord(false);	//it restores to the previous state
+		}
+		
+		//it is not used
+		
+		public function returnIdOfSelectedListItem(dgObject:DataGridNew,selIndex:int,colNumber:int):String{
+			//it returns the value of selected row condition apply colnumber is given.
+				return	DataGridFunctionList.returnSelectedRowValue(dgObject,selIndex,colNumber);		
+		}	 			
+		
+		public function loadNames(other:Boolean=false,tabname:String="all"):void{
+
+			//trace("loadNames: "+tabname);
+			
+			if (tabname == "search_history") {
+				loadQueries();
+				return;
+			}
+			
+			searching=true;
+			
+			var parameters:Object=new Object();
+			parameters.tabname = tabname; 
+			
+           	if(other){
+           		userRequestOtherName.useProxy	=	false;
+           		userRequestOtherName.url			=	varIPAddress+"Load.php";
+           		userRequestOtherName.send(parameters);
+           	}
+           	else {
+           		userRequestName.useProxy	=	false;
+           		userRequestName.url			=	varIPAddress+"Load.php";
+           		userRequestName.send(parameters);
+           	}
+		}
+
+		private function requestNameResult(event:Event,other:Boolean=false):void{
+		
+			trace("requestNameResult: "+other);
+			var currentResult:Object = new Object();
+			
+			searching=false;
+			
+			if (other){
+
+				lastUserNameResult = userRequestOtherName.lastResult;
+				searchResult.selectedIndex	=	0;            	
+           		mainTab.selectedIndex		=	0;
+           		//acSideMenu.selectedIndex	=	0; 
+           		//selectDisplayLayout(acSideMenu.selectedIndex);
+           		loadQueries();
+           		nameResultOK = true;
+           		//this.focusManager.setFocus(loginUserName);
+        		checkLoadTypesDone();
+           		trace("general initialised:"+ (biodatas.general != null));
+           		if (biodatas.general != null) biodatas.general.loadData(); // workaround for refresh
+			}
+			else {
+
+				currentResult = userRequestName.lastResult;		
+//Alert.show(' testing inf@ 2179');
+				if (currentResult.casts != null) lastUserNameResult.casts = currentResult.casts;		
+				if (currentResult.reviewtypes != null) lastUserNameResult.reviewtypes = currentResult.reviewtypes;
+				if (currentResult.courses != null) lastUserNameResult.courses = currentResult.courses;
+				if (currentResult.idFullNames != null) lastUserNameResult.casts.caste = currentResult.idFullNames;
+				if (currentResult.movementreasons != null) lastUserNameResult.movementreasons = currentResult.movementreasons;
+				if (currentResult.qualifications != null) lastUserNameResult.qualifications = currentResult.qualifications;
+				if (currentResult.specialities != null) lastUserNameResult.specialities = currentResult.specialities;
+				if (currentResult.istd_codes != null) lastUserNameResult.istd_codes = currentResult.istd_codes;
+				if (currentResult.countries != null) lastUserNameResult.countries = currentResult.countries;
+				if (currentResult.groupnames != null) lastUserNameResult.groupnames = currentResult.groupnames;
+				if (currentResult.usernames != null) lastUserNameResult.usernames = currentResult.usernames;
+				if (currentResult.religions != null) lastUserNameResult.religions = currentResult.religions;
+				if (currentResult.leaveTypes != null) lastUserNameResult.leaveTypes = currentResult.leaveTypes;
+				if (currentResult.staffTypes != null) lastUserNameResult.staffTypes = currentResult.staffTypes;
+				if (currentResult.programmes != null) lastUserNameResult.programmes = currentResult.programmes;
+				if (currentResult.projects != null) lastUserNameResult.projects = currentResult.projects;
+				if (currentResult.visaIdTitle != null) lastUserNameResult.visaIdTitle = currentResult.visaIdTitle;
+				if (currentResult.leavingReasons != null) lastUserNameResult.leavingReasons = currentResult.leavingReasons;
+				if (currentResult.grades != null) lastUserNameResult.grades = currentResult.grades;
+				if (currentResult.serviceposts != null) lastUserNameResult.serviceposts = currentResult.serviceposts;
+				if (currentResult.visaposts != null) lastUserNameResult.visaposts = currentResult.visaposts;
+				if (currentResult.activeserviceposts != null) lastUserNameResult.activeserviceposts = currentResult.activeserviceposts;
+				if (currentResult.activevisaposts != null) lastUserNameResult.activevisaposts = currentResult.activevisaposts;
+				if (currentResult.servicelocations != null) lastUserNameResult.servicelocations = currentResult.servicelocations;
+				if (currentResult.personnelReviewers != null) lastUserNameResult.personnelReviewers = currentResult.personnelReviewers;
+				if (currentResult.jobReviewers != null) lastUserNameResult.jobReviewers = currentResult.jobReviewers;
+				if (currentResult.medicalReviewers != null) lastUserNameResult.medicalReviewers = currentResult.medicalReviewers;
+				if (currentResult.agreements != null) lastUserNameResult.agreements = currentResult.agreements;
+				if (currentResult.illnesses != null) lastUserNameResult.illnesses = currentResult.illnesses;
+				if (currentResult.hospitals != null) lastUserNameResult.hospitals = currentResult.hospitals;
+				if (currentResult.coursetypes != null) lastUserNameResult.coursetypes = currentResult.coursetypes;
+				if (currentResult.course_subjects != null) lastUserNameResult.course_subjects = currentResult.course_subjects;
+				if (currentResult.organisations != null) lastUserNameResult.organisations = currentResult.organisations;
+				if (currentResult.organisation_types != null) lastUserNameResult.organisation_types = currentResult.organisation_types;
+				if (currentResult.registration_types != null) lastUserNameResult.registration_types = currentResult.registration_types;
+				if (currentResult.organisationaddresses != null) lastUserNameResult.organisationaddresses = currentResult.organisationaddresses;
+				if (currentResult.organisationphones != null) lastUserNameResult.organisationphones = currentResult.organisationphones;
+				if (currentResult.organisationemails != null) lastUserNameResult.organisationemails = currentResult.organisationemails;
+				if (currentResult.locationphones != null) lastUserNameResult.locationphones = currentResult.locationphones;
+				if (currentResult.locationemails != null) lastUserNameResult.locationemails = currentResult.locationemails;
+				if (currentResult.locationaddresses != null) lastUserNameResult.locationaddresses = currentResult.locationaddresses;
+				if (currentResult.movementlocations != null) lastUserNameResult.movementlocations = currentResult.movementlocations;
+//***
+				if (currentResult.patientservicetypes != null) lastUserNameResult.patientservicetypes = currentResult.patientservicetypes;
+				if (currentResult.patientsurgerytypes != null) lastUserNameResult.patientsurgerytypes = currentResult.patientsurgerytypes;
+				
+				if (currentResult.patienttreatmentcategories != null) lastUserNameResult.patienttreatmentcategories = currentResult.patienttreatmentcategories;
+				if (currentResult.patientreferredfroms != null) lastUserNameResult.patientreferredfroms = currentResult.patientreferredfroms;
+				if (currentResult.patientrequestedfroms != null) lastUserNameResult.patientrequestedfroms = currentResult.patientrequestedfroms;
+				
+				if (currentResult.patienthealthstafftypes != null) lastUserNameResult.patienthealthstafftypes = currentResult.patienthealthstafftypes;
+		
+				if (currentResult.patientappliancetypes != null) lastUserNameResult.patientappliancetypes = currentResult.patientappliancetypes;
+				
+				//if (currentResult.patienttreatmentregimen != null) lastUserNameResult.patienttreatmentregimen = currentResult.patienttreatmentregimens;
+				//if (currentResult.patienttreatmentregimen != null) lastUserNameResult.patienttreatmentregimen = currentResult.patienttreatmentregimen;
+				if (currentResult.patienttreatmentresults != null) lastUserNameResult.patienttreatmentresults = currentResult.patienttreatmentresults;
+				
+				if (currentResult.patienttreatmentcases != null) lastUserNameResult.patienttreatmentcases = currentResult.patienttreatmentcases;
+				if (currentResult.patienttreatmentreasons != null) lastUserNameResult.patienttreatmentreasons = currentResult.patienttreatmentreasons;
+				if (currentResult.patienttreatmentregimens != null) lastUserNameResult.patienttreatmentregimens = currentResult.patienttreatmentregimens;
+				if (currentResult.mainpatienttreatmentreasons != null) lastUserNameResult.mainpatienttreatmentreasons = currentResult.mainpatienttreatmentreasons;
+				if (currentResult.detailpatienttreatmentreasons != null) lastUserNameResult.detailpatienttreatmentreasons = currentResult.detailpatienttreatmentreasons;
+				
+				if (currentResult.sections != null) lastUserNameResult.sections = currentResult.sections;
+				if (currentResult.units != null) lastUserNameResult.units = currentResult.units;
+				if (currentResult.trainingneeds != null) lastUserNameResult.trainingneeds = currentResult.trainingneeds;
+				if (currentResult.personneltrainingneeds != null) lastUserNameResult.personneltrainingneeds = currentResult.personneltrainingneeds;
+				loadNamesResult();
+				refreshData();
+				nameResultOK = true;
+        		checkLoadTypesDone();
+			}
+		}
+		
+		//To disable login OK button until all initialization is complete
+		private function checkLoadTypesDone():void{  
+			
+			loadTypesDone = (loadTypeOK && nameResultOK);
+		}
+
+		private function checkLoginOK():void{ 
+			 
+			enableLoginOK = ((loginUserName.text != '') && (loginPassword.text != ''));
+		}
+				
+		public function loadTypes():void{
+			
+			    userRequestType.useProxy	=	false;
+           		userRequestType.url			=	varIPAddress+"LoadTypes.php";    
+              	
+              	searching=true;
+           		userRequestType.send(); 
+		}
+		
+		private function requestTypeResult(event:Event):void{
+				
+				searching=false;
+				loadTypeOK=true;
+				checkLoadTypesDone();
+				lastUserTypeResult = userRequestType.lastResult.loadtypes;
+				loadNames(true);
+		}
+		
+		public function loadQueries():void{
+         	
+         	//trace("loadQueries");
+         	requestLoadQueries.useProxy	=	false;
+         	
+         	var parameters:Object= new Object();
+         	if (loggedIn) {
+         		parameters.userID	=	getCurrentUserID();
+				parameters.userGroup =	userLoginInfo['role'];
+         	}
+         	else {
+         		parameters.userID	=	0;
+				parameters.userGroup =	'none';
+         	}
+         	
+ 			requestLoadQueries.url=varIPAddress+"requestLoadQueries.php";
+ 				
+            searching=true;  
+			requestLoadQueries.send(parameters);			   	
+	   	}
+	   
+	   	private function loadQueriesResult(event:ResultEvent):void{
+	   		
+	   		comboDefaultSearch.dataProvider=requestLoadQueries.lastResult.savedsearches.search; 
+	   		var numDefaultSearchID:int=Number(userLoginInfo['searchID']);
+	   		setComboData(comboDefaultSearch,numDefaultSearchID);
+	   		
+	   		//trace("loadQueriesResult: "+ requestLoadQueries.lastResult.dashTag);
+	   		
+	   		var nameIndex:int;
+	   		
+			if (dashBoardSearch1 != -1) {
+				nameIndex = dashBoardSearch1;
+				dashBoardSearch1 = -1;
+			}
+			else {
+				nameIndex = getComboData(comboQuery1,comboQuery1.text);
+			}
+			comboQuery1.dataProvider = requestLoadQueries.lastResult.dashTag.query;
+			setComboData(comboQuery1,nameIndex);
+			comboChange(1,comboQuery1);
+
+			if (dashBoardSearch2 != -1) {
+				nameIndex = dashBoardSearch2;
+				dashBoardSearch2 = -1;
+			}
+			else {
+				nameIndex = getComboData(comboQuery2,comboQuery2.text);
+			}		
+			comboQuery2.dataProvider = requestLoadQueries.lastResult.dashTag.query; 
+			setComboData(comboQuery2,nameIndex);
+			comboChange(2,comboQuery2);
+
+			if (dashBoardSearch3 != -1) {
+				nameIndex = dashBoardSearch3;
+				dashBoardSearch3 = -1;
+			}
+			else {
+				nameIndex = getComboData(comboQuery3,comboQuery3.text);
+			}		
+			comboQuery3.dataProvider = requestLoadQueries.lastResult.dashTag.query; 
+			setComboData(comboQuery3,nameIndex);
+			comboChange(3,comboQuery3);
+
+			if (dashBoardSearch4 != -1) {
+				nameIndex = dashBoardSearch4;
+				dashBoardSearch4 = -1;
+			}
+			else {
+				nameIndex = getComboData(comboQuery4,comboQuery4.text);
+			}		
+			comboQuery4.dataProvider = requestLoadQueries.lastResult.dashTag.query; 
+			setComboData(comboQuery4,nameIndex);
+			comboChange(4,comboQuery4);
+	
+			loadNamesResult();
+			searching=false;         	
+		}
+		
+		public function getLoadQueriesResult():Object {
+			
+			return requestLoadQueries.lastResult.queryTag;
+		}
+
+		private function comboChange(whichQuery:uint,whichCombo:Object):void{
+			
+			//trace("comboChange");
+			dashboard.reloadQuery(whichQuery,whichCombo);
+		}
+		
+		private function initiateComboChange1(event:DropdownEvent):void{
+
+	      	 comboChange(1,comboQuery1);       
+   		}
+ 
+ 		private function initiateComboChange2(event:DropdownEvent):void{
+
+	      	 comboChange(2,comboQuery2);       
+   		}
+
+		private function initiateComboChange3(event:DropdownEvent):void{
+
+	      	 comboChange(3,comboQuery3);       
+   		}
+ 
+ 		private function initiateComboChange4(event:DropdownEvent):void{
+
+	      	 comboChange(4,comboQuery4);       
+   		}
+   		
+		private function initiateComboChangeFocus1(event:FocusEvent):void{
+			
+			//comboChange(1,comboQuery1);    
+   		}		
+
+		private function initiateComboChangeFocus2(event:FocusEvent):void{
+			
+			//comboChange(2,comboQuery2); 
+   		}
+
+		private function initiateComboChangeFocus3(event:FocusEvent):void{
+			
+			//comboChange(3,comboQuery3);    
+   		}		
+
+		private function initiateComboChangeFocus4(event:FocusEvent):void{
+			
+			//comboChange(4,comboQuery4); 
+   		}
+   		   		   		  				
+		private function complete():void{
+			
+			this.addEventListener( KeyboardEvent.KEY_DOWN, keyPressHandler );//for keyboard functions
+			this.addEventListener( KeyboardEvent.KEY_UP, keyUpPressHandler );//for keyboard functions
+			this.addEventListener( MouseEvent.CLICK, mouseClickHandler ); //for mouse functions
+			comboQuery1.addEventListener(Event.CLOSE,initiateComboChange1);
+			comboQuery2.addEventListener(Event.CLOSE,initiateComboChange2);
+			//comboQuery1.addEventListener(FocusEvent.FOCUS_OUT,initiateComboChangeFocus1);
+			//comboQuery2.addEventListener(FocusEvent.FOCUS_OUT,initiateComboChangeFocus2);
+			comboQuery3.addEventListener(Event.CLOSE,initiateComboChange3);
+			comboQuery4.addEventListener(Event.CLOSE,initiateComboChange4);
+			//comboQuery3.addEventListener(FocusEvent.FOCUS_OUT,initiateComboChangeFocus3);
+			//comboQuery4.addEventListener(FocusEvent.FOCUS_OUT,initiateComboChangeFocus4);
+			
+    		navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+           	this.focusManager.setFocus(loginUserName);
+  		} 	
+			
+        private function loadData():void{
+
+        	//initGifPlayer();//for showing gif animation for busy icon
+			// work out varIPAddress from starting URL
+				var curUrl:String =  String( ExternalInterface.call(" function(){ return document.location.href.toString();}"));
+				trace(curUrl+": "+initialised);
+				
+				initialised = false;
+				loadTypeOK = false;
+				nameResultOK = false;
+				checkLoadTypesDone();
+        		
+				if (curUrl.indexOf("localhost") == -1) //if not running on localhost, rewrite URL
+				{
+					var mainIndex:int = curUrl.indexOf("main/");
+					varIPAddress = curUrl.substring(0,mainIndex)+"files/";
+				
+					var debugIndex:int  = curUrl.indexOf("debug=true"); //check if running debug
+				
+					// force reload to starting (login) tab after browser reload
+					var baseUrl:String = curUrl.substring(0,mainIndex);
+					if (debugIndex == -1)
+						baseUrl = baseUrl+"main/inf.html#";
+					else
+						baseUrl = baseUrl+"main/inf.html?debug=true#";
+				
+					trace(baseUrl);
+					var request:URLRequest = new URLRequest(baseUrl);
+        			navigateToURL(request,"_self");
+    			}
+    			
+        		//trace("inf.loadData: "+currentID);
+				searchResult.toolTip = "Shift + click to copy selected row, ctrl + click to copy cell to clipboard"; 			
+			   		
+        		startTimer();
+        		loggedIn = false;
+        		
+        		//loadTypes(); // calls loadNames() and then does initialisation        		
+        		//loadTypeOK = true;
+        		//checkLoadTypesDone();      		
+    	}		        
+      
+       //search result is visble only if the tab is set to	biodata,application,serivce	
+      	private function toggle():void{ 
+
+			searchVisible		=	loggedIn && (!forceChangeUserPassword) && (mainTab.selectedIndex>0);
+			dashVisible	= loggedIn && (!forceChangeUserPassword) && (mainTab.selectedIndex==0);
+			if (dashVisible && (!fieldsEditable)) {
+				this.focusManager.setFocus( comboQuery1 );
+				this.focusManager.getFocus().drawFocus(true);	
+			}
+			if (searchVisible && (searchResult.height == expandedSearchListHeight) && (!fieldsEditable)) {
+				this.focusManager.setFocus( searchResult );
+				this.focusManager.getFocus().drawFocus(true);	
+			}      		 
+      		//trace("toggle "+searchVisible+", "+dashVisible);
+      		//toggleSearchResultHeight.visible = searchResult.visible;
+      		//copySearchResultToClipboard.visible = searchResult.visible;
+			//printDG.visible=searchResult.visible;
+			//sortDG.visible = searchResult.visible;
+			relIcon.visible = searchVisible && relativeMode;
+      	}
+      	
+      	
+      	////*******************Login************************////
+      	////***********************************************////
+      	////**********************************************////
+      	private function sendLoginDetails():void{
+      			
+      		 var parameters:Object=new Object();
+      		 parameters.username=loginUserName.text;
+	 		 parameters.password=MD5.encrypt(loginPassword.text);
+	 		 parameters.requester='loginService';
+	 		 loginService.useProxy	=	false;
+      		 loginService.url		=	varIPAddress+"login.php";   	   	
+      		      		
+      		if((loginUserName.text!="")&&(loginPassword.text!="")){
+      			userName=loginUserName.text;
+      			searching=true;
+      			loginService.send(parameters);
+      		}      		
+      	}
+      	            
+       // this is the function that receives a response from the server after clicking submit
+      // event.result contains the string response from the server
+      // you check if the user has access to any of the roles
+      
+      private function handleLogin(event:ResultEvent):void {
+
+	  	userLoginInfo=new Array();//re initialise
+   
+      // userAccess = event.result as String;
+        var userInfoArray: Array = (event.result as String).split(",");
+        searching=false;
+        
+        for each ( var str:String in userInfoArray ){
+        	var tempArr:Array=str.split('=');
+        	userLoginInfo[tempArr[0]] = tempArr[1];
+        }
+
+		treeComplete();
+		
+        if (userLoginInfo['allowLogin']=="true") {       	      	
+            // login success             
+          	login();          	        	      
+        }
+         else {
+         	//show failed login message, show guest menu
+         	if (userLoginInfo['allowLogin']=="maintenance")
+         		logOut("Under maintenance - try again later");
+         	else {
+         		if (userLoginInfo['allowLogin']=="disabled")
+         			logOut("Your account has been disabled");
+         		else
+         			logOut("Unable to login as " + loginUserName.text);
+         	}	
+           		          
+         }     
+      }
+            
+      private function logOut($msg:String):void{
+      	
+      		if (appMode != "View") setAppMode("View",true);
+      		emptyText();
+      		
+      		loginFailedText.text	=	$msg ;
+            mainTab.selectedIndex	=	0;
+           	acSideMenu.selectedIndex	=	0;
+           	//reset to personal tab and restore default search fields
+           	portals.selectedIndex = 0;
+           	if (biodatas.portals != null)
+	           	biodatas.portals.selectedIndex = 0;
+	        if (biodatas.general != null)
+           		biodatas.general.activate(true);
+
+           	loggedIn	=	false;
+           	limited		=	true;
+           	selectDisplayLayout(acSideMenu.selectedIndex); 	            
+          	addAllowed	=	false;
+          	editAllowed	=	false;
+          	deleteAllowed	=	false;
+          	navEnabled	=	false;
+          	initEnabled = 	true;
+          	dashEnabled =	false;
+          	bioEnabled	=	false;
+          	appEnabled	=	false;
+          	servEnabled	=	false;
+          	patientEnabled=	false;
+          	staffEnabled=	false;
+          	relativeToggleEnabled	=	false;
+          	panelEnabled =	true;
+          	ckChangePassword.selected = false;
+          	
+          	clearChangePasswordInterfaces();      	
+            
+            deleteTemporaryFiles(userLoginInfo['userID']);
+            currentID = "";
+            currentStaffID = "";
+            initialSearchDone = false;
+            initialised = false;
+
+          	userLoginInfo= new Array();
+          	this.focusManager.setFocus(loginUserName);
+          	this.focusManager.getFocus().drawFocus(true);
+          	
+          //	var sysMan:SystemManager	=	Application.application.systemManager;
+         //	sysMan.removeEventListener(FlexEvent.IDLE, timeoutHandle);         	
+      }
+
+	  public function isAdmin():Boolean {
+	  	
+	  	return((userLoginInfo['role']=='admin') || (userLoginInfo['role']=='superadmin'))
+	  }      
+
+	  public function isSuperAdmin():Boolean {
+	  	
+	  	return(userLoginInfo['role']=='superadmin')
+	  }
+	  
+	  public function isLimited():Boolean {
+	  	
+	  	return(userLoginInfo['role']=='limited')
+	  }
+	  
+	  public function getuserLoginInfo(strIndex:String):String{
+	  //	Alert.show('DefaultsearchID : ' + userLoginInfo[strIndex]);
+	  	return(userLoginInfo[strIndex]);
+	  }	
+	
+	  public function isIncompleteWarningOn():Boolean {
+	  	
+	  	return(userLoginInfo['userIncompleteWarning']!='No')
+	  }      
+
+	//public var maskSystemDefaultSearch:Boolean=false;
+		
+	  private function resetUserDetails():void{
+	  	
+	  	userForename.text=userLoginInfo['userForeName'];
+	    userSurname.text=userLoginInfo['userSurname'];
+	    userEmail.text=userLoginInfo['userEmail'];
+	    var numDefaultSearchID:int=Number(userLoginInfo['searchID']);
+	    setComboData(comboDefaultSearch,numDefaultSearchID);
+	    ckWarningOnOff.selected=isIncompleteWarningOn();   
+	  } 	  
+	  
+      private function forcePasswordChange():void{
+		
+		mainTab.selectedIndex	=	0;
+		acSideMenu.selectedIndex	=	0;
+		selectDisplayLayout(acSideMenu.selectedIndex);
+		
+		emptyText();
+		loginFailedText.text	=	"";
+		
+		//the admin setting is accessible to admin group only				
+		acSideMenu.getHeaderAt(1).enabled=false;	
+		acSideMenu.getHeaderAt(2).enabled=false;
+		acSideMenu.getHeaderAt(3).enabled=false;
+
+		loggedIn = true;
+		resetUserDetails();
+		editMode();
+		ckChangePassword.selected = true;
+		resetChangePasswordInterfaces();				
+		searchVisible=false;
+		dashVisible=false;
+      }
+	  
+	  private function userInfoResult(event:ResultEvent):void{
+	 	
+		if(forceChangeUserPassword){
+			//Alert.show('Password changed! Please login.');
+			forceChangeUserPassword=false;
+			logOut("Password changed - please relogin");
+		}
+	  }
+		
+	  private function onForcePassword(evt:CloseEvent):void {
+			
+            forcePasswordChange();
+      }
+
+	/*  	
+	  public function checkSiteType(currentSiteType:String):Boolean{
+	  	if(userLoginInfo['siteType']==currentSiteType)
+	  		return true;
+	  	else	
+	  		return false;
+	  }	
+	 */	
+	
+	  public function getSiteID():uint{
+	  	
+	  		return(userLoginInfo['siteID']);
+	  }	
+	  
+	  public function getSiteLocation():String{
+	  	
+	  		return(userLoginInfo['siteLocation']);
+	  }
+	  
+	  public function getSiteProgramme():String{
+	  	
+	  		return(userLoginInfo['siteProgramme']);
+	  }
+	  
+      private function login():void{
+		//trace("inf.login: "+currentID);
+		//sessionExpired = false;
+			
+		forceChangeUserPassword=false;
+		if(userLoginInfo['passwordChanged']==1){
+		 	forceChangeUserPassword=true;
+			//force user to change password
+			var alertForce:Alert = Alert.show("Password has been reset","Please change your password and re-login",Alert.OK,this,onForcePassword);			
+		}
+		else{	
+			mainTab.selectedIndex	=	0;
+			
+			limited = isLimited();
+			//if (limited)
+			//	acSideMenu.selectedIndex	=	0;
+			//else
+				acSideMenu.selectedIndex	=	1; //set to search tab initially for limited (otherwise initial search won't work) - processSearchResult() resets it
+				
+			emptyText();
+			loginFailedText.text	=	"";
+		
+			dashBoardSearch1 = userLoginInfo['dashboard_search_1'];
+        	dashBoardSearch2 = userLoginInfo['dashboard_search_2'];
+        	dashBoardSearch3 = userLoginInfo['dashboard_search_3'];
+        	dashBoardSearch4 = userLoginInfo['dashboard_search_4'];
+        	
+			//the admin setting is accessible to admin group only				
+			acSideMenu.getHeaderAt(3).enabled=isAdmin();
+			acSideMenu.getHeaderAt(1).enabled=!limited;	//limited users can't search
+			acSideMenu.getHeaderAt(2).enabled=!limited; //or run saved searches
+			searchResult.enabled=true;
+			
+			picIcon.enabled=isAdmin(); //disable passport photo download
+						
+			resetUserDetails();
+		
+			loadTypes(); // calls loadNames() and then does initialisation        		
+        	//loadTypeOK = true;
+        	
+			loggedIn	=	true;		
+			addAllowed	=	false;
+        	editAllowed	=	false;
+        	deleteAllowed	=	false;
+        	navEnabled	=	false;
+ 
+ 			initEnabled =	!loggedIn;
+ 			dashEnabled = 	loggedIn;
+        	bioEnabled	=	loggedIn;
+        	appEnabled	=	false; //loggedIn && userLoginInfo['siteType']!="Patient";
+        	servEnabled	=	false; //loggedIn && userLoginInfo['siteType']!="Patient";
+        	patientEnabled=	false; //loggedIn && userLoginInfo['siteType']=="Patient";
+        	staffEnabled=	false; //loggedIn && userLoginInfo['siteType']=="Patient";
+        	
+        	patientSystem = (userLoginInfo['siteType']=="Patient");
+        	personnelWorldwideSystem = (userLoginInfo['siteType']=="INF_Worldwide");
+        	personnelNepalSystem = (userLoginInfo['siteType']=="INF_Nepal");
+			embassyEnabled = personnelWorldwideSystem;
+			nationalityEnabled = !patientSystem;
+			citizenshipEnabled = personnelNepalSystem;
+			siteLocationEnabled = !patientSystem;
+			
+			viewBioEnabled = checkChildTabs(biodatas.getChildLabels());
+			viewServEnabled = checkChildTabs(tests.getChildLabels()) && !patientSystem;	
+			viewAppEnabled = checkChildTabs(app.getChildLabels()) && personnelWorldwideSystem;	
+			viewStaffEnabled = checkChildTabs(staff.getChildLabels()) && patientSystem;	
+			viewPatientEnabled = checkChildTabs(patient.getChildLabels()) && patientSystem;
+						
+			if (portals.numChildren > 4) { // if it hasn't been done already, remove unused tabs				
+				if (patientSystem) {
+					portals.removeChildAt(3);
+					portals.removeChildAt(2);
+				}
+				else {
+					portals.removeChildAt(5);
+					portals.removeChildAt(4);
+					if (personnelNepalSystem) portals.removeChildAt(2);
+				}
+			}
+			
+			if (patientSystem) {
+				panelSideBar.title = "INF Patient Database";
+				initscreen.frontPageText.text = " INF  Patient Database";
+			}
+			if (personnelNepalSystem) {
+				panelSideBar.title = "INF/N Personnel Database";
+				initscreen.frontPageText.text = " INF/N  Personnel Database";
+			}
+			if (personnelWorldwideSystem) {
+				panelSideBar.title = "INF/W Personnel Database";
+				initscreen.frontPageText.text = " INF/W  Personnel Database";
+			}
+			
+			dashTitle.text	=	"Logged on as "+ userLoginInfo['userForeName'] + " " + userLoginInfo['userSurname'] + " at site ID = " + userLoginInfo['siteID'];
+ 			dashStatus.text = "Last sync on "+ userLoginInfo['lastSyncTime'];
+ 			if (getSiteID()==1) dashStatus.text += " with site ID = "+ userLoginInfo['lastSyncFrom'];
+ //loadTypes();
+        	appMode	=	"View";
+        	relativeMode = false;
+        	enableStandardMode = true;
+        	panelEnabled =	true;
+			timeOutTotal	=	0;
+			biodataEnabled	=	loggedIn;
+			enableRelativeToggle();
+		
+			clearChangePasswordInterfaces();
+			editEnabled=true;
+			cancelEnabled=false;
+
+			selectDisplayLayout(acSideMenu.selectedIndex);
+										
+			//loadQueries();//for loading user_specific queries to the Report Tab
+
+			//trace("selectDisplayLayout: "+searchVisible+", "+acSideMenu.selectedIndex+", "+currentID+", "+search);
+			//if (searchVisible && (selIndex == 1) && (currentID == "")) {
+			//if ((currentID == "") && (search != null)) {
+
+			if (search != null) {
+	        	//searchResult.height = defaultSearchListHeight;
+				var numDefaultSearchID:int=Number(userLoginInfo['searchID']);  
+	        	search.runSearchQuery(numDefaultSearchID);
+	        	//displayRecord(); 
+			}
+			else {
+				setAppMode(appMode,true);
+			}
+
+		//var sysMan:SystemManager = Application.application.systemManager;
+
+       //	if (enableTimeout) {
+          //sysMan.addEventListener(FlexEvent.IDLE, timeoutHandle);            }
+          
+    	}
+      }     
+      
+      public function getUserPermission(tableName:String):void{
+      	
+      	var tabName:String = getTabName(tableName);
+      // Alert.show('personalSetting:'+userLoginInfo['personal_setting']);
+  //Alert.show('tab: '+tabName);   
+         	
+      	if (userLoginInfo['personal_setting']=='true'){
+      		
+      		if(userLoginInfo[tabName+'_add']=='y')
+      			addAllowed=true;
+      		else
+      			addAllowed=false;
+      		if(userLoginInfo[tabName+'_edit']=='y')
+      			editAllowed=true;
+      		else
+      			editAllowed=false;	
+      		/*
+      		if(userLoginInfo[tabName+'_view']=='y')
+      			viewAllowed=true;
+      		else
+      			viewAllowed=false;
+      		*/
+      		if(userLoginInfo[tabName+'_delete']=='y')
+      			deleteAllowed=true;	
+      		else
+      			deleteAllowed=false; 
+      	}     		      		
+      }
+      
+      private function emptyText():void{
+      	
+    		loginUserName.text	=	"";
+			loginPassword.text	=	"";  			    
+      }
+      
+      ////*******************end of Login************************////
+      	////***********************************************////
+      	////**********************************************////
+      	
+    // not used
+      private function timeoutHandle(event:FlexEvent):void {
+      	
+      	timeOutTotal += 100;
+      	 
+      	var varTimeOutHandle:timeOutHandler	=	new timeOutHandler();
+      	
+      	if(varTimeOutHandle.isTimeOut()	==	true){
+      		logOut("Session Expired ! Please login again");
+      	}    	
+      }
+      
+      private function getRelativeDetail(event:ResultEvent):void{
+      	
+      //	biodatas.relatives.DisplayFirstRelativeDetail(searchRelativeData);      
+      }
+      
+      //end of not used
+      
+	  //********Look up matching index in array collection (for combobox)****************////
+
+ 		public function findInDataArray(dataArray:ArrayCollection,val:Object):int{
+ 			
+        	if ((val != null) && (dataArray != null)) {
+                
+            	for (var i : int = 0; i < dataArray.length; i++) {
+            		if (dataArray[i] != null) {
+                		if ( val == dataArray[i].data || val == dataArray[i].label) {
+                    		return i;
+                    	}
+        			}
+        		}
+        	}
+        	return -1;
+    	} 
+
+ 		public function findInArray(dataArray:ArrayCollection,val:Object):int{
+ 			
+ 			var tempString:String='';
+        	
+        	if ((val != null) && (dataArray != null)) {
+                
+            	for (var i : int = 0; i < dataArray.length; i++) {
+            		
+            		tempString=dataArray[i];
+                	
+                	if (tempString != null) {
+                		if ( val.toString().toUpperCase() == tempString.toUpperCase() ) {
+                    		return i;
+                    	}
+        			}
+        		}
+        	}
+        	return -1;
+    	}
+    	
+    	public function getComboData(obj:Object,val:String):int{
+    		
+    		// lookup combobox index corresponding to text value
+			var index:int = findInArray(obj.dataProvider,val);
+			//obj.selectedIndex = index;
+			// now lookup id for the index (id will remain the same even if text/position in array changes)
+			if (index == -1) {
+				return -1;
+			}
+			else
+			{
+				return obj.dataProvider[index].data;
+			}
+    	}
+    	
+    	public function setComboData(obj:Object,val:int):void{
+
+			obj.selectedIndex = findInDataArray(obj.dataProvider,val);
+    	}
+	  
+	  //*****************Change to upper case**********************////
+	 
+	  public function changeToUpper(inputObject:Object):void{
+	  	
+	  		// inputObject.text	=	inputObject.text.toUpperCase();
+	  }
+	    
+	  //*****************Change to upper case**********************////
+	 
+	 ////**************for the navigation buttons********************////
+	 
+	  private function moveTo(event:KeyboardEvent):void{
+	
+			var keyCode:int = event.keyCode;
+			trace("moveto: "+keyCode);			
+			trace("key down: "+event.type+" + "+shiftKeyPressed+" : "+ctrlKeyPressed);
+			
+			if((keyCode	==	40) || (keyCode == 38)) {
+				if(searchResult.height == defaultSearchListHeight)
+		  			displayRecord();
+	  		}
+	  		if (keyCode == 13 && (searchResult.dataProvider.length > 0)) {
+	  			searchResult.height = defaultSearchListHeight;
+	  			displayRecord();
+	  		}
+	  }
+	  
+	  public function goTo(action:String="Next"):void{
+	  	
+			var dgObject:DataGridNew;
+			dgObject = returnSelectedObject();
+			
+			if (isRelativeMode()) {
+				dgObject.selectedIndex = lastSelectedRelativeIndex;
+			}
+			
+			var newIndex:int;	
+	
+			//trace("inf.goto: "+dgObject.selectedIndex+", len: "+dgObject.dataProvider.length);
+	
+			if(action	==	"Next")
+				newIndex =	dgObject.selectedIndex	+	1	;
+			else					
+				newIndex =	dgObject.selectedIndex	-	1	;
+			
+		  	if (newIndex<0)
+				newIndex	=	0;
+				
+	 		dgObject.selectedIndex	= newIndex;
+	
+	 		//trace("inf.goto: "+dgObject.selectedIndex+", rel: "+lastSelectedRelativeIndex);
+	 						
+	  		returnID(dgObject);	  	
+	  }
+	  
+	  ////**************end of the navigation button funciton ********************////	  
+	  		
+	 private function displayRecord(resetIndex:Boolean=true):void{
+
+	  	if (panelEnabled)	{
+			
+	  		if (relativeMode) {
+	  			if (resetIndex) {
+	  				tempStaffMode = true; //switch back temporarily to get corresponding staff record
+	  				trace("displayRecord: tempStaffMode");
+	  				returnID(searchResult);
+	  			}
+	  			else {
+	  				var dgObject:DataGridNew;
+	  				dgObject = returnSelectedObject();
+	  				// restore previously selected relative
+					dgObject.selectedIndex = lastSelectedRelativeIndex;
+					trace("displayRecord: relativeMode, using relative index: "+lastSelectedRelativeIndex);
+	  				returnID(dgObject);
+	  			}
+	  		}
+	  		else {
+	  			trace("displayRecord: staffMode");
+	 			returnID(searchResult);
+	 		}
+	 	}
+	 }
+	 
+	 private function isRecord():void{
+	 	
+	 	//searchResult.columns[0].visible = false; // hide id column
+	 	
+	 	if (Number(txtNoOfRecords.text)>0)
+	 		noRecord	=	false;
+	 	else
+	 		noRecord	= true;	 		
+	 }
+
+	public function isNumeric(string:String):Boolean{
+
+		if (string=="")
+			return false;
+			
+   		return !isNaN(Number(string));
+	}
+	
+	public function isPositive(string:String):Boolean{
+
+		if (string=="")
+			return false;
+		
+		var temp:Number = Number(string);
+		
+		if(isNaN(temp)) {
+			return false;
+		}
+		else {	
+			return (temp>0);
+		}
+	}
+	
+	public function isZeroOrPositive(string:String):Boolean{
+
+		if (string=="")
+			return false;
+		
+		var temp:Number = Number(string);
+		
+		if(isNaN(temp)) {
+			return false;
+		}
+		else {	
+			return (temp>=0);
+		}
+	}
+	
+	public function isInteger(string:String):Boolean{
+
+		if (string=="")
+			return false;
+					
+		var temp:Number = Number(string);
+		
+		if(isNaN(temp)) {
+			return false;
+		}
+		else {	
+			return (temp == int(temp));
+		}
+	}
+
+	public function isPositiveInteger(string:String):Boolean{
+
+		if (string=="")
+			return false;
+					
+		var temp:Number = Number(string);
+		
+		if(isNaN(temp)) {
+			return false;
+		}
+		else {	
+			return ((temp > 0) && (temp == int(temp)));
+		}
+	}
+	
+	public function isZeroOrPositiveInteger(string:String):Boolean{
+
+		if (string=="")
+			return false;
+					
+		var temp:Number = Number(string);
+		
+		if(isNaN(temp)) {
+			return false;
+		}
+		else {	
+			return ((temp >= 0) && (temp == int(temp)));
+		}
+	}
+	
+	 ////**************************get or set the the value of the variables**************////
+
+	 public function isStandardModeEnabled():Boolean{
+	 	
+	 	return enableStandardMode;
+	 }
+	 
+	 public function getCurrentUserID():String{
+	 	
+	 	return userLoginInfo['userID'];
+	 }
+	 
+	 public function getCurrentUserName():String{
+	 	
+	 	return userName;
+	 }
+	 
+	 public function getCurrentID():String{
+	 	
+	 	return currentID;
+	 }
+	 
+	 public function getCurrentStaffID():String{
+	 	
+	 	return currentStaffID;
+	 }
+	 
+	 public function setCurrentID(id:String):void{
+	 	
+	 	currentID	=	id;
+	 }
+
+	 public function setCurrentRelativeID(id:String):void{
+	 	
+	 	currentRelativeID	=	id;
+	 }
+
+	 public function getCurrentRelativeID():String{
+	 	
+	 	return currentRelativeID;
+	 }
+	 
+	 public function setCurrentStaffID(id:String):void{
+	 	
+	 	currentStaffID	=	id;
+	 }
+	 
+	 public function getPath():String{
+	 	
+	 	return varIPAddress;
+	 }
+
+	 public function getFileName(link:String):String{
+	 	
+	 	var names:Array = link.split("/");	 	
+	 	return names[names.length-1];
+	 }
+	 
+	 public function getUploadPath(pathType:String='temporary'):String{
+	 	
+	 	var path:String;
+	 	if(pathType=='temporary')//files temporary stored in this link
+	 		path = varIPAddress+'../main/fileUploads/'+userLoginInfo['userID']+'/'+currentID+'/';
+	 	else //this is the string to be stored in the database 
+	 		path = varIPAddress+'../main/fileUploads/userID/'+currentID+'/';//here userID is just a place holder
+		trace("uploadPath = "+path);
+		return path;
+	 }
+
+	 public function getUploadURL(fileName:String,type:String='image'):String{
+	 	
+	 	var path:String = varIPAddress+"upload.php?type="+type+"&imageName="+fileName+"&tab="+getTabTableName()+"&nameID="+currentID+"&userID="+getCurrentUserID()+'/';
+		trace("uploadURL = "+path);
+		return path;
+	 }
+
+	 public function getComboIndex(arrColln:ArrayCollection,fieldName:String,itemID:int):int{
+	 	/* finds the index of the of the given itemID in the arrayCollection in the given fieldName	*/
+
+	 	for (var i:int = 0; i < arrColln.length; i++) {
+			if(arrColln[i][fieldName]==itemID) return i;  			
+		}
+		return -1;
+	 }
+	 	 
+	 public function isNoRecord():Boolean{
+	 	
+	 	noRecord = true;
+	 	if (initialised) {
+	 		var dgObject:DataGridNew;
+	 		dgObject = returnSelectedObject();
+	 		if (dgObject.dataProvider != null)
+	 			noRecord = (dgObject.dataProvider.length==0);
+	 	}
+	 	trace("isNoRecord = "+noRecord+", "+currentID);
+		return noRecord;
+	 }
+
+	 public function removeRecord(deletedID:int=-1):void{
+	 	
+	 	var thisID:int;	 			
+	 	var i:int = 0;
+	 	var found:Boolean = false;
+	 	
+	 	if (deletedID > 0) {
+	 		i = 0;
+	 		while ((i < searchResult.dataProvider.length) && !found) {
+	 			thisID = searchResult.dataProvider[i].zzzid;
+				if(thisID == deletedID) {
+					found = true;
+					searchResult.dataProvider.removeItemAt(i);
+					txtNoOfRecords.text = (parseInt(txtNoOfRecords.text) - 1).toString();
+					isRecord();
+					trace("Deleted staff index: "+i);
+				}
+				i++;
+			}
+		}	 	
+	}
+
+	public function insertRecord(recordID:int,forenames:String,surname:String,staffID:int):void{
+	 	
+	 	var thisID:int;	 			
+	 	var i:int = 0;
+	 	var found:Boolean = false;
+	 	
+	 	if (recordID > 0) {
+	 		i = 0;
+	 		while ((i < searchResult.dataProvider.length) && !found) {
+	 			thisID = searchResult.dataProvider[i].zzzid;
+				if(thisID == recordID) {
+					found = true;
+					trace("Record already in list: "+i);
+				}
+				i++;
+			}
+		}
+		
+		if (!found) {
+			if (staffID < 1) {
+				searchResult.dataProvider.addItem({name_forenames:forenames,surname_surname:surname, zzzid:recordID});
+   			}
+   			else {
+   				searchResult.dataProvider.addItem({name_forenames:forenames,surname_surname:surname, zzzid:recordID, zzzstaffid:staffID});
+			}
+			txtNoOfRecords.text = (parseInt(txtNoOfRecords.text) + 1).toString();
+			searchResult.selectedIndex=searchResult.dataProvider.length-1;      		
+		}	 	
+	}
+	
+	private function onAlertClose(evt:CloseEvent):void {
+    	
+    	searching = false;
+    	onalert = false;
+    	searchResult.selectedIndex	=	-1;
+	 	storeIndex = searchResult.selectedIndex;
+ 		//trace("setRecord2a: "+this.focusManager.getFocus());
+ 		var event:ResultEvent;
+ 		//this.focusManager.setFocus(portals.selectedChild);
+		defaultResult(event); // so that boundField() is called and record refresh()
+ 		//trace("setRecord2b: "+this.focusManager.getFocus());
+    }	
+	 
+	 public function setRecord(selectedID:int=-1,doSearch:Boolean=true,errorMessage:String=""):void{
+	 	
+	 	//if (!isRelativeMode()) doSort();
+	 	
+	 	//if (!initialised) return;
+	 	
+	 	//trace("setRecord("+selectedID+") "+storeIndex+" - "+isRelativeMode());
+	 	var dgObject:DataGridNew = returnSelectedObject();
+	 	//trace("setRecord1: "+searchResult.selectedIndex+", "+dgObject.selectedIndex);
+	 	//trace("setRecord1: "+currentStaffID+", "+currentID);
+	 	
+	 	var selectedStaffID:int = selectedID;
+	 	var selectedRelativeID:int = selectedID;
+	 	
+	 	if (isRelativeMode()) {
+	 		selectedStaffID = parseInt(currentStaffID);
+	 	}
+	 	
+	 	if (selectedRelativeID < 1) {
+	 		selectedRelativeID = parseInt(currentID);
+	 	}
+	 	if (selectedStaffID < 1) {
+	 		selectedStaffID = parseInt(currentStaffID);
+	 	}
+	 	
+	 	//trace("setRecord1: "+selectedStaffID+", "+selectedRelativeID);
+	 		 	
+	 	var numRecords:int = dgObject.dataProvider.length;	
+	 	var numStaffRecords:int = searchResult.dataProvider.length;
+	 	var noRecords:Boolean = (numStaffRecords == 0);	 		
+	 	var relativeFound:Boolean = false;
+	 	var staffFound:Boolean = false;
+	 	
+	 	var thisID:int;	 			
+	 	var i:int = 0;
+	 		
+	 	if (noRecords != noRecord) {
+	 		noRecord	=	noRecords;
+	 		setAppMode(appMode,true);	 		
+	 	}
+	 	//trace("noRecord = "+noRecord);
+		if (numRecords==0) {
+	 		dgObject.selectedIndex	=	-1;
+	 	}
+	 	if (numStaffRecords==0) {
+	 		//searchResult.selectedIndex	=	-1;
+	 		//storeIndex = searchResult.selectedIndex;
+	 		if(errorMessage == '') errorMessage = "No matching records found";
+	 		if(errorMessage.substring(0,11) == "Maintenance") 
+	 			searchResult.height = expandedSearchListHeight;
+	 		else
+	 			searchResult.height == defaultSearchListHeight;
+	 		/*//Alert.show(errorMessage,);
+	 		trace("setRecord2a: "+this.focusManager.getFocus());
+	 		var event:ResultEvent;
+	 		//this.focusManager.setFocus(portals.selectedChild);
+			defaultResult(event); // so that boundField() is called and record refresh()
+	 		trace("setRecord2b: "+this.focusManager.getFocus());*/
+	 		searching = true;
+	 		onalert = true;
+	 		var alert:Alert = Alert.show(errorMessage,"Search failed",Alert.OK,this,onAlertClose);
+	 		return;	 		
+		}
+
+		if (doSearch) doSort();
+	 	
+	 	if (selectedStaffID > 0) {
+	 		i = 0;
+	 		while ((i < searchResult.dataProvider.length) && !staffFound) {
+	 			thisID = searchResult.dataProvider[i].zzzid;
+				if(thisID == selectedStaffID) {
+					staffFound = true;
+					searchResult.selectedIndex	= i;
+					trace("Find staff index: "+i);
+				}
+				i++;
+			}
+		}
+		
+	 	if (!isRelativeMode()) relativeFound = staffFound;
+	 	
+	 	if (selectedRelativeID > 0) {
+	 		i = 0;	 		 		
+	 		while ((i < dgObject.dataProvider.length) && !relativeFound) {
+	 			thisID = dgObject.dataProvider[i].zzzid;
+				if(thisID == selectedRelativeID) {
+					relativeFound = true;
+					dgObject.selectedIndex	= i;
+					trace("Find relative index: "+i);
+				}
+				i++;
+	 		}
+	 	}		 	
+	 	/*	
+	 		if (!found) {
+	 			if (!isRelativeMode()) {
+	 				found = (selectedID > -1);
+	 				if (storeIndex >= numRecords) storeIndex = numRecords - 1; //if deleted last record
+	 				dgObject.selectedIndex	= storeIndex;	 				
+	 			}
+	 		}
+	 	*/	
+	 	if ((numRecords > 0) && (dgObject.selectedIndex == -1)) {
+			dgObject.selectedIndex	=	0; 
+		}			
+		if ((numStaffRecords > 0) && (searchResult.selectedIndex == -1)) {
+			searchResult.selectedIndex	=	0;
+			storeIndex = searchResult.selectedIndex;
+		}
+			
+		if (searchResult.visible) {
+        	this.focusManager.setFocus(searchResult);
+        	searchResult.scrollToIndex(searchResult.selectedIndex);
+        	this.focusManager.getFocus().drawFocus(true);
+        }
+        	
+        if (dgObject.visible && (searchResult.height == defaultSearchListHeight)) {
+        	this.focusManager.setFocus(dgObject);
+        	dgObject.scrollToIndex(dgObject.selectedIndex);
+        	this.focusManager.getFocus().drawFocus(true);
+        }
+
+		storeIndex = searchResult.selectedIndex;
+	 	//trace("setRecord2: "+this.focusManager.getFocus());
+	 	//trace("setRecord2: "+searchResult.selectedIndex+", "+dgObject.selectedIndex);
+	 		//returnID(dgObject, (((numRecords == 1) || found) && !isRelativeMode()) );
+	 	if (doSearch) returnID(dgObject, ((numStaffRecords == 1) || staffFound));
+	 }
+	 
+	 public function allowedToEdit():Boolean{
+	 	
+	 	return editAllowed;
+	 }
+
+	 public function allowedToAdd():Boolean{
+	 	
+	 	return addAllowed;
+	 }
+	 
+	 public function allowedToDelete():Boolean{
+	 	
+	 	return deleteAllowed;
+	 }
+
+	 public function allowedToEditAdmin():Boolean{
+	 	
+	 	return isAdmin();
+	 	//return (editAllowed && isAdmin());
+	 }
+
+	 public function allowedToAddAdmin():Boolean{
+	 	
+	 	return isAdmin();
+	 	//return (addAllowed && isAdmin());
+	 }
+	 
+	 public function allowedToDeleteAdmin():Boolean{
+	 	
+	 	return isAdmin();
+	 	//return (deleteAllowed && isAdmin());
+	 }
+	 
+	 public function isBiodataEnabled():Boolean{
+	 	
+	 	return biodataEnabled;
+	 }
+	 
+	 private function enableRelativeToggle():void {
+	 	
+	 	//relativeToggleEnabled = (relativeMode || biodataEnabled) && enableStandardMode;
+	 	relativeToggleEnabled = biodataEnabled && enableStandardMode;
+	 	//trace("relativeToggle = "+relativeMode+", "+enableStandardMode);
+	 }
+	 
+	 public function setBiodataEnabled(value:Boolean):void{
+	 	
+	 	biodataEnabled	=	value;
+	 	enableRelativeToggle();
+	 }
+
+	 public function isFamilyIncluded():Boolean{
+	 	
+	 	return includeFamily;
+	 }
+
+	 public function setIncludeFamily(value:Boolean):void{
+	 	
+		includeFamily	=	value;
+	 }
+
+	 public function isPanelEnabled():Boolean{
+	 	
+	 	return panelEnabled;
+	 }
+
+	 public function isRelativeMode():Boolean{
+	 	
+	 	return (relativeMode && !(tempStaffMode));
+	 }
+
+	 public function setRelativeMode(value:Boolean,searchModeChange:Boolean=false):void{
+	 	
+	 	//if (searchModeChange) relativeSearchMode = value;
+	 	relativeMode	=	value;
+	 	embassyEnabled 	= (!relativeMode) && personnelWorldwideSystem;
+	 	citizenshipEnabled 	= (!relativeMode) && personnelNepalSystem;
+	 	/*if (relativeMode) {
+	 		addAllowed = addAllowed && !noRecord;
+	 	} else {
+        	addAllowed	=(userLoginInfo['add']=='y');
+	 	}*/
+	 	setAppMode(appMode,true);
+	 	if (!relativeMode) enableStandardMode = true;
+	 	enableRelativeToggle();
+	 	tempStaffMode	=	false;
+	 	lastSelectedRelativeIndex = -1;
+	 	trace("change to/from relativeMode, reset relative index - "+relativeMode); 	
+	 }
+
+	 public function isTempStaffMode():Boolean{
+	 	
+	 	return tempStaffMode;
+	 }
+
+	 public function setTempStaffMode(value:Boolean):void{
+	 	
+	 	tempStaffMode	=	value;
+	 	lastSelectedRelativeIndex = -1;
+	 	trace("change to/from tempStaffMode, reset relative index"); 	 	
+	 }
+
+	 public function getLastSelectedRelativeIndex():int{
+	 	
+	 	trace("retrieve relative index: "+lastSelectedRelativeIndex);
+	 	return lastSelectedRelativeIndex;
+	 }
+
+	 public function getAppMode():String{
+	 	
+	 	return appMode;
+	 }
+	 
+	 public function setAppMode(value:String,refresh:Boolean=false):void{
+	 	
+	 	var obj:Object;
+	 	var i:uint=0;
+	 	var cnt:uint=0;
+	 	trace("set app mode to "+value+"("+refresh+")");
+	
+	 	var currentTab:String = portals.selectedChild.className;	 	
+	 	//if ((appMode == value) && (!refresh)) return;
+	 	//if (currentTab == "iniscr") return;
+	 	
+	 	appMode	=	value;
+	 	navEnabled = (appMode == "View") && (!isNoRecord()); // disallow navigation in edit/add mode
+	 	panelEnabled = (appMode == "View");
+	 	
+	 	//trace("setAppMode ("+currentTab+") "+navEnabled+") "+initialised);
+	 	if (appMode != "View") {   			
+	 		switch(currentTab)
+        	{	
+        		case "biodatas":
+        			for (i=0; i < biodatas.portals.numChildren; i++) {
+        				obj = biodatas.portals.getChildAt(i);
+        				obj.enabled = false;
+        			}
+        			biodatas.portals.selectedChild.enabled = true;
+        			appEnabled = false;
+        			servEnabled = false;
+        			patientEnabled = false;
+        			staffEnabled = false;      			
+        			break;
+        			
+        		case "app":
+        			for (i=0; i < app.portals.numChildren; i++) {
+        				obj = app.portals.getChildAt(i);
+        				obj.enabled = false;
+        			}
+        			app.portals.selectedChild.enabled = true;
+        			bioEnabled = false;
+        			servEnabled = false;
+        			patientEnabled = false;
+        			staffEnabled = false;
+        			break;
+        			
+        		case "test":
+        			for (i=0; i < tests.portals.numChildren; i++) {
+        				obj = tests.portals.getChildAt(i);
+        				obj.enabled = false;
+        			}
+        			tests.portals.selectedChild.enabled = true;
+        			appEnabled = false;
+        			bioEnabled = false;
+        			patientEnabled = false;
+        			staffEnabled = false;
+        			break;
+        			
+        		case "patient":
+        			for (i=0; i < patient.portals.numChildren; i++) {
+        				obj = patient.portals.getChildAt(i);
+        				obj.enabled = false;
+        			}
+        			patient.portals.selectedChild.enabled = true;        			
+        			bioEnabled = false;
+        			appEnabled = false;
+        			servEnabled = false;
+        			staffEnabled = false;
+        			break;
+        			
+        		case "staff":        
+        			for (i=0; i < staff.portals.numChildren; i++) {
+        				obj = staff.portals.getChildAt(i);
+        				obj.enabled = false;
+        			}       		
+        			staff.portals.selectedChild.enabled = true;	        			
+        			bioEnabled = false;
+        			appEnabled = false;
+        			servEnabled = false;
+        			patientEnabled = false;       			       		
+        			break;
+        	}
+	 	}
+	 	else {		
+	 		        		
+        	bioEnabled = panelEnabled && viewBioEnabled;
+        		
+	 		if (refresh || (currentTab == "biodatas")) {
+        		if (bioEnabled && (biodatas.portals != null)) {
+        			cnt = setTabEnabled(biodatas.portals.getChildAt(0),bioEnabled);
+        			for (i=1; i < biodatas.portals.numChildren; i++) {
+        				cnt = cnt + setTabEnabled(biodatas.portals.getChildAt(i),navEnabled);
+        			}
+        			if (cnt == biodatas.portals.numChildren){ 
+        				bioEnabled = false;
+        			}
+        			else {
+        				if (biodatas.portals.selectedChild == null) {
+							biodatas.portals.selectedIndex = 0;
+						}
+						if (biodatas.portals.selectedChild.enabled == false) {
+							biodatas.portals.selectedIndex = firstEnabledTab(biodatas.getChildLabels());
+						}
+					}
+				}
+    		}
+        		
+        	appEnabled = navEnabled && !relativeMode && viewAppEnabled;
+        		
+	 		if (refresh || (currentTab == "app")) {
+        		if (appEnabled && (app.portals != null)) {
+        			cnt = setTabEnabled(app.portals.getChildAt(0),appEnabled);
+        			for (i=1; i < app.portals.numChildren; i++) {
+        				cnt = cnt + setTabEnabled(app.portals.getChildAt(i),appEnabled);
+        			}
+        			if (cnt == app.portals.numChildren){ 
+        				appEnabled = false;
+        			}
+        			else {
+        				if (app.portals.selectedChild == null) {
+							app.portals.selectedIndex = 0;
+						}
+						if (app.portals.selectedChild.enabled == false) {
+							app.portals.selectedIndex = firstEnabledTab(app.getChildLabels());
+						}
+					}
+        		}
+    		}
+        			
+			servEnabled = navEnabled && viewServEnabled;
+				        	
+	 		if (refresh || (currentTab == "test")) {
+				if (servEnabled && (tests.portals != null)) {
+        			cnt = setTabEnabled(tests.portals.getChildAt(0),servEnabled);
+        			for (i=1; i < tests.portals.numChildren; i++) {
+        				cnt = cnt + setTabEnabled(tests.portals.getChildAt(i),(servEnabled && !relativeMode));
+        			}
+        			if (cnt == tests.portals.numChildren){ 
+        				servEnabled = false;
+        			}
+        			else {
+        				if (tests.portals.selectedChild == null) {
+							tests.portals.selectedIndex = 0;
+						}
+						if (tests.portals.selectedChild.enabled == false) {
+							tests.portals.selectedIndex = firstEnabledTab(tests.getChildLabels());
+						}
+					}
+    			}
+    		}
+       		
+        	patientEnabled= navEnabled && !relativeMode && viewPatientEnabled;
+        		        	
+	 		if (refresh || (currentTab == "patient")) {	
+        		if (patientEnabled && (patient.portals != null)) {
+        			cnt = setTabEnabled(patient.portals.getChildAt(0),patientEnabled);        		
+        			for (i=1; i < patient.portals.numChildren; i++) {
+        				cnt = cnt + setTabEnabled(patient.portals.getChildAt(i),patientEnabled);
+        			}
+        			if (cnt == patient.portals.numChildren){ 
+        				patientEnabled = false;
+        			}
+        			else {
+        				if (patient.portals.selectedChild == null) {
+							patient.portals.selectedIndex = 0;
+						}
+						if (patient.portals.selectedChild.enabled == false) {
+							patient.portals.selectedIndex = firstEnabledTab(patient.getChildLabels());
+						}
+					}
+        		}
+    		}
+        	
+        	staffEnabled= navEnabled && !relativeMode && viewStaffEnabled;
+        	
+	 		if (refresh || (currentTab == "staff")) {        		      		
+        		if (staffEnabled && (staff.portals != null)) {
+        			cnt = setTabEnabled(staff.portals.getChildAt(0),staffEnabled);
+        			for (i=1; i < staff.portals.numChildren; i++) {
+        				cnt = cnt + setTabEnabled(staff.portals.getChildAt(i),staffEnabled);
+        			}
+        			if (cnt == staff.portals.numChildren){ 
+        				staffEnabled = false;
+        			}
+        			else {
+        				if (staff.portals.selectedChild == null) {
+							staff.portals.selectedIndex = 0;
+						}
+						if (staff.portals.selectedChild.enabled == false) {
+							staff.portals.selectedIndex = firstEnabledTab(staff.getChildLabels());
+						}
+					}        		
+        		}
+        	}
+	 	}
+	 	
+	 	//Alert.show('setappmode out @inf');
+	 }	 
+
+	 public function isTabEnabled(tabName:String,tabType:String='view'):Boolean {
+	 	
+	 	var tab:String = tabName+'_'+tabType;
+	 	return (userLoginInfo[tab]=='y');
+	 }
+	 
+	 public function firstEnabledTab(tabString:String):int {
+
+	 	var tabs:Array = tabString.split(",");
+	 	var i:uint;
+	 	var cnt:int=-1;
+	 	var total:uint=tabs.length;
+
+	 	for (i=total; i>0; i--) {
+	 		if(isTabEnabled(tabs[i-1])) cnt=i-1; //set to first enabled tab
+	 	}
+	 	return (cnt);	 	
+	 }
+
+	 public function firstEnabledTable(tabString:String):String {
+
+	 	var tabs:Array = tabString.split(",");
+	 	var i:uint;
+	 	var cnt:int=-1;
+	 	var total:uint=tabs.length;
+
+	 	for (i=total; i>0; i--) {
+	 		if(isTabEnabled(tabs[i-1])) cnt=i-1; //set to first enabled tab
+	 	}
+	 	return (getTableName(tabs[cnt]));	 	
+	 }
+	 	 
+	 private function checkChildTabs(tabString:String):Boolean {
+	 	
+	 	return (firstEnabledTab(tabString)>-1);
+	 }
+	 
+	 private function setTabEnabled(obj:Object,ok:Boolean=true):uint {
+		
+	 	var id:String=obj.label.toLowerCase();
+	 	id = id.replace(" ","_");
+		//trace(id+'_view = ' + userLoginInfo[id+'_view']);
+        ok = ok && isTabEnabled(id);
+        obj.enabled = ok;
+        return (ok)?0:1;
+	 }	
+	
+	 public function isNavEnabled():Boolean{
+	 	return navEnabled;
+	 }
+
+	 public function setNavEnabled(value:Boolean):void{	 	
+	 	navEnabled=value;
+	 }
+
+	 public function setPanelEnabled(value:Boolean):void{	 	
+	 	panelEnabled=value;
+	 }
+	
+	 public function isLoggedIn():Boolean{	 	
+	 	return loggedIn;
+	 }
+	 
+	 private function toggleExpandedSearchList(forceSmall:Boolean=false):void{
+	 	
+	 	if(searchResult.visible) {
+	 		this.focusManager.setFocus( searchResult );
+	 		this.focusManager.getFocus().drawFocus(true);
+	 	}
+	 	trace("toggleExpanded: "+noRecord+", "+forceSmall+", "+searchResult.height);
+	 	if(!noRecord && (forceSmall || (searchResult.height == expandedSearchListHeight))){
+	 		searchResult.height = defaultSearchListHeight;		
+	 		displayRecord();
+	 		//
+	 		//toggleSearchResultHeight.label = "->";
+	 	}
+	 	else {
+	 		searchResult.height = expandedSearchListHeight;
+	 		//toggleSearchResultHeight.label = "<-";
+	 	}	
+	 }
+
+	 private function updateSearchScrollBar():void{
+	 	
+	 	if (loggedIn) {
+	 		//searchResult.invalidateList();
+	 		if (searchResult.selectedIndex > -1)
+	 			searchResult.scrollToIndex(searchResult.selectedIndex);
+	 	}
+	 }
+	 
+	 public function toggleRelativeMode():void {
+
+		if (isRelativeMode()) {
+ 			setRelativeMode(false);
+ 		}
+ 		else {
+  			setRelativeMode(true);  					
+  		}
+  				
+		var dgObject:DataGridNew;
+        dgObject = returnSelectedObject();
+        returnID(dgObject);
+ 	 }
+	 
+	 ////********************************end of get	or set value*******************/////
+	 
+	 private function setSendParameters():Object {
+			
+			var parameters:Object=new Object();					
+ 			parameters.name=userForename.text;
+ 			parameters.userSurname=userSurname.text;
+ 			parameters.userEmail=userEmail.text;
+ 			parameters.defaultSearchID=comboDefaultSearch.value;
+ 			parameters.tableName='users';
+ 			parameters.action='Edit';
+ 			parameters.id=	userLoginInfo['userID'];
+ 			parameters.userID=	userLoginInfo['userID'];
+ 			parameters.timestamp=	userLoginInfo['userTimestamp'];
+ 			if(forceChangeUserPassword){//if users.changed_password field is set
+ 				parameters.changedPasswordSettings='reset';//we need to reset thsi field now
+ 				//forceChangeUserPassword=false;
+ 			}
+ 			else
+ 				parameters.changedPasswordSettings='';//default case
+ 			
+ 			if(ckChangePassword.selected){
+ 				parameters.changePassword='yes';
+ 				parameters.newPassword=MD5.encrypt(userNewPassword.text);
+ 			}
+ 			else
+ 				parameters.changePassword='no';
+ 				
+ 			if(ckWarningOnOff.selected){
+ 				parameters.userIncompleteWarning='Yes';
+ 			}
+ 			else
+ 				parameters.userIncompleteWarning='No';
+ 		//Alert.show('SET senddata USer');		
+			return parameters;			
+		}
+	 
+	 private function sendData():void{ 	
+	 	
+	 		userRequestSaveUserInfo.useProxy = false;
+           	userRequestSaveUserInfo.url	=	getPath()	+	"requestSaveAdmin.php";
+            userRequestSaveUserInfo.send(setSendParameters()); 
+            clearChangePasswordInterfaces();
+            viewMode();	 	
+	 }
+	 
+	 private function checkDBValues():void{ 	
+	 		
+	 		 var parameters:Object=new Object();	
+	 		 parameters.userID=userLoginInfo['userID'];
+	 		 parameters.requester='checkPassword';
+	 		 parameters.oldPassword=MD5.encrypt(userOldPassword.text);
+	 		 userRequestCheckDB.useProxy = false;
+           	 userRequestCheckDB.url	=	getPath()	+	"requestCheckDb.php";
+           	 if(userOldPassword.text!='')
+           	 {
+           	 	searching=true;
+             	userRequestCheckDB.send(parameters); 
+             }         	 	
+	 }
+
+	 private function handleDBResult(event:ResultEvent):void{
+	 	
+	 	searching=false;
+	 	if(userRequestCheckDB.lastResult.userName==userName){
+	 		userNewPassword.enabled=true;
+	 		userConfirmPassword.enabled=true;	 		
+	 	}
+	 	else{
+	 		userNewPassword.enabled=false;
+	 		userConfirmPassword.enabled=false;
+	 		userNewPassword.text='';
+	 		userConfirmPassword.text='';
+	 		userOldPassword.text='';
+	 		Alert.show("Invalid username/password for "+userName+"\n"+"Please enter VALID username/password");
+	 	}	
+	 	this.focusManager.setFocus(userNewPassword);	
+	 }
+	 
+	 private function checkConfirmPassword():void{
+	 
+	 	if(userNewPassword.text!='')	
+		 	if(userNewPassword.text==userConfirmPassword.text)
+		 		checkValid();
+		 	else{
+		 		Alert.show("New passwords do not match");
+		 		userNewPassword.text = '';
+		 		userConfirmPassword.text = '';
+		 		this.focusManager.setFocus(userNewPassword);
+		 		saveEnabled=false;
+		 	}	 	
+	 }
+	 
+	 private function clearChangePasswordInterfaces():void{
+	 	
+      		saveEnabled =	false;
+      		editEnabled =false;
+      		
+         	ckChangePassword.selected=false;          	
+          	userNewPassword.enabled=false;
+	 		userConfirmPassword.enabled=false;
+	 		userNewPassword.text='';
+	 		userConfirmPassword.text='';
+	 		userOldPassword.text='';
+	 		lbl1.visible=false;
+	 		lbl2.visible=false;
+	 		lbl3.visible=false;
+	 		userOldPassword.visible=false;          	
+          	userNewPassword.visible=false;
+	 		userConfirmPassword.visible=false;
+     }
+         
+     private function resetChangePasswordInterfaces():void{
+     	
+     		saveEnabled =	false;
+     		     		
+     		userNewPassword.text='';
+	 		userConfirmPassword.text='';
+	 		userOldPassword.text='';
+     		lbl1.visible=true;
+	 		lbl2.visible=true;
+	 		lbl3.visible=true;
+	 		userOldPassword.visible=true;          	
+          	userNewPassword.visible=true;
+	 		userConfirmPassword.visible=true;
+	 		this.focusManager.setFocus(userOldPassword); 
+        	this.focusManager.getFocus().drawFocus(true);
+        	//trace("reset: "+this.focusManager.getFocus());	 		
+     }	
+     
+	 private function editMode():void{
+	 	
+	 	cancelEnabled=true;
+	 	checkValid();
+	 	fieldsEditable= true;
+	 	editEnabled=false;
+	 	this.focusManager.setFocus(userForename); 
+        this.focusManager.getFocus().drawFocus(true);
+	 }
+	 
+	 private function viewMode():void{
+	 	
+	 	fieldsEditable= false;
+	 	clearChangePasswordInterfaces();
+		editEnabled=true;
+	 	cancelEnabled=false;	 	
+	 }
+	 
+	 private function deleteTemporaryFiles(userID:int):void{
+  		
+  		var parameters:Object=new Object();	
+	 	parameters.userID=userID;	 		
+	 	logoutService.useProxy = false;
+	 	logoutService.url	=	getPath()	+	"removeDirectory.php";          	 	
+      	logoutService.send(parameters);	     	
+     }
+
+     private function activate():void{
+       	//trace("main activate ("+portals.selectedIndex+", "+currentIndex+")");
+       	//parentApplication.refreshListTab();
+     }
+       
+     private function itemclick():void{
+       	//trace("main itemclick ("+portals.selectedIndex+", "+currentIndex+")");
+       	//refreshListTab();
+     }
+       
+     private function render():void{
+     	
+     	if (!isLoggedIn()) {
+       		portals.selectedIndex = 0;
+       		currentIndex = 0;
+       	}       	
+       	if (currentIndex == portals.selectedIndex) return;
+       	currentIndex = portals.selectedIndex;
+       	
+       	trace("main render ("+portals.selectedIndex+", "+currentIndex+")");
+       	toggle();
+       	
+        //trace("main render: "+initialised);
+       	if (initialised) {
+       		refreshListTab();
+       	}	
+     }
+
+     private function doSort():void{
+     	
+     	//this.focusManager.setFocus( searchResult );
+       	var selectedIndex:int = searchResult.selectedIndex;
+       	var selectedObject:Object = searchResult.selectedItem;
+       	trace("before sort: "+searchResult.selectedItem+" at "+searchResult.selectedIndex);
+        sortDataGrid(searchResult);
+        searchResult.selectedIndex = selectedIndex;
+        searchResult.selectedItem = selectedObject;
+        trace("after sort: "+searchResult.selectedItem+" at "+searchResult.selectedIndex);
+        if (searchResult.selectedIndex > -1) searchResult.scrollToIndex(searchResult.selectedIndex);;
+        if (searchResult.visible) {
+        	this.focusManager.setFocus( searchResult );
+        	this.focusManager.getFocus().drawFocus(true);
+        }
+     }
+
+	 //opening email-Client for sending emails
+	 public function goToEmail(emailStr:String):void {
+         
+         if((emailStr!='')&&(appMode == "View")){
+	        //see http://livedocs.macromedia.com/flex/2/langref/flash/net/URLRequest.html
+	     	var emailURL:URLRequest = new URLRequest("mailto:" + emailStr );
+		        
+		    //see: http://livedocs.macromedia.com/flex/2/langref/flash/net/package.html#navigateToURL()
+		    // navigateToURL(emailURL);     
+		    navigateToURL(emailURL);
+		 }
+     }//end goToEmail
+                    
+	 public function CheckValidEmail(objEmail:Object):Boolean {	
+	 	
+	 	objEmail.errorString = "";	 
+	 	if (objEmail.text == '') return true;
+	 	
+	 	var emailValidator:EmailValidator;	    
+	 	emailValidator = new EmailValidator();	    
+	 	var arr:Array = EmailValidator.validateEmail(emailValidator, objEmail.text, "text");	    
+	 	var obj:ValidationResult;	    
+	 	if (arr.length > 0) {	        
+	 		obj = arr[0] as ValidationResult;	        
+	 		objEmail.errorString = obj.errorMessage;	
+	 		return false;	    
+	 	} else {
+	 		return true;    
+	 	}    
+	}	
+	
+	public function CheckValidDate(objDate:Object):Boolean {	
+		
+		//trace("start: "+objDate.text + ": " + objDate.errorString);	 	
+		objDate.errorString = "";
+			 
+		if (objDate.text == '') return true;
+			 	
+		var dValidator:DateValidator;	    
+		dValidator = new DateValidator();
+		dValidator.inputFormat=appDateFormat;
+		dValidator.allowedFormatChars = "/";	    
+		var arr:Array = DateValidator.validateDate(dValidator,objDate.text,"text");
+
+		var obj:ValidationResult;	    
+		if (arr.length > 0) {	        
+			obj = arr[0] as ValidationResult;	        
+			objDate.errorString = obj.errorMessage;	
+			//trace("false: " + objDate.text + ": " + objDate.errorString);
+			return false;	    
+		}
+		else {
+			//trace("true: " + objDate.text + ": " + objDate.errorString);
+			return true;    
+		}    
+	}
+	  		
+	public function checkValidFields(TextObject:ArrayCollection):String{
+		
+		var alertMessage:String='';
+		
+		if(TextObject)//check to see if calle has send data in this arrayCollection		
+        	for(var count:int = 0; count < TextObject.length; count++){
+				var fieldObject:Object=TextObject.getItemAt(count).data;
+			
+        		if(invalidChars(fieldObject.text)){
+        		 	// invalid chars
+        			alertMessage += TextObject.getItemAt(count).label+'\n';		 
+        		}       		 
+        	}
+        
+        if (alertMessage != '') {
+        	alertMessage = "Remove invalid characters (<,>) from \n"+alertMessage;
+        }
+        	
+		return alertMessage;//if no invalid characters then alertMessage will be empty
+	}
+	
+	public function invalidChars(inputString:String):Boolean {
+		
+		var ltPos:int = inputString.indexOf("<"); 
+		var gtPos:int = inputString.indexOf(">");
+			
+        //return((ltPos != -1)||(gtPos!=-1)); //figured out how to escape these
+        return false;
+	}	
+	 
+	public function isStaff(nameID:String):Boolean{
+  	 	
+  	 	for(var i:int=0;i<arrInfStaff.length;i++){
+  	 
+  	 		if(arrInfStaff[i]==nameID){
+  	 			return true;
+  	 		}
+  	 	}
+
+  	 	return false;	
+  	}
+
+  	public function getRelativeStaff(relativeID:String):String{
+  		
+  	 	return arrRelativeInfStaff[relativeID];
+  	}	  
+
+	private function checkValid():void {
+			 
+	 	saveEnabled = CheckValidEmail(userEmail) && (userEmail.text != '');
+	 	if (ckChangePassword.selected || forceChangeUserPassword) { // additional checks if changing password
+			if (userOldPassword.text == '') saveEnabled = false;
+			if (userNewPassword.text == '') saveEnabled = false;
+			if (userConfirmPassword.text == '') saveEnabled = false;
+			if(userNewPassword.text!=userConfirmPassword.text) {
+				saveEnabled = false;
+				userConfirmPassword.errorString = "Passwords don't match";
+			}
+			else {
+				userConfirmPassword.errorString = "";
+			}
+	 	}
+	}	 	
+						
+  		public function copyCell(event:ListEvent, dg:DataGrid):void {
+
+			var cellStr:String='';
+			var cols:int=dg.columnCount;
+			var column:DataGridColumn;
+			var columns:Array = dg.columns;
+			var targetCol:int=0;
+			
+			// select row
+			var item:Object = dg.dataProvider[event.rowIndex];
+			
+			trace("copy Cell: "+ctrlKeyPressed);
+			if (!ctrlKeyPressed) return;
+			ctrlKeyPressed = false;
+			
+			//now parse through each column so as to avoid selecting the invisible column data	
+			for(var t:Number=0;t<cols;t++){
+				column = columns[t]
+				if(!column.visible)
+				{
+					continue;
+				}
+				if(targetCol==event.columnIndex){
+					cellStr = item[dg.columns[t].dataField]; 
+					if (cellStr != null) {
+						System.setClipboard(cellStr);
+						Alert.show("'"+cellStr+"' copied to clipboard");
+					}
+					return;
+				}
+				targetCol++;
+			}		
+		}
+		
+  		public function copyRow(event:ListEvent, dg:DataGrid):void{				
+	
+			var dgRowData:String='';
+			var cols:int=dg.columnCount;
+			var column:DataGridColumn;
+			var columns:Array = dg.columns;
+			
+			// select row
+			var item:Object = dg.dataProvider[event.rowIndex];
+			
+			trace("copy Row: "+shiftKeyPressed);
+			if (!shiftKeyPressed) return;
+			shiftKeyPressed = false;
+						
+			for(var t:Number=0;t<cols;t++){
+				column = columns[t]
+				if(!column.visible)
+				{
+					continue;
+				}
+				dgRowData += item[dg.columns[t].dataField] + "\t";
+			}
+			dgRowData += "\n";
+		
+			System.setClipboard(dgRowData);
+			Alert.show('Selected row copied to clipboard');
+		}
+
+  		private function dgItemClick(event:ListEvent):void {
+		
+			//trace("item click: "+event.type+" + "+searchResult.selectedIndex+" : "+storeIndex);	
+			trace("click: shift key up: "+shiftKeyPressed+" ctrl key up: "+ctrlKeyPressed);
+			if ((!shiftKeyPressed) && (!ctrlKeyPressed)) {
+				toggleExpandedSearchList(true);
+			}
+			else dgDoubleClick(event);
+		}
+						  		
+  		private function dgDoubleClick(event:ListEvent):void {
+		
+			// list event doesn't have state of shift/ctrl keys so take from previous single-click mouse event
+			if ((!shiftKeyPressed) && (!ctrlKeyPressed)) return;
+			
+			trace("double click: "+event.type+" : "+storeIndex);	
+			// Get the target of this event (Datagrid)
+			var myGrid:DataGrid = event.target as DataGrid;
+			
+			copyRow(event, myGrid);
+			copyCell(event, myGrid);
+
+			searchResult.selectedIndex = storeIndex;	
+			//trace("double click: "+searchResult.selectedIndex);				
+		}
+
+	 	public function processSearchResult(provider:Object,dgColumns:String,txtLimit:String,targetID:int):void {
+
+           	var noOfRecords:int;
+            
+            searching=false;
+            searchResult.dataProvider=provider;
+            noOfRecords	= searchResult.dataProvider.length;
+            
+            if (limited)
+				acSideMenu.selectedIndex	=	0; //switch back to login tab (search disabled)
+				
+            if (noOfRecords > 0) {
+            //Now initialise for oredring the fields in datagrid as per the search order
+		 		assignDgColumnOrder(dgColumns,searchResult);
+    
+            	//the following statement is made so as to avoid visual distortion in datagrid's header : unknown bug occurs sometings and doesnot occurs sometimes
+				searchResult.height = expandedSearchListHeight;	
+			}		   			
+
+            txtNoOfRecords.text	= noOfRecords.toString(); 
+            txtNoOfRecords.enabled = (noOfRecords.toString() != txtLimit);
+            
+            var lastColumn:int = searchResult.columns.length;
+            
+            for(var col:uint=0;col<lastColumn;col++) {
+            	if(searchResult.columns[col].dataField.substring(0,3)=="zzz") {
+            		searchResult.columns[col].visible = false; //hide id column
+            	}
+            }
+            
+            setRecord(targetID,true,dgColumns);
+	 	}
+
+		private function updateDashboardSearches():void{
+			//Alert.show(comboQuery1.value+' : '+ comboQuery1.text);
+			searching=true;
+			
+			var parameters:Object=new Object();	
+	 		parameters.requester='dashboardSearchUpdate';	
+	 		parameters.userID = getCurrentUserID();
+	 		parameters.search1= comboQuery1.value;
+	 		parameters.search2= comboQuery2.value;		
+	 		parameters.search3= comboQuery3.value;
+	 		parameters.search4= comboQuery4.value;
+	 		requestUpdateDashboard.useProxy = false;
+	 		requestUpdateDashboard.url	=	getPath()	+	"requestCheckDb.php";          	 	
+      		requestUpdateDashboard.send(parameters);	     	
+		}
+		
+		private function dashboardResult(event:Event):void{
+				
+			searching=false;
+			
+			switch(requestUpdateDashboard.lastResult.rootTag.requester){
+			
+				case 'dashboardSearchUpdate':
+				
+					txtDashBoardMsg.text = requestUpdateDashboard.lastResult.rootTag.statusMsg;
+					if(requestUpdateDashboard.lastResult.rootTag.status=='success')
+						txtDashBoardMsg.enabled=true;
+					else	
+						txtDashBoardMsg.enabled=false;						
+				break;	
+				
+				case 'getPassportPhotos':
+						
+					var targetFile:String = requestUpdateDashboard.lastResult.rootTag.fileName;
+					navigateToURL(new URLRequest(downloadFile(targetFile)));						
+					//navigateToURL(new URLRequest(targetFile),'downloadPhotos');
+				break;
+				
+				default:
+					var errorMessage:String = requestUpdateDashboard.lastResult.rootTag.error;
+					Alert.show(errorMessage, "Error");
+				break;
+			}			
+		}
+
+		private function getCurrentIDList():String {
+			
+			var list:String = '';
+			for (var i:int=0; i < searchResult.dataProvider.length; i++) {
+				list = list + searchResult.dataProvider[i].zzzid +",";
+			}
+			if (list.length > 0) list = list.slice(0,list.length-1); //get rid of trauling comma
+			return list;
+		}
+				
+		private function downloadPhotos():void{
+			
+			searching = true;
+			
+			var parameters:Object=new Object();	
+			parameters.userID = getCurrentUserID();
+	 		parameters.userIDList = getCurrentIDList();	
+	 		//parameters.requester = 'getPassportPhotos';
+	 		requestUpdateDashboard.useProxy = false;
+	 		requestUpdateDashboard.url	=	getPath()	+	"getPassportPhotos.php";          	 	
+      		requestUpdateDashboard.send(parameters);
+		}
+
+		public function getFileExtension(fileName:String):String{
+			
+			if (fileName == null) return '';
+			if (fileName == '') return '';
+			var fileSplit:Array = fileName.split('.');
+			return fileSplit.pop().toLowerCase();			
+		}
+		
+		public function getLinkFileName(fileLink:String):String{
+			
+			if (fileLink == null) return '';
+			if (fileLink == '') return '';
+			
+			var fileInfo:Array	 =	fileLink.split('/');	 		 
+ 		 	var fileName:String =  fileInfo.pop();
+ 		 	if (fileName.indexOf("requestDownload") > -1) { //already in correct form
+ 		 		fileInfo = fileName.split('file=');
+ 		 		fileName = fileInfo.pop();
+ 		 	}
+ 		 	return fileName;
+		}
+		
+		public function downloadFile(fileLink:String,type:String='file'):String{			
+			 
+			if (fileLink == null) return '';
+			if (fileLink == '') return '';
+
+			var personID:String = getCurrentUserID();
+			if (type != 'file') personID = getCurrentID();
+			
+ 		 	var fileName:String = getLinkFileName(fileLink);
+ 		 	if (fileName == '') return '';
+ 		 	var filePath:String = getPath()+"requestDownload.php?type="+type+'&person='+personID+"&tab="+getTabTableName()+'&file='+fileName;   
+			return filePath;
+		}
+			
+	]]>	    
+	</mx:Script>
+		
+	<mx:Panel id="panelSideBar" x="0" y="0" minWidth="250" width="25%" minHeight="570" height="100%" layout="absolute" backgroundColor="{lightBackgroundColour}" enabled="{panelEnabled}" tabIndex="1" title="INF Database" fontWeight="bold" fontSize="16" color="{brightTextColour}" textAlign="center" fontFamily="Arial">
+	
+		<mx:Accordion id="acSideMenu" y="0" width="100%" minHeight="485" height="85%" x="0"  click="selectDisplayLayout(acSideMenu.selectedIndex)" selectedIndex="0" tabIndex="1">
+		
+		<!-- Login window -->
+			<mx:Canvas width="100%" height="100%" defaultButton="{btnLoginOK}" label="Login" backgroundColor="{lightBackgroundColour}" tabIndex="2">
+
+				<mx:Button x="15" y="6" icon="@Embed(source='../files/images/logoff.jpeg')"   id="logoff" width="40" visible="{loggedIn}" click="logOut('User logged out')" height="21" tabIndex="2"/>
+				
+				<mx:Label x="10" y="34" text="User Name:" width="80" fontWeight="bold" visible="{!loggedIn}" color="{mandatoryLabelColour}"/>
+				<mx:TextInput x="90" id="loginUserName" y="34" width="130" visible="{!loggedIn}" tabIndex="2" change="{checkLoginOK()}"/>
+				
+				<mx:Label x="10" y="58" text="Password:" width="80" fontWeight="bold" visible="{!loggedIn}" color="{mandatoryLabelColour}"/>				
+				<mx:TextInput x="90" id="loginPassword" displayAsPassword="true" y="58" width="130" visible="{!loggedIn}" tabIndex="2" change="{checkLoginOK()}"/>
+				
+				<mx:Button id="btnLoginOK" enabled="{enableLoginOK}" x="20" y="90" icon="@Embed(source='../files/images/ok.gif')" click="sendLoginDetails()" width="65" visible="{!loggedIn}" tabIndex="2"  label="OK" labelPlacement="left" disabledIcon="@Embed(source='../files/images/disabled_ok.gif')"/>
+				<mx:Button id="btnLoginCancel" x="90" y="90" icon="@Embed(source='../files/images/cancel.gif')" width="65" click="emptyText()" visible="{!loggedIn}" tabIndex="2" label="Cancel" labelPlacement="left" />
+				<mx:TextInput x="10" y="120" width="210" id="loginFailedText" editable="false" backgroundColor="{lightBackgroundColour}" borderStyle="none" color="{brightTextColour}" paddingLeft="15" visible="{!loggedIn}" tabIndex="2"/>
+				
+				<mx:Label x="10" y="34" text="Forename:" width="80" fontWeight="bold" visible="{loggedIn}"/>				
+				<mx:TextInput x="90" y="34" width="130" visible="{loggedIn}" id="userForename" enabled="{fieldsEditable}" tabIndex="2" maxChars="50" toolTip="50 chars"/>
+				
+				<mx:Label x="10" y="58" text="Surname:" width="80" fontWeight="bold" visible="{loggedIn}"/>
+				<mx:TextInput x="90" y="58" width="130" visible="{loggedIn}" id="userSurname" enabled="{fieldsEditable}" tabIndex="2" maxChars="50" toolTip="50 chars"/>
+				
+				<mx:Label x="10" y="82" text="Email:" width="80" fontWeight="bold" visible="{loggedIn}" color="{mandatoryLabelColour}"/>
+				<mx:TextInput x="90" y="82" width="130" visible="{loggedIn}" id="userEmail" change="checkValid()" enabled="{fieldsEditable}" tabIndex="2"  maxChars="100" toolTip="100 chars (double-click to send email)" doubleClick="goToEmail(userEmail.text)" doubleClickEnabled="true"/>
+
+				<mx:Label x="10" y="110" text="Search:" width="80" fontWeight="bold" visible="{!limited}"/>
+				<packages:ComboBoxNew id="comboDefaultSearch"  width="130" x="90" y="110" height="20" enabled="{fieldsEditable}" tabIndex="2" visible="{!limited}" toolTip="Select a default search"/>
+
+				<mx:CheckBox x="10" y="135" label="Warning For Incomplete Data" enabled="{fieldsEditable}" id="ckWarningOnOff" fontWeight="bold" visible="{loggedIn}" tabIndex="2"/>
+				
+				<mx:CheckBox x="10" y="156" label="Change Password" visible="{loggedIn}" id="ckChangePassword" click="{if(ckChangePassword.selected) resetChangePasswordInterfaces(); else{ clearChangePasswordInterfaces();checkValid();}}" enabled="{fieldsEditable}" tabIndex="2"/>
+				
+				<mx:Label x="20" y="180" text="Current Password:" color="{mandatoryLabelColour}" width="200" fontWeight="bold" id="lbl1" visible="false"/>
+				<mx:TextInput x="20" displayAsPassword="true" y="204" width="140" id="userOldPassword" focusOut="checkDBValues()" visible="false" tabIndex="2"  maxChars="50" toolTip="50 chars"/>
+				
+				<mx:Label x="20" y="228" text="New Password:" color="{mandatoryLabelColour}" width="200" fontWeight="bold" id="lbl2" visible="false"/>
+				<mx:TextInput x="20" displayAsPassword="true" y="252" width="140" id="userNewPassword" enabled="false" change="checkValid()" visible="false" tabIndex="2"  maxChars="50" toolTip="50 chars"/>
+				
+				<mx:Label x="20" y="276" text="Confirm Password:" color="{mandatoryLabelColour}" width="200" fontWeight="bold" id="lbl3" visible="false"/>
+				<mx:TextInput x="20" displayAsPassword="true" y="300" width="140" id="userConfirmPassword" enabled="false" change="checkValid()" visible="false" tabIndex="2"  maxChars="50" toolTip="50 chars"/>
+
+				<mx:Label x="5" y="324" text="Changes take effect only after relogin" width="200" enabled="false"/>
+				
+				<mx:Button x="5" y="350" id="btnEdit" icon="@Embed(source='../files/images/edit.gif')" label="Edit" labelPlacement="left"  width="70" height="25" visible="{loggedIn}" enabled="{editEnabled}" click="editMode()" tabIndex="2">
+					<mx:disabledIcon>@Embed(source='../files/images/editDisabled.gif')</mx:disabledIcon>
+				</mx:Button>
+				
+				<mx:Button id="btnOk"  icon="@Embed(source='../files/images/save1.gif')" label="Save" labelPlacement="left" x="80" y="350" width="70" height="25" visible="{loggedIn}" click="sendData()" enabled="{saveEnabled}" tabIndex="2">
+					<mx:disabledIcon>@Embed(source='../files/images/saveDisabled.gif')</mx:disabledIcon>
+				</mx:Button>
+				
+				<mx:Button id="btnCancel" icon="@Embed(source='../files/images/cancel.gif')" label="Cancel" labelPlacement="left" x="155" y="350" width="70" height="25" visible="{loggedIn}" enabled="{cancelEnabled}" click="resetUserDetails(),viewMode()" tabIndex="2">
+					<mx:disabledIcon>@Embed(source='../files/images/cancelDisabled.gif')</mx:disabledIcon>
+				</mx:Button>
+				
+			</mx:Canvas>
+		<!--end  login window-->
+
+		<!--search window-->
+			<mx:Canvas label="Search" enabled="{loggedIn}" width="100%" height="100%" backgroundColor="{lightBackgroundColour}" tabIndex="3">			
+				<maincomp:search id="search" width="100%" height="100%" borderStyle="none" tabIndex="3"/>
+			</mx:Canvas>
+		<!--end search window-->
+				
+			<mx:Canvas enabled="{loggedIn}" label="Reports" width="100%" height="100%" backgroundColor="{lightBackgroundColour}" show="{searchHistory.loadQueries();}" tabIndex="4">
+				<maincomp:searchHistory id="searchHistory" width="100%" height="100%" borderStyle="none" />
+			</mx:Canvas>
+			
+		<!-- Admin Section -->
+			<mx:Canvas enabled="{loggedIn}" label="Admin" width="100%" height="100%" backgroundColor="{lightBackgroundColour}" tabIndex="5"  id="adminCanvas">			
+				<mx:Tree id="tree1" creationComplete="treeComplete()"  dataProvider="{treeDataPersonnel}" labelField="@label"  click="createPanel(event)" showRoot="false" x="10" y="10" width="100%" height="100%" tabIndex="5"/>					
+			</mx:Canvas>
+		<!-- end of admin section -->		
+
+			<mx:Canvas enabled="{loggedIn}" label="Help" width="100%" height="100%" backgroundColor="{lightBackgroundColour}" tabIndex="6"/>
+				
+		</mx:Accordion> 	
+		
+		<mx:TextArea x="0" y="{acSideMenu.height+5}" height="20" width="100%" id="currentText" backgroundColor="{lightBackgroundColour}" editable="false" tabEnabled="false">
+			<mx:text>{versionText}</mx:text>
+		</mx:TextArea>		
+		
+	</mx:Panel>
+		
+	<mx:Panel id="panelMain" x="{panelSideBar.width - 8}" y="-30" minWidth="762" width="75%" minHeight="600" height="{panelSideBar.height+30}" layout="absolute" backgroundColor="{lightBackgroundColour}" tabIndex="7">
+		
+		<mx:TabBar x="3" y="0" id="mainTab" visible="false" dataProvider="portals" minWidth="600" width="80%" itemClick="itemclick()" activate="activate()" render="render()" tabIndex="8" />
+
+		<mx:ViewStack id="loginDisplay"  visible="true" width="100%" height="100%" x="0" y="0" tabIndex="11">
+			<maincomp:iniscr id="initscreen" enabled="{initEnabled}" label="Login Window" width="100%"  height="100%" tabIndex="11"/>
+		</mx:ViewStack>
+		
+		<mx:ViewStack id="portals" visible = "false" width="100%" height="100%" x="0" y="147" tabIndex="11" historyManagementEnabled="true">			
+
+			<maincomp:dashboard id="dashboard" enabled="{dashEnabled}" label="Home" width="100%"  height="100%" tabIndex="11"/>			
+			<maincomp:biodatas id="biodatas"   enabled="{bioEnabled}" label="Biodata" width="100%"  height="100%" tabIndex="11"/>
+			<maincomp:app id="app"  label="Applications" enabled="{appEnabled}" width="100%"  height="100%" tabIndex="11"/>
+			<maincomp:test id="tests" label="Service" enabled="{servEnabled}" width="100%"  height="100%" tabIndex="11"/>
+			<maincomp:patients id="patient" label="Patient" enabled="{patientEnabled}" width="100%"  height="100%" tabIndex="11"/>
+			<maincomp:staff id="staff" label="Health Staff" enabled="{staffEnabled}" width="100%"  height="100%" tabIndex="11"/>
+
+		</mx:ViewStack>
+		
+		<mx:ViewStack id="adminDisplay"  visible="false" width="100%" height="100%" x="0" y="0" tabIndex="12">
+			<maincomp:_admin id="_admin"  label="Admin" width="100%"  height="100%" tabIndex="12"/>
+		</mx:ViewStack>
+		
+		<packages:DataGridNew id="searchResultDuplicate"  x="10" y="53"  width="90%"  minWidth="700" height="{expandedSearchListHeight}" visible="false" tabIndex="9"/>
+
+		<mx:Label x="10" y="30" id="dashTitle" text="" width="350" height="28" visible="{dashVisible}" tabIndex="9" fontWeight="bold" textAlign="left"/>
+		<mx:Label x="360" y="30" id="dashTime" text="" width="350" height="28" visible="{dashVisible}" tabIndex="9" fontWeight="bold" textAlign="right"/>
+		<mx:Label x="10" y="60" id="dashStatus" text="" width="350" height="28" visible="{dashVisible}" tabIndex="9" fontWeight="bold" textAlign="left"/>
+	    
+		<mx:FormItem label="Select first query:" x="10" y="90" width="120" visible="{dashVisible}" tabIndex="9" />
+		<packages:ComboBoxNew id="comboQuery1" width="200" x="140" y="87" enabled="true" visible="{dashVisible}" tabIndex="9" />
+		<mx:FormItem label="Select second query:" x="10" y="120" width="120" visible="{dashVisible}" tabIndex="9" />
+		<packages:ComboBoxNew id="comboQuery2" width="200" x="140" y="117" enabled="true" visible="{dashVisible}" tabIndex="9" />
+		<mx:FormItem label="Select third query:" x="350" y="90" width="120" visible="{dashVisible}" tabIndex="9" />
+		<packages:ComboBoxNew id="comboQuery3" width="200" x="490" y="87" enabled="true" visible="{dashVisible}" tabIndex="9" />
+		<mx:FormItem label="Select fourth query:" x="350" y="120" width="120" visible="{dashVisible}" tabIndex="9" />
+		<packages:ComboBoxNew id="comboQuery4" width="200" x="490" y="117" enabled="true" visible="{dashVisible}" tabIndex="9" />
+		<mx:Button  id="setAsDefaultSearches" icon="@Embed(source='../files/images/save1.gif')"  x="709" y="87" width="22" height="22" visible="{dashVisible}" toolTip="Save as default" click="updateDashboardSearches()" tabIndex="9"/>
+		<mx:Label x="360" y="60" width="350" height="28" id="txtDashBoardMsg" visible="{dashVisible}" enabled="false" disabledColor="{statusDisabledColour}"/>
+				
+		<packages:DataGridNew id="searchResult" x="10" y="23" itemClick="dgItemClick(event)" minWidth="700" width="90%" visible="{searchVisible}" height="{expandedSearchListHeight}" enabled="{panelEnabled}" keyDown="moveTo(event)" updateComplete="isRecord()" textAlign="left" liveScrolling="true" tabIndex="9" itemDoubleClick="dgDoubleClick(event)" doubleClickEnabled="false">		
+			<!--mx:DataGridColumn headerText="id" visible="false" dataField="__id" id="searchID" width="2" /-->
+		</packages:DataGridNew> 
+		
+		<mx:Button id="toggleSearchResultHeight" x="{searchResult.width+11}" y="23" width="22" height="22" click="toggleExpandedSearchList()" visible="{searchVisible}" toolTip="Toggle expanded list (CTRL + X)" tabIndex="10" icon="@Embed(source='../files/images/toggle.gif')" enabled="{loggedIn}"/>
+		<mx:Button  icon="@Embed(source='../files/images/copy.gif')" id="copySearchResultToClipboard" x="{searchResult.width+11}" y="46" width="22" height="22" visible="{searchVisible}" click="DataGridDataExporter.exportCSV (searchResult)" toolTip="Copy table data to clipboard (CTRL + C)" tabIndex="10" enabled="{loggedIn}"/>
+		<mx:Button  icon="@Embed(source='../files/images/printer.gif')"  x="{searchResult.width+11}" y="69" id="printDG" visible="{searchVisible}" width="22" click="doPrint(searchResult)" height="22" toolTip="Print table data (CTRL + P)" tabIndex="10" enabled="{loggedIn}"/>
+		<mx:Button  icon="@Embed(source='../files/images/sort.gif')"  x="{searchResult.width+11}" y="92" id="sortDG"   width="22" click="doSort()" height="22" visible="{searchVisible}" toolTip="Sort first four columns  (CTRL + S)" tabIndex="10" enabled="{loggedIn}"/>
+	
+		<mx:Label x="{mainTab.width+95}" y="3" width="40" height="16"  id="txtNoOfRecords" disabledColor="{statusDisabledColour}" visible="{searchVisible}" fontSize="9" tabEnabled="false"/>
+		<mx:FormHeading x="{mainTab.width+11}" y="3" label="No Of Records:" id="lblNoOfRecords" fontSize="9" visible="{searchVisible}"  width="85" textAlign="left" tabEnabled="false"/>
+		<mx:Button x="{searchResult.width+11}" y="115" icon="@Embed(source='../files/images/download.png')" width="22" height="22" id="picIcon" visible="{searchVisible}" toolTip="Download photos for ID cards" tabEnabled="false"  click="downloadPhotos()"/>	
+		<mx:Button x="{searchResult.width+11}" y="138" icon="@Embed(source='../files/images/relationship.gif')" disabledIcon="@Embed(source='../files/images/relationshipDisabled.gif')" width="22" height="22" id="relIcon" visible="{relativeMode}" enabled="{relativeToggleEnabled}" toolTip="Relative mode" tabEnabled="false" scaleX="0.75" scaleY="0.75" click="biodatas.general.toggleRelativeMode()"/>
+	</mx:Panel>
+	
+	<mx:Button x="2" y="2" icon="@Embed(source='../files/images/busy.gif')" width="35" height="27" id="searchingIcon"  toolTip="Search query processing" tabEnabled="false" enabled="false" visible="{searching}"/>
+	<mx:Image id="gifIm" x="10" y="2"  visible="{searching}"/>
+	
+	<mx:HTTPService id="userRequestType" method="POST" fault="defaultFault(event)" result="requestTypeResult(event)"/>
+	<mx:HTTPService id="userRequestName" method="POST" fault="defaultFault(event)" result="requestNameResult(event)"/>
+	<mx:HTTPService id="userRequestOtherName" method="POST" fault="defaultFault(event)" result="requestNameResult(event,true)"/>
+	<mx:HTTPService id="userRequestSaveUserInfo"  method="POST" result="userInfoResult(event)" fault="{defaultFault(event)}"/> 
+	<mx:HTTPService id="userRequestCheckDB"  method="POST" result="{handleDBResult(event)}" fault="{defaultFault(event)}"/>       
+
+	<mx:HTTPService id="loginService"  method="POST" resultFormat="text" result="{handleLogin(event)}" fault="{defaultFault(event)}"/>	
+	<mx:HTTPService id="logoutService"  method="POST" resultFormat="text" result="{defaultResult(event)}" fault="{defaultFault(event)}"/>	
+	<mx:HTTPService id="requestUpdateDashboard"  method="POST" result="{dashboardResult(event)}" fault="{defaultFault(event)}"/>	
+		
+	<mx:HTTPService id="searchUserRequest" method="POST" result="defaultResult(event)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="searchOtherUserRequest" method="POST" result="defaultResult(event,true)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="searchAdmin" method="POST" fault="defaultFault(event)" result="adminResult(event)"/>	
+	<mx:HTTPService id="searchOtherAdmin" method="POST" fault="defaultFault(event)" result="adminResult(event,true)"/>	
+	<mx:HTTPService id="requestFamilyDetails" method="POST" fault="defaultFault(event)" result="refreshListData(event)"/>
+	<mx:HTTPService id="requestOtherFamilyDetails" method="POST" fault="defaultFault(event)" result="refreshListData(event,true)"/>
+	<mx:HTTPService id="requestLoadQueries" method="POST" fault="defaultFault(event)" result="loadQueriesResult(event)"/>
+
+</mx:Application>

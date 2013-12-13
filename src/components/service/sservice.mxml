@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabServiceClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="INF Role:" x="10" y="12" width="67" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="86" y="9" id="comboServicePost" width="380" enabled="{inputEnabled}"  change="checkValid(comboServicePost)" doubleClickEnabled="true" doubleClick="displayPopUpPost('INF Role',true)" toolTip="Double-click for details"/>
+	<mx:Button x="476" y="9" label="+" width="32" height="22" click="displayPopUpPost('INF Role')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Grade:" x="10" y="36" width="67" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="86" y="33" id="comboServiceGrade" width="128" enabled="{inputEnabled}"  change="checkValid(comboServiceGrade)" doubleClickEnabled="true" doubleClick="displayPopUpGrade('Grade',true)" toolTip="Double-click for details"/>
+	<mx:Button x="224" y="33" label="+" width="32" height="22" click="displayPopUpGrade('Grade')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Location:" x="10" y="60" width="67" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="86" y="57" id="comboServiceLocation" width="128" enabled="{inputEnabled}"  change="checkValid(comboServiceLocation)" doubleClickEnabled="true" doubleClick="displayPopUpLocation('Location',true)" toolTip="Double-click for details"/>
+	<mx:Button x="224" y="57" label="+" width="32" height="22" click="displayPopUpLocation('Location')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	
+	<mx:FormItem label="Start Date:" x="10" y="84" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="123" y="81" id="dateServiceStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceStartDate),CheckSingleDateValidity(dateServiceStartDate)" editable="true"/>
+
+	<mx:FormItem label="End Date:" x="10" y="108" width="77"/>
+	<mx:DateField x="123" y="105" id="dateServiceEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceEndDate)" editable="true"/>
+
+	<mx:FormItem label="Working Week:" x="298" y="57" width="107"/>
+	<packages:ComboBoxNew x="415" y="54" width="93" id="comboServiceWorkingWeek" enabled="{inputEnabled}"></packages:ComboBoxNew>
+	
+	<mx:FormItem label="Percentage Time:" x="298" y="81" width="107"/>
+	<mx:TextInput x="415" y="78" width="93" maxChars="3" restrict="0123456789" id="numServicePercentageTime" enabled="{inputEnabled}" change="checkValid(numServicePercentageTime)" toolTip="integer from 0-100"/>
+	
+	<mx:FormItem label="Special Contract:" x="298" y="105" width="107"/>
+	<packages:ComboBoxNew x="415" y="102" width="93" id="comboServiceSpecialContract" enabled="{inputEnabled}"></packages:ComboBoxNew>
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Service" click="showAll()" enabled="{!inputEnabled}"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Service Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgList" x="10" y="156"	height="{defaultListHeight}" width="700" visible="true"		
+		keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="Start"  dataField="date_from" width="80" />	
+			<mx:DataGridColumn  headerText="End"  dataField="date_until" width="80" />							
+			<mx:DataGridColumn  headerText="Role" dataField="INF_role"  width="200"/>	
+			<mx:DataGridColumn  headerText="post_id" visible="false" dataField="post_id" width="30" />
+			<mx:DataGridColumn  headerText="Grade" dataField="grade"  width="100"/>	
+			<mx:DataGridColumn  headerText="grade_id" visible="false" dataField="grade_id" width="30" />
+			<mx:DataGridColumn  headerText="Location" dataField="location"  width="100"/>
+			<mx:DataGridColumn  headerText="location_id" visible="false" dataField="location_id" width="30" />
+			<mx:DataGridColumn  headerText="Week"  dataField="working_week" width="40"/>			
+			<mx:DataGridColumn  headerText="%"  dataField="percent_of_time" width="40"/>			
+			<mx:DataGridColumn  headerText="Special"  dataField="special_contract" width="40"/>
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>			
+			<mx:DataGridColumn  headerText="timestamp"  dataField="service_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+		
+</local:tabServiceClass>

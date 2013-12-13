@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DGIR_DynamicDP.mxml
+  DataGrid ComboBox ItemRender with Dynamic DataProvider for each row
+  Sample itemRenderer wrapper that uses "ComboBoxSelectedValue"
+  When the frame work calls commitProperties, we:
+    Set the dataProvider on the superclass:  this allows us to have different 
+      dataProviders on each row of the DataGrid. 
+    Set the selectedValue on the superclass: this causes the ComboBox selection
+      to sync with the current dataprovider item.
+  
+  Usage:
+  Important: set the DataGridColumn.editable="false". We handle the item update ourselves,
+    and this property can cause unexpected behaviors if true. 
+  dataField: must be set by the parent. Specifies which field in the dataProvied item contains the value
+  _sDropListSource: Field name should be hard-coded in this file.  
+    This value specifies which field in the main dataprovider item 
+    contains the array or collection that is to be the dataprovider for
+    the combobox drop down list.
+    1) For an array of simple values, leave this field blank.
+    2) For an array of arrays, specify the index into the array
+    3) for an array (or collection) of Objects, specify the name of the property
+-->
+<ComboBoxSelectedValue 
+    xmlns:mx="http://www.adobe.com/2006/mxml" 
+    xmlns="components.*"
+    editable="false"  
+    dropDownDataField="" 
+    initialize="init()" 
+    change="onChangeCBOSelection(event)"   width="50" arrowButtonWidth="0">
+    
+<mx:Script><![CDATA[
+  import mx.controls.dataGridClasses.DataGridListData
+ // import ComboBoxSelectedValue;
+  import components.ComboBoxSelectedValue;
+
+  private var _oItem:Object;                        //a reference to the dataProvider item
+  private var _dgListData:DataGridListData;         //contains dataField, rowIndex, and other info about the renderer'senvironment
+  private var _sDropListSource:String = "valuesArray"; //property in item that contains the dataProvider
+  private var _sDropDownDataField:String = "";      //property in the dropdown DATAPROVIDER that contains the value
+  private var _sDataField:String;                   //dataField for this column.  Gotten from listData
+
+
+  private function init():void  
+  {
+    this.dropDownDataField = _sDropDownDataField;  //NOT item dependent
+  }//init
+  
+  override public function set data(value:Object):void
+  {
+    //trace("DGIR..set data")
+    if(value != null)
+    {
+      super.data = value;
+      _dgListData = DataGridListData(listData);
+      _sDataField = _dgListData.dataField;
+      _oItem = value;
+      invalidateProperties();
+    }   
+  }//set data
+  
+  /** Override committ, this may be called repeatedly */
+  override protected function commitProperties():void
+  {
+    //trace("DGIR..commitProperties")
+    super.commitProperties();                        // invoke superclass call 
+    if (_oItem)  {
+      setDropListDataProvider();
+      setSelectedValue();
+    }
+    
+  }//commitProperties
+  
+  private function setDropListDataProvider():void
+  {
+    //trace("DGIR..setDropListDataProvider")
+    try {
+      this.dataProvider = _oItem[_sDropListSource];//works for array or coll in property, or childnodes of xml
+    }
+    catch  (error:Error)  {
+      //trace("dataProvider in field: " + _sDropListSource + " is invalid");
+    }
+    
+  }//setDropListDataProvider
+
+  private function setSelectedValue():void
+  {
+    //trace("DGIR..setSelectedValue")
+    this.selectedValue = _oItem[_sDataField];
+   
+  }//setSelectedValue
+  
+  private function onChangeCBOSelection(oEvent:Event):void
+  {
+    if (_sDropDownDataField.length > 0) {
+      _oItem[_sDataField] = oEvent.target.selectedItem[_sDropDownDataField];  // Get this item's data ??work for array???
+    }
+    else  {
+      _oItem[_sDataField] = oEvent.target.selectedItem;
+    } 
+    dispatchEvent(new Event("changeCBOValue",true));      //bubbling event for sample app
+  }//onChangeCBOSelection
+
+]]></mx:Script>
+
+</ComboBoxSelectedValue>
+

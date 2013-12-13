@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="744" height="414" themeColor="#A95C5C" initialize="loadData()" xmlns:packages="packages.*">
+
+	<mx:Script>
+	<![CDATA[
+		import mx.controls.dataGridClasses.DataGridColumn;
+
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import packages.DataGridDataExporter;
+		import mx.collections.ArrayCollection;
+		import mx.events.ListEvent;
+		import mx.controls.DataGrid;
+		
+		[Bindable]private var oneEnabled:Boolean = false;
+		[Bindable]private var twoEnabled:Boolean = false;
+		[Bindable]private var threeEnabled:Boolean = false;
+		[Bindable]private var fourEnabled:Boolean = false;
+		
+		[Bindable]private var defaultListHeight:uint = 200;
+		[Bindable]private var expandedListHeight:uint = 200;
+			
+		private function loadData():void {		
+		}
+
+		private function exportCSV(dgObject:DataGridNew):void{
+			
+			DataGridDataExporter.exportCSV (dgObject);
+		}
+
+		private function toggleExpandedList(dgObject:Object,forceSmall:Boolean=false):void{
+
+			if (forceSmall || (dgObject.height == expandedListHeight)){
+				dgObject.height = defaultListHeight;
+			}
+			else {
+ 				dgObject.height = expandedListHeight;
+	 		}	 			
+	 	}
+				
+		public function reloadQuery(whichQuery:uint,queryCombo:Object):void {
+			
+			if (queryCombo.selectedIndex == 0) {
+				
+				switch(whichQuery)
+        		{	       					
+        			case 1:
+        				dgList1.dataProvider = null;
+        				oneEnabled = false;
+        				//dgList1.showHeaders = false;
+        				toggleExpandedList(dgList1,true);
+        				break;
+        				
+        			case 2:
+        				dgList2.dataProvider = null;
+        				twoEnabled = false;
+        				//dgList2.showHeaders = false;
+        				toggleExpandedList(dgList2,true);
+        				break;
+        				
+        			case 3:
+        				dgList3.dataProvider = null;
+        				threeEnabled = false;
+        				//dgList3.showHeaders = false;
+        				toggleExpandedList(dgList3,true);
+        				break;
+        				
+        			case 4:
+        				dgList4.dataProvider = null;
+        				fourEnabled = false;
+        				//dgList4.showHeaders = false;
+        				toggleExpandedList(dgList4,true);
+        				break;
+        		}
+        		
+			}	
+			else {
+				
+				parentApplication.searching=true;	
+				var parameters:Object=new Object();  
+				parameters.queryID = queryCombo.value;
+				trace("combo"+whichQuery+" ("+queryCombo.selectedIndex+") "+ parameters.queryID);
+				
+				switch(whichQuery)
+        		{	       					
+        			case 1:
+        				dashSearch1.url	=	parentApplication.getPath()	+	"dash.php";
+        				dashSearch1.send(parameters); 
+        			break;
+        		
+        			case 2:
+        				dashSearch2.url	=	parentApplication.getPath()	+	"dash.php";
+        				dashSearch2.send(parameters); 
+        			break;
+        			
+        			case 3:
+        				dashSearch3.url	=	parentApplication.getPath()	+	"dash.php";
+        				dashSearch3.send(parameters); 
+        			break;
+        		
+        			case 4:
+        				dashSearch4.url	=	parentApplication.getPath()	+	"dash.php";
+        				dashSearch4.send(parameters); 
+        			break;
+        		}
+        		
+        	}  
+		}
+
+        ////***************default fault function***************////
+        private function defaultFault(event:FaultEvent):void {
+         	
+                var faultstring:String = event.fault.faultString;
+                Alert.show(faultstring);               
+        }
+        
+        private function defaultResult(event:ResultEvent,whichQuery:uint=1):void {	
+			
+			switch(whichQuery)
+        	{	       					
+        		case 1:
+        			parentApplication.assignDgColumnOrder(dashSearch1.lastResult.columnOrder,dgList1);
+        			dgList1.dataProvider = dashSearch1.lastResult.rootTag.subTag; 
+        			parentApplication.sortDataGrid(dgList1);
+        			oneEnabled = (dgList1.dataProvider.length > 0);
+        			//dgList1.showHeaders = oneEnabled; 
+        		break;
+        		
+          		case 2:        			
+        			parentApplication.assignDgColumnOrder(dashSearch2.lastResult.columnOrder,dgList2);
+        			dgList2.dataProvider = dashSearch2.lastResult.rootTag.subTag; 
+        			parentApplication.sortDataGrid(dgList2);
+        			twoEnabled = (dgList2.dataProvider.length > 0);
+        			//dgList2.showHeaders = twoEnabled;  
+        		break;
+
+        		case 3:        		   			    			
+        			parentApplication.assignDgColumnOrder(dashSearch3.lastResult.columnOrder,dgList3);
+        			dgList3.dataProvider = dashSearch3.lastResult.rootTag.subTag; 
+        			parentApplication.sortDataGrid(dgList3);
+        			threeEnabled = (dgList3.dataProvider.length > 0); 
+        			//dgList3.showHeaders = threeEnabled;
+        		break;
+        		
+          		case 4:        			 
+        			parentApplication.assignDgColumnOrder(dashSearch4.lastResult.columnOrder,dgList4);
+        			dgList4.dataProvider = dashSearch4.lastResult.rootTag.subTag;
+        			parentApplication.sortDataGrid(dgList4);
+        			fourEnabled = (dgList4.dataProvider.length > 0); 
+        			//dgList4.showHeaders = fourEnabled;  
+        		break;
+           	}
+        	parentApplication.searching=false;			 		
+        }	
+
+  		private function dgItemClick(event:ListEvent):void {
+		
+			// single-click always fires first, so store state of shift/ctrl keys for double-click
+			//trace("item click: "+event.type+" + "+dgList.selectedIndex+" : "+storeIndex);	
+			if ((!parentApplication.shiftKeyDown()) && (!parentApplication.ctrlKeyDown())) {
+				// nothing
+			}
+			else dgDoubleClick(event);
+		}	
+
+  		private function dgDoubleClick(event:ListEvent):void {
+		
+			// list event doesn't have state of shift/ctrl keys so take from previous single-click mouse event
+			if ((!parentApplication.shiftKeyDown()) && (!parentApplication.ctrlKeyDown())) return;
+			
+			trace("double click: "+event.type);	
+			// Get the target of this event (Datagrid)
+			var myGrid:DataGrid = event.target as DataGrid;
+			
+			parentApplication.copyRow(event, myGrid);
+			parentApplication.copyCell(event, myGrid);	
+			//trace("double click: "+dgList.selectedIndex);				
+		}        		
+	]]>
+	</mx:Script>
+	
+	<packages:DataGridNew id="dgList1" x="10" y="0" itemClick="dgItemClick(event)" height="{defaultListHeight}" width="335" liveScrolling="true" visible="{oneEnabled}" tabEnabled="false"/>
+
+	<mx:Button id="copyResultToClipboard1" visible="{oneEnabled}" x="344" y="0" icon="@Embed(source='../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList1)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../files/images/printer.gif')" visible="{oneEnabled}" x="344" y="30" id="printDG1"   width="23" click="parentApplication.doPrint(dgList1)" height="23" toolTip="Print table data"/>
+	
+	<packages:DataGridNew id="dgList2" x="10" y="200" itemClick="dgItemClick(event)" height="{defaultListHeight}" width="335" visible="{twoEnabled}" liveScrolling="true" tabEnabled="false" editable="false"/>
+<!--
+	<packages:DataGridNew id="tempDg"  x="1" y="0"  width="700"  minWidth="300"   height="44" visible="false"/>
+-->
+	<mx:Button id="copyResultToClipboard2" visible="{twoEnabled}" x="344" y="200" icon="@Embed(source='../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList2)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../files/images/printer.gif')" visible="{twoEnabled}" x="344" y="230" id="printDG2"   width="23" click="parentApplication.doPrint(dgList2)" height="23" toolTip="Print table data"/>
+
+	<packages:DataGridNew id="dgList3" x="375" y="0" itemClick="dgItemClick(event)" height="{defaultListHeight}" width="335"  visible="{threeEnabled}" liveScrolling="true" tabEnabled="false"/>
+
+	<mx:Button id="copyResultToClipboard3" visible="{threeEnabled}" x="709" y="0" icon="@Embed(source='../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList3)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../files/images/printer.gif')" visible="{threeEnabled}" x="709" y="30" id="printDG3"   width="23" click="parentApplication.doPrint(dgList3)" height="23" toolTip="Print table data"/>
+
+	<packages:DataGridNew id="dgList4" x="375" y="200" itemClick="dgItemClick(event)" height="{defaultListHeight}" width="335" visible="{fourEnabled}" liveScrolling="true" tabEnabled="false"/>
+
+	<mx:Button id="copyResultToClipboard4" visible="{fourEnabled}" x="709" y="200" icon="@Embed(source='../../files/images/copy.gif')" width="23" height="22" click="exportCSV(dgList4)" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../files/images/printer.gif')" visible="{fourEnabled}" x="709" y="230" id="printDG4"   width="23" click="parentApplication.doPrint(dgList4)" height="23" toolTip="Print table data"/>
+	
+	<packages:DataGridNew id="tempDg" x="10" y="0" height="{defaultListHeight}" width="700"  visible="false" liveScrolling="true" tabEnabled="false"/>
+	
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}" visible="false"/>
+	
+	<mx:HTTPService id="dashSearch1" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event,1)"/>
+	<mx:HTTPService id="dashSearch2" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event,2)"/>
+	<mx:HTTPService id="dashSearch3" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event,3)"/>
+	<mx:HTTPService id="dashSearch4" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event,4)"/>
+
+
+</mx:Canvas>

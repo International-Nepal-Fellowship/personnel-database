@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ComboBoxSelect.mxml
+  Allows specification of a dataField (default="data") and
+  the setting of selectedValue.
+  
+  Searches the dataField propety values for a match to selectedValue, 
+  and sets the combobox selected Index.
+-->
+<mx:ComboBox xmlns:mx="http://www.adobe.com/2006/mxml" width="50" arrowButtonWidth="0">
+<mx:Script><![CDATA[
+
+  private var _sDropDownDataField:String = "";      //property in the dropdown DATAPROVIDER that contains the value
+  private var _selectedValue:Object;                //holds value in dataField
+
+  /**  usually set by parent at creation */
+  public function set dropDownDataField(s:String):void
+  {
+    //trace("ComboBoxSelectedValue.set dataField")
+    _sDropDownDataField = s;
+  }//
+  
+  /** set dynamically if used as a renderer and drop lists are different per item */
+  override public function set dataProvider(o:Object):void
+  {
+    //trace("ComboBoxSelectedValue.set dataProvider")
+    super.dataProvider = o;                         // invoke superclass  
+  }//set dataProvider  
+  
+  /** Set by the parent, often by an ItemRenderer wrapper. */
+  public function set selectedValue(o:Object):void
+  {
+    //trace("ComboBoxSelectedValue.set selectedValue")
+    _selectedValue = o;
+    setSelectedIndex()
+  }//set dataProvider   
+
+  
+  /** loops over the dataprovider comparing the value in "_sDropDownDataField" to the current "selectedValue"
+    if a match is found, the selectedIndex is set to sync the ComboBox
+  */
+  private function setSelectedIndex():void
+  {
+    //trace("ComboBoxSelectedValue.setSelectedIndex")
+    for (var i:int=0;i<this.dataProvider.length;i++)// Loop through dataProvider
+    {
+      var item:String;
+      if (_sDropDownDataField.length > 0) {
+        item = this.dataProvider[i][_sDropDownDataField];  // Get this item's data ??work for array???
+      }
+      else  {
+        item = this.dataProvider[i];
+      } 
+      if(item == _selectedValue)                    // Check if is selectedValue 
+      {
+        this.selectedIndex = i;                     // Yes, set selectedIndex 
+        break;
+      }
+    }    
+  }//setSelectedIndex
+
+]]></mx:Script>
+
+</mx:ComboBox>
+

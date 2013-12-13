@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabSecondmentClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
+
+	<mx:FormItem label="Secondment From:"  x="10" y="12" width="126"/>
+	<packages:ComboBoxNew id="comboSecondmentFrom"  x="143" y="9" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Seconding From Organisation',comboSecondmentFrom,true)" toolTip="Double-click for details"/>
+	<mx:Button x="279" y="9" label="+" width="32" height="22" click="displayPopUpOrganisation('Seconding From Organisation',comboSecondmentFrom)" visible="false"/>
+
+	<mx:FormItem label="Secondment To:"  x="10" y="36" width="126"/>
+	<packages:ComboBoxNew id="comboSecondmentTo"  x="143" y="33" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Seconding To Organisation',comboSecondmentTo,true)" toolTip="Double-click for details"/>
+	<mx:Button x="279" y="33" label="+" width="32" height="22" click="displayPopUpOrganisation('Seconding To Organisation',comboSecondmentTo)" visible="false"/>
+
+	<mx:Button x="279" y="45" label="+" width="32" height="22" click="displayPopUpOrganisation('Organisation',comboChurch)" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Local Support Provider:"  x="10" y="60" width="126"/>
+	<packages:ComboBoxNew id="comboLocalSupportProvider"  x="143" y="57" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Local Support Provider',comboLocalSupportProvider,true)" toolTip="Double-click for details"/>
+	<mx:Button x="279" y="57" label="+" width="32" height="22" click="displayPopUpOrganisation('Local Support Provider',comboLocalSupportProvider)" visible="false"/>
+
+	<mx:FormItem label="Church:"  x="10" y="84" width="126"/>
+	<packages:ComboBoxNew id="comboChurch"  x="143" y="81" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Church',comboChurch,true)" toolTip="Double-click for details"/>
+	<mx:Button x="279" y="81" label="+" width="32" height="22" click="displayPopUpOrganisation('Church',comboChurch)" visible="false"/>
+
+	<mx:FormItem label="Further Seconded To:"  x="412" y="12" width="126"/>
+	<packages:ComboBoxNew id="comboFurtherSecondedTo"  x="545" y="9" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Further Seconding To Organisation',comboFurtherSecondedTo,true)" toolTip="Double-click for details"/>
+	<mx:Button x="681" y="9" label="+" width="32" height="22" click="displayPopUpOrganisation('Further Seconding To Organisation',comboFurtherSecondedTo)" visible="false"/>
+
+	<mx:FormItem label="Post Agreed:"  x="412" y="36" width="126"/>
+	<packages:ComboBoxNew id="comboPostAgreed"  x="545" y="33" width="128" enabled="{inputEnabled}"/>
+
+	<mx:FormItem label="Link Person:"  x="412" y="60" width="126"/>
+	<packages:ComboBoxNew id="comboLinkPerson"  x="545" y="57" width="128" enabled="{inputEnabled}"/>
+
+	<mx:FormItem x="412" y="84" label="Invitation Letter Recvd:" width="128"/>
+	<mx:DateField x="545" y="82" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateInvitationLetterRcvd" editable="true"/>
+	<mx:Button x="651" y="83" height="23" click="displayPopUpDoc('Invitation Letter Details','invitation_letter_id',dateInvitationLetterRcvd)" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" toolTip="Invitation Letter Details" id="btnInvitationLetter"/>
+
+	<mx:Button x="170" y="321"  icon="@Embed(source='../../../files/images/showDetail.gif')"  toolTip="Toggle History" click="{showDatagrid=!showDatagrid}" width="25" height="21"/>
+
+	<mx:FormItem label="OSA Approval" width="89" x="10" y="116" fontWeight="bold"/>
+
+	<mx:FormItem label="Sent Date" width="89" x="213" y="116"/>	
+	<mx:FormItem label="Received Date" width="89" x="333" y="116"/>	
+	<mx:FormItem label="Signed Date" width="89" x="453" y="116"/>	
+	<mx:FormItem label="Copy Sent Date" width="89" x="573" y="116"/>
+
+	<mx:FormItem label="Member:" width="55" x="10" y="140"/>
+	<mx:DateField x="213" y="137" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAMemberSent" editable="true"/>
+	<mx:DateField x="333" y="137" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAMemberReceived" editable="true"/>
+	<mx:DateField x="453" y="137" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAMemberSigned" editable="true"/>
+	<mx:DateField x="573" y="137" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAMemberCopySent" editable="true"/>
+
+	<mx:FormItem label="Seconding Agency:" width="55" x="10" y="164"/>
+	<packages:ComboBoxNew id="comboOSAApprovalAgency"  x="71" y="161" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Agency',comboOSAApprovalAgency,true)" toolTip="Double-click for details" visible="false"/>
+	<mx:DateField x="213" y="161" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAAgencySent" editable="true"/>
+	<mx:DateField x="333" y="161" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAAgencyReceived" editable="true"/>
+	<mx:DateField x="453" y="161" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAAgencySigned" editable="true"/>
+	<mx:DateField x="573" y="161" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAAgencyCopySent" editable="true"/>
+
+	<mx:FormItem label="INF/W:" width="55" x="10" y="188" visible="false"/>
+	<packages:ComboBoxNew id="comboOSAApprovalINFW"  x="71" y="185" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('INF/W',comboOSAApprovalINFW,true)" toolTip="Double-click for details" visible="false"/>
+	<mx:DateField x="213" y="185" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAINFWSent" editable="true" visible="false"/>
+	<mx:DateField x="333" y="185" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAINFWReceived" editable="true" visible="false"/>
+	<mx:DateField x="453" y="185" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAINFWSigned" editable="true" visible="false"/>
+	<mx:DateField x="573" y="185" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateOSAINFWCopySent" editable="true" visible="false"/>
+
+	<mx:FormItem label="FSA Approval" width="89" x="10" y="212" fontWeight="bold"/>
+
+	<mx:FormItem label="Member:" width="55" x="10" y="236"/>
+	<mx:DateField x="213" y="233" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateFSAMemberSent" editable="true"/>
+	<mx:DateField x="333" y="233" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAMemberReceived" editable="true"/>
+	<mx:DateField x="453" y="233" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateFSAMemberSigned" editable="true"/>
+	<mx:DateField x="573" y="233" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAMemberCopySent" editable="true"/>
+
+	<mx:FormItem label="Host:" width="55" x="10" y="260"/>
+	<packages:ComboBoxNew id="comboFSAApprovalAgency"  x="71" y="257" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('Agency',comboFSAApprovalAgency,true)" toolTip="Double-click for details" visible="false"/>
+	<mx:DateField x="213" y="257" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAAgencySent" editable="true"/>
+	<mx:DateField x="333" y="257" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAAgencyReceived" editable="true"/>
+	<mx:DateField x="453" y="257" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAAgencySigned" editable="true"/>
+	<mx:DateField x="573" y="257" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAAgencyCopySent" editable="true"/>
+
+	<mx:FormItem label="INF/W:" width="55" x="10" y="284" visible="false"/>
+	<packages:ComboBoxNew id="comboFSAApprovalINFW"  x="71" y="281" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpOrganisation('INF/W',comboFSAApprovalINFW,true)" toolTip="Double-click for details" visible="false"/>
+	<mx:DateField x="213" y="281" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAINFWSent" editable="true" visible="false"/>
+	<mx:DateField x="333" y="281" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAINFWReceived" editable="true" visible="false"/>
+	<mx:DateField x="453" y="281" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAINFWSigned" editable="true" visible="false"/>
+	<mx:DateField x="573" y="281" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100"  id="dateFSAINFWCopySent" editable="true" visible="false"/>
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Secondment" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button><mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Secondment Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="115"	height="{defaultListHeight}" width="700"		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" visible="{showDatagrid}">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" dataField="__id" width="25"/>
+			<mx:DataGridColumn headerText="From" dataField="seconded_from" width="70"  />
+			<mx:DataGridColumn headerText="From ID" dataField="seconded_from_id" width="70"  visible="false" />		
+			<mx:DataGridColumn headerText="To" dataField="seconded_to" width="70"  />
+			<mx:DataGridColumn headerText="To ID" dataField="seconded_to_id" width="70"  visible="false" />	
+			<mx:DataGridColumn headerText="Local Support" dataField="local_support" width="70"  />	
+			<mx:DataGridColumn headerText="Local Support ID" dataField="local_support_id" width="70"  visible="false" />
+			<mx:DataGridColumn headerText="Church" dataField="church" width="70" />	
+			<mx:DataGridColumn headerText="Church ID" dataField="church_id" width="70" visible="false"/>			
+			<mx:DataGridColumn headerText="Post" dataField="post_agreed_id" width="70" visible="false"/>
+			<mx:DataGridColumn headerText="Post" dataField="INF_role" width="70" />	
+			<mx:DataGridColumn headerText="Link" dataField="link_person_id" width="70" visible="false"/>
+			<mx:DataGridColumn headerText="Link Person" dataField="link_person" width="70" />
+			<mx:DataGridColumn headerText="Further S T" dataField="further_seconded_to_id" width="70" visible="false"/>
+			<mx:DataGridColumn headerText="Further Seconded" dataField="further_seconded_to" width="70" />
+			
+			<mx:DataGridColumn headerText="OA Agency" dataField="osa_approval_agency_id" width="70"  visible="false"/>
+			<mx:DataGridColumn headerText="OA INFW" dataField="osa_approval_infw_id" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FA Agency" dataField="fsa_approval_agency_id" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FA INFW" dataField="fsa_approval_infw_id" width="70" visible="false"/>	
+			
+			<mx:DataGridColumn headerText="OM sent" dataField="osa_member_sent_date" width="70"  visible="false" />	
+			<mx:DataGridColumn headerText="OM Received" dataField="osa_member_received_date" width="70"  visible="false" />	
+			<mx:DataGridColumn headerText="OM Signed" dataField="osa_member_signed_date" width="70"  visible="false" />	
+			<mx:DataGridColumn headerText="OM Copy Sent" dataField="osa_member_copy_sent_date" width="70"  visible="false" />	
+				
+			<mx:DataGridColumn headerText="OA Sent" dataField="osa_agency_sent_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OA Received" dataField="osa_agency_received_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OA Signed" dataField="osa_agency_signed_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OA Copy Sent" dataField="osa_agency_copy_sent_date" width="70" visible="false"/>	
+		
+			<mx:DataGridColumn headerText="OI Sent" dataField="osa_infw_sent_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OI Received" dataField="osa_infw_received_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OI Signed" dataField="osa_infw_signed_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="OI Copy Sent" dataField="osa_infw_copy_sent_date" width="70" visible="false"/>	
+			
+			<mx:DataGridColumn headerText="FM sent" dataField="fsa_member_sent_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FM Received" dataField="fsa_member_received_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FM Signed" dataField="fsa_member_signed_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FM Copy Sent" dataField="fsa_member_copy_sent_date" width="70" visible="false"/>	
+			
+			<mx:DataGridColumn headerText="FA Sent" dataField="fsa_agency_sent_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FA Received" dataField="fsa_agency_received_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FA Signed" dataField="fsa_agency_signed_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FA Copy Sent" dataField="fsa_agency_copy_sent_date" width="70" visible="false"/>	
+			
+			<mx:DataGridColumn headerText="FI Sent" dataField="fsa_infw_sent_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FI Received" dataField="fsa_infw_received_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FI Signed" dataField="fsa_infw_signed_date" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="FI Copy Sent" dataField="fsa_infw_copy_sent_date" width="70" visible="false"/>						
+			
+			<mx:DataGridColumn headerText="Invitation Received" dataField="invitation_letter_rcvd_date" width="70"/>						
+			<mx:DataGridColumn headerText="invitation_letter_id" dataField="invitation_letter_id" width="70" visible="false"/>						
+			
+			<mx:DataGridColumn headerText="timestamp" dataField="secondment_timestamp" visible="false" /> 
+		
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="116" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="{showDatagrid}"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="146" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="{showDatagrid}"/>
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="176" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="{showDatagrid}"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+		
+</local:tabSecondmentClass>

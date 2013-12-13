@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="744" height="414" themeColor="#A95C5C">
+	<mx:TextArea  x="32" y="20" width="642" height="367" text="" fontSize="40" textAlign="center" dropShadowEnabled="true" cornerRadius="25" dropShadowColor="{parentApplication.highlightTextColour}" backgroundDisabledColor="{parentApplication.darkBackgroundColour}" paddingTop="100" enabled="false" disabledColor="{parentApplication.brightTextColour}" fontWeight="bold" wordWrap="true"/>
+	<mx:TextArea id="frontPageText" x="232" y="120" width="242" height="167" text="INF Database" fontSize="40" textAlign="center" backgroundDisabledColor="{parentApplication.darkBackgroundColour}" enabled="false" disabledColor="{parentApplication.brightTextColour}" fontWeight="bold" wordWrap="true" borderStyle="none"/>
+</mx:Canvas>

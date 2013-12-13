@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabHomeAssignmentClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Start Date:" x="48" y="7" width="62" height="19" />
+	<mx:DateField x="117" y="4" id="dateFrom" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" width="90" editable="true"/>
+
+	<mx:FormItem label="End Date:" x="324" y="6" width="56"  />
+	<mx:DateField x="383" y="4" id="dateUntil" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" width="90" editable="true"/>
+
+	<mx:CheckBox x="611" y="6" label="Confirmed Dates" enabled="{inputEnabled}" id="chkConfirmedDates"/>
+
+	<mx:FormItem label="Report received:" x="15" y="33" width="94" />
+	<mx:DateField x="117" y="30" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="90" id="dateReportReceived" editable="true"/>
+	 
+	<mx:FormItem label="Report Sent (member):" x="247.5" y="30" width="118.5"  />
+	<mx:DateField x="383" y="31" id="dateRSentDateMember" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" width="90" editable="true"/>
+
+	<mx:FormItem label="Report Sent (agency):" x="511" y="29" width="120"  />
+	<mx:DateField x="639" y="30" id="dateRSentDateAgency" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" width="90" editable="true"/>
+	
+	<mx:FormItem label="Medical arranged:" x="9" y="58" width="100" />
+	<mx:DateField x="117" y="57" id="dateMedicalArranged" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}"  width="90" editable="true"/>	
+	
+	<mx:FormItem label="Medical Report Received:" x="235.5" y="58" width="144.5"  />
+	<mx:DateField x="383" y="57" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="90" id="dateMedicalReportReceived" editable="true"/>
+	<mx:Button x="475" y="57" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" id="btnGetMedicalArranged" width="23" toolTip="Medical details">
+		<mx:click>displayPopUpDoc('Medical Report Details','medical_report_received_id',dateMedicalReportReceived)</mx:click>
+	</mx:Button>	
+
+	<mx:FormItem label="Sent Date(agency):" x="527.5" y="57" width="106.5"  />
+	<mx:DateField x="639" y="57" id="dateMSentDateAgency" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}"  width="90" editable="true"/>
+	
+	<mx:FormItem label="Interview Date:" x="23" y="84" width="86"  />
+	<mx:DateField x="117" y="83" id="dateInterviewDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}"  width="90" editable="true"/>
+	
+	<mx:FormItem label="Interviewer:" x="307" y="84" width="73" color="{parentApplication.mandatoryLabelColour}" />
+	<packages:ComboBoxNew x="382" y="83" change="checkValid(comboInterviewer)" id="comboInterviewer" width="128" enabled="{inputEnabled}"/>
+	
+	<mx:FormItem label="Infopack Sent:" x="551" y="86" width="82"  />
+	<mx:DateField x="639" y="84" id="dateInfopackSent" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" width="90" editable="true"/>
+	
+	<mx:FormItem x="22" y="109" label="Invitation Rcvd:" width="87"/>
+	<mx:DateField x="117" y="109" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="90" id="dateInvitationLetterReceived" editable="true"/>
+	<mx:Button x="215" y="110" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetInvitationLetterReceived" toolTip="Invitation letter details">
+		<mx:click>displayPopUpDoc('Invitation Letter Details','invitation_letter_received_id',dateInvitationLetterReceived)</mx:click>
+	</mx:Button>
+
+	<mx:FormItem x="11" y="133" label="STV Manager " width="99"  height="19"/>
+	<mx:FormItem label="comments Rcvd:" width="99"  height="15" x="11" y="150"/>	
+	<mx:DateField x="117" y="138" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="90" id="dateSTVManagerCommentsReceived" editable="true"/>
+	<mx:Button x="215" y="139" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnGetSTVManagerCommentsReceived" toolTip="STV comment details">
+		<mx:click>displayPopUpDoc('STV Mgr Comments Details','STV_manager_comments_received_id',dateSTVManagerCommentsReceived)</mx:click>
+	</mx:Button>
+
+	<mx:FormItem label="Notes:" x="259.5" y="112" width="37.5" height="20" />
+	<mx:TextArea id="textHADescription" x="300" y="110" height="66" width="429" enabled="{inputEnabled}"/>
+		
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" width="75" height="25" enabled="{editEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Movement Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" x="300" y="318" width="75" height="25" enabled="{addEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" x="383" y="318" width="75" height="25" enabled="{deleteEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button id="btnOk" click="sendData()" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25" enabled="{saveEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" width="75" height="25" enabled="{inputEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="176"	height="{defaultListHeight}" width="700" visible="true"		
+		click="fillData()" keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" itemDoubleClick="copySelectedCell(event)" doubleClickEnabled="true">
+		<packages:columns>
+			<!--<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="25"/>-->
+			<mx:DataGridColumn  headerText="Start" dataField="date_from"  width="75"/>
+			<mx:DataGridColumn  headerText="End" dataField="date_until"  width="75"/>		
+			<mx:DataGridColumn  headerText="Info Pack Sent" dataField="infopack_sent"  width="200"/>
+			<mx:DataGridColumn  headerText="InterviewDate" dataField="interview_date"  width="200"/>
+			
+			<mx:DataGridColumn  headerText="ReportReceived" dataField="report_received"  width="75"/>
+			<mx:DataGridColumn  headerText="ReportSentDate(M)" dataField="rsent_date_member"  width="75"/>		
+			<mx:DataGridColumn  headerText="MedicalArranged" dataField="medical_arranged"  width="200"/>
+			<mx:DataGridColumn  headerText="MedicalRepReceived" dataField="medical_report_received"  width="200"/>
+			
+			<mx:DataGridColumn  headerText="MedicalSentDate(A)" dataField="msent_date_agency"  width="75"/>
+			<mx:DataGridColumn  headerText="CommentsReceived" dataField="STV_manager_comments_received"  width="75"/>		
+			<mx:DataGridColumn  headerText="InvLetterRec" dataField="invitation_letter_received"  width="200"/>
+			<mx:DataGridColumn  headerText="Notes" dataField="notes"  width="200"/>
+			<mx:DataGridColumn  headerText="Interviewer" dataField="interviewer" width="200"/>
+
+			<mx:DataGridColumn  headerText="medical_report_received_id" visible="false" dataField="medical_report_received_id" width="30"/>
+			<mx:DataGridColumn  headerText="STV_manager_comments_received_id" visible="false" dataField="STV_manager_comments_received_id" width="30"/>
+			<mx:DataGridColumn  headerText="invitation_letter_received_id" visible="false" dataField="invitation_letter_received_id" width="30"/>
+			
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>
+			<mx:DataGridColumn  headerText="timestamp"  dataField="home_assignment_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:CheckBox x="487.5" y="149" id="chkShowAll" label="Include Family HomeAssignments" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="179" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="209" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="239" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>	
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+		
+</local:tabHomeAssignmentClass>

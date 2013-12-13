@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:patienttreatmentreasonClass backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:mx="http://www.adobe.com/2006/mxml" height="351"  width="598" xmlns:local="components.patientadmin.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="77" y="65" label="Name:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="197" y="63" width="230" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="230" x="197" y="63" enabled="{listEnabled}" change="comboChange()"/>
+
+	<mx:FormItem label="Category:" width="90" x="77" y="94" color="{parentApplication.mandatoryLabelColour}" />
+	<packages:ComboBoxNew x="197" y="92" width="160" id="comboAdminTreatmentCategory" enabled="{inputEnabled}" change="checkValid(comboAdminTreatmentCategory)"/>
+		
+	<mx:FormItem label="Main:" width="70" x="77" y="123" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="197" y="121" width="160" id="comboAdminMain" enabled="{inputEnabled}" />
+	
+	<mx:FormItem label="Type:" width="70" x="77" y="153" color="{parentApplication.mandatoryLabelColour}" visible="false"/>
+	<packages:ComboBoxNew x="197" y="151" width="160" id="comboAdminType" enabled="{inputEnabled}" visible="false"/>
+		
+	<packages:DataGridNew id="dgList"  x="10" y="162" visible="false"	height="88" width="569"  >
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID"  width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Title" width="150" dataField="name" />
+			<mx:DataGridColumn headerText="Treatment Category ID" width="30" dataField="treatment_category_id" />
+			<mx:DataGridColumn headerText="Main" width="150" dataField="main" />
+			<mx:DataGridColumn headerText="Type" width="150" dataField="type" />
+            <mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" />
+		</packages:columns>
+	</packages:DataGridNew> 
+	
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Label x="32" y="317" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	     
+	<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+	
+</local:patienttreatmentreasonClass>

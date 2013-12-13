@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabHospitalisationClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	<mx:FormItem label="Start Date:" x="10" y="12" width="77" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField id="dateHospitalisationStartDate" x="123" y="9" yearNavigationEnabled="true" formatString="{parentApplication.appDateFormat}" change="checkValid(dateHospitalisationStartDate),CheckSingleDateValidity(dateHospitalisationStartDate)" enabled="{inputEnabled}" editable="true"/>
+	<mx:FormItem label="End Date:" x="321" y="12" width="77"/>
+	<mx:DateField id="dateHospitalisationEndDate" x="438" y="9" yearNavigationEnabled="true" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" change="checkCostLimit()" editable="true"/>
+	<mx:FormItem label="Relative:"  x="10" y="36" width="77" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="123" y="33" width="160" id="comboHospitalisationRelative" enabled="{inputEnabled}" change="checkValid(comboHospitalisationRelative)"/>
+	<mx:FormItem label="Hospital:"  x="10" y="60" width="77"/>	
+	<packages:ComboBoxNew x="123" y="57" width="128" id="comboHospitalisationHospital" enabled="{inputEnabled}" change="checkValid(comboHospitalisationHospital)" doubleClickEnabled="true" doubleClick="displayPopUpHospital('Hospital',true)" toolTip="Double-click for details"/>
+	<mx:Button x="264" y="57" label="+" width="32" height="22" click="displayPopUpHospital('Hospital')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	<mx:FormItem label="Illness:"  x="321" y="60" width="77"/>
+	<packages:ComboBoxNew x="438" y="57" width="128" id="comboHospitalisationIllness" enabled="{inputEnabled}" change="checkValid(comboHospitalisationIllness)" doubleClickEnabled="true" doubleClick="displayPopUpIllness('Illness',true)" toolTip="Double-click for details"/>
+	<mx:Button x="579" y="57" label="+" width="32" height="22" click="displayPopUpIllness('Illness')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	<mx:FormItem label="Births:"  x="10" y="84" width="77"/>
+	<mx:TextInput id="numberHospitalisationBirths"  x="123" y="81" width="80" maxChars="1" restrict="0123456789" enabled="{inputEnabled}" change="checkValid(numberHospitalisationBirths)" toolTip="single digit"/>
+	<mx:FormItem label="Cost:"  x="10" y="108" width="77" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="numberHospitalisationCost"  x="123" y="105" width="80" restrict="0123456789.," change="checkCostLimit()" enabled="{inputEnabled}" toolTip="non-negative decimal"/>
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Hospitalisation" click="showAll()" enabled="{!inputEnabled}"/>
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Hospitalisation Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+	<packages:DataGridNew id="dgList" x="10" y="156"	height="{defaultListHeight}" width="700" visible="true"		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" 
+			itemDoubleClick="copySelectedCell(event)" doubleClickEnabled="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="25"/>	
+    		<mx:DataGridColumn  headerText="Relative" dataField="relative"  width="80"/>
+    		<mx:DataGridColumn  headerText="Relative ID" visible="false" dataField="relative_id"  width="40"/>	
+    		<mx:DataGridColumn  headerText="From" dataField="date_from"  width="75"/>		
+    		<mx:DataGridColumn  headerText="Until" dataField="date_until"  width="75"/>
+    		<mx:DataGridColumn  headerText="Births" dataField="births"  width="40"/>
+    		<mx:DataGridColumn  headerText="Illness" dataField="illness"  width="70"/>
+    		<mx:DataGridColumn  headerText="Illness ID" dataField="illness_id"  width="40" visible="false"/>	
+    		<mx:DataGridColumn  headerText="Hospital" dataField="hospital"  width="80"/>
+    		<mx:DataGridColumn  headerText="Hospital ID" dataField="hospital_id"  width="40" visible="false"/>
+    		<mx:DataGridColumn  headerText="Cost" dataField="cost"  width="40"/>			
+			<mx:DataGridColumn  headerText="timestamp"  dataField="hospitalisation_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="217" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="userRequestCheckDB"  method="POST" result="{handleDBResult(event)}" fault="{defaultFault(event)}"/>       
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	
+</local:tabHospitalisationClass>

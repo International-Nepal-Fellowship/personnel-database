@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:FormHeading x="30" y="35" label="User Name:"/>
+	<mx:TextInput x="171" y="33"/>
+	<mx:FormHeading x="30" y="65" label="Password:"/>
+	<mx:TextInput x="171" y="63"/>
+	<mx:FormHeading x="30" y="95" label="Confirm password:"/>
+	<mx:TextInput x="171" y="93"/>
+	<mx:FormHeading x="30" y="125" label="Group:"/>
+	<packages:ComboBoxNew x="171" y="122"></packages:ComboBoxNew>
+	
+</mx:Canvas>

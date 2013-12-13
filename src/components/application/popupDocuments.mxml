@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupDocumentsClass xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.application.*" xmlns:packages="packages.*" showCloseButton="true" width="520" close="removeMe()" borderAlpha="1" height="400" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Canvas height="100%" width="100%">
+	
+	<mx:FormItem x="77" y="35" label="Document:" width="112"/>
+	<mx:TextInput id="txtDocumentPath" x="197" y="32" width="197" editable="false" tabEnabled="false" toolTip="Click to download">
+		<mx:click ><![CDATA[ if(dgList.selectedItem){navigateToURL(new URLRequest(downloadDoc(dgList.selectedItem.link)))};]]></mx:click>	
+	</mx:TextInput>
+	<mx:Button x="402" y="33" id="btnDocumentBrowse" icon="@Embed(source='../../../files/images/browse.gif')" width="25" click="selectFile()" enabled="{inputEnabled}"/>
+
+	<mx:FormItem x="77" y="65" label="Notes:" width="112"/>
+	<mx:TextInput id="txtDocumentNotes" x="197" y="63" width="230" height="87" enabled="{inputEnabled}"/>	
+	
+	<packages:DataGridNew id="dgList"  x="77" y="158"	height="105" width="350" visible="{setDgListVisible}" click="setValues()">
+	
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID"  width="30" visible="false" dataField="__id" />	
+			<mx:DataGridColumn headerText="Notes" width="150" dataField="notes" />	
+			<mx:DataGridColumn headerText="Filename" width="90" dataField="filename"/>
+			<mx:DataGridColumn headerText="Path" width="30" visible="false" dataField="link"/>	
+		</packages:columns>
+	</packages:DataGridNew> 
+
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+		     
+	<mx:Label x="32" y="331" width="333" height="18" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+
+</mx:Canvas>
+
+<mx:HTTPService id="requestCurrentDoc" method="POST" fault="defaultFault(event)" result="currentDocResult(event)" />
+<mx:HTTPService id="requestSaveDoc" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+
+</local:popupDocumentsClass>

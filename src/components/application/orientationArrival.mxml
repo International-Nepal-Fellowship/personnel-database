@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabOrientationArrivalClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="10" y="12" label="Arrival/Flight:" width="156"/>
+	<mx:TextInput x="169" y="11" width="100" id="txtArrivalFlight" enabled="{inputEnabled}"/>
+	
+	<mx:FormItem x="10" y="36" label="Arrival Date:" width="156"/>
+	<mx:DateField x="169" y="35" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateDate" editable="true"/>
+	
+	<mx:FormItem x="10" y="60" label="Arrival Time:" width="156"/>
+	<mx:TextInput x="169" y="59" width="100" id="txtInputTime" enabled="{inputEnabled}"/>
+	
+	<mx:FormItem x="10" y="84" label="Pickup Arranged:" width="156"/>
+	<mx:DateField x="169" y="83" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="datePickUpArranged" editable="true"/>	
+
+	<mx:FormItem x="10" y="108" label="Accommodation Arranged:" width="156"/>	
+	<mx:DateField x="169" y="107" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateAccoArranged" editable="true"/>
+	<mx:Button x="271" y="107" height="23" click="displayPopUpDoc('Accommodation Details','accomodation_arranged_doc_id',dateAccoArranged)" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" toolTip="Accommodation Details" id="btnAccoArranged"/>
+	
+	<mx:FormItem x="370" y="12" label="Bus Ticket Arranged:" width="156"/>
+	<mx:DateField x="529" y="11" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateBusTicketArranged" editable="true"/>	
+	
+	<mx:FormItem x="370" y="36" label="Ticket Info Sent To PKR:" width="156"/>
+	<mx:DateField x="529" y="35" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateTicketInfoSentToPKR" editable="true"/>
+	
+	<mx:FormItem x="370" y="60" label="Survival Orientation Booklet:" width="156"/>
+	<mx:DateField x="529" y="59" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateSurvivalOrientationBooklet" editable="true"/>
+	
+	<mx:FormItem x="370" y="84" label="Welcome Pack:" width="156"/>
+	<mx:DateField x="529" y="83" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateWelcomePack" editable="true"/>
+
+	<mx:FormItem x="370" y="108" label="Welcome Letter:" width="156"/>
+	<mx:DateField x="529" y="107" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" width="100" id="dateWelcomeLetter" editable="true"/>
+
+	<mx:CheckBox x="524" y="288" id="chkShowAll" label="Include all" click="showAll()" visible="false"/>
+	
+	<mx:Button x="187" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="270" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="353" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="478" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="561" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Orientation Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+			
+	<packages:DataGridNew id="dgList" x="7" y="156"	height="{defaultListHeight}" width="700" 		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="ID"  dataField="__id" width="25" visible="false"/>
+			<mx:DataGridColumn  headerText="Arr/Flt"  dataField="arrival_flight" width="25"/>
+			<mx:DataGridColumn  headerText="Arr Date"  dataField="arrival_date" width="25"/>
+			<mx:DataGridColumn  headerText="Time"  dataField="arrival_time" width="25"/>
+			<mx:DataGridColumn  headerText="PkUp Arr"  dataField="pickup_arranged_date" width="25"/>
+			<mx:DataGridColumn  headerText="Acco Arr"  dataField="accomodation_arranged_date" width="25"/>
+			<mx:DataGridColumn  headerText="Tkt Arr"  dataField="bus_ticket_arranged_date" width="25"/>
+			<mx:DataGridColumn  headerText="Tkt Sent Pkr"  dataField="ticket_info_sent_to_pkr_date" width="25"/>
+			<mx:DataGridColumn  headerText="S.O.Booklet"  dataField="survival_orientation_booklet_date" width="25"/>
+			<mx:DataGridColumn  headerText="WC Pack"  dataField="welcome_pack_date" width="25"/>
+			<mx:DataGridColumn  headerText="WC Letter"  dataField="welcome_letter_date" width="25"/>
+			<mx:DataGridColumn  headerText="Acco Doc" dataField="accomodation_arranged_doc_id" width="25" visible="false"/>
+		    <mx:DataGridColumn headerText="timestamp" dataField="orientation_arrangement_timestamp" visible="false" /> 
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:Button id="toggleResultHeight" x="712" y="156" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="712" y="186" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="712" y="216" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+	<mx:Label x="16" y="347" width="700" height="33" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>	
+
+	<mx:HTTPService id="userRequestSaveTab"  useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	
+</local:tabOrientationArrivalClass>

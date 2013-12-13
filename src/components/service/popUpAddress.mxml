@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupAddressClass xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.service.*" xmlns:packages="packages.*" initialize="loadData()" showCloseButton="true" width="520" close="removeMe()" borderAlpha="1" height="400" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Canvas height="100%" width="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	
+	<mx:FormItem label="Type:" x="77" y="65" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboAddressType" width="128" x="182" y="62" enabled="{inputEnabled}" change="checkValid(comboAddressType)"/>
+
+	<mx:CheckBox x="10" y="33" id="chkCurrent" label="Current Address" enabled="{inputEnabled}" width="133" visible="false"/>
+		
+	<mx:FormItem label="Address:"  x="77" y="89" width="97"/>
+	<mx:TextArea id="textAddressAddress"  x="182" y="86" width="295" height="45" enabled="{inputEnabled}">
+		<mx:change>parentApplication.changeToUpper(textAddressAddress)</mx:change>
+	</mx:TextArea>
+		
+	<mx:FormItem label="City/Town:"  x="77" y="137" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textAddressCityTown"  x="182" y="134" change="checkValid(textAddressCityTown)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+		
+	<mx:FormItem label="State/District:"  x="77" y="161" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textAddressStateProvince"  x="182" y="158" change="checkValid(textAddressStateProvince)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+		
+	<mx:FormItem label="Postcode/Zip:"  x="77" y="185" width="97"/>
+	<mx:TextInput id="textAddressPostCode"  x="182" y="182" enabled="{inputEnabled}" maxChars="12" width="80" toolTip="12 chars">
+		<mx:change>parentApplication.changeToUpper(textAddressPostCode)</mx:change>
+	</mx:TextInput>
+
+	<mx:FormItem label="Country:"  x="77" y="209" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboAddressCountry"  x="182" y="206" width="128" enabled="{inputEnabled}" change="checkValid(comboAddressCountry)"/>
+	<mx:Button x="318" y="206" label="+" width="32" height="22" click="displayPopUpCountry('Country')" enabled="{addAdminEnabled}" visible="false"/>
+		
+	<mx:FormItem label="Latitude:"  x="77" y="233" width="97"/>
+	<mx:TextInput id="textAddressLatitude"  x="182" y="230" enabled="{inputEnabled}" maxChars="15" width="80" toolTip="15 chars">
+		<mx:change>parentApplication.changeToUpper(textAddressLatitude)</mx:change>
+	</mx:TextInput>
+
+	<mx:FormItem label="Longitude:"  x="276" y="233" width="97"/>
+	<mx:TextInput id="textAddressLongitude"  x="381" y="230" enabled="{inputEnabled}" maxChars="15" width="80" toolTip="15 chars">
+		<mx:change>parentApplication.changeToUpper(textAddressLongitude)</mx:change>
+	</mx:TextInput>
+
+	<mx:Button id="copyAddressToClipboard" x="465" y="230" icon="@Embed(source='../../../files/images/copyFieldsToClipBoard.gif')" click="{copyTabFieldsToClipBoard(copyTabFields)}" toolTip="Copy full address to clipboard" width="23" height="22"/>
+	
+	<mx:CheckBox x="230" y="5" id="chkShowAll" label="Include Family Addresses" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+		
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25"/>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273" width="75" height="25" />
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25" visible="false"/>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273" width="75" height="25"/>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25"/>
+	<mx:Button x="625" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Address Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="136"	 height="180" width="400" visible="false"		
+		keyDown="moveTo(event)" enabled="{!inputEnabled}">
+		<packages:columns>
+			<mx:DataGridColumn headerText="Type" dataField="type" width="70"  />	
+			<mx:DataGridColumn headerText="Address" dataField="address" width="120" />	
+			<mx:DataGridColumn headerText="City/Town" dataField="city_town" width="120" />		
+			<mx:DataGridColumn headerText="State/District" dataField="state_province" width="120" />
+			<mx:DataGridColumn headerText="Postcode/Zip" dataField="postcode_zip" width="70" />
+			<mx:DataGridColumn headerText="Country" dataField="country_id" width="70"  />
+			<mx:DataGridColumn headerText="Latitude" visible="false" dataField="latitude" width="70" />
+			<mx:DataGridColumn headerText="Longitude" visible="false" dataField="longitude" width="70" />
+			<mx:DataGridColumn headerText="id" visible="false" dataField="__id" width="5" />
+			<mx:DataGridColumn headerText="Current" visible="false" dataField="current" width="30" />
+			<mx:DataGridColumn headerText="Own" visible="false" dataField="own" width="30" />
+			<mx:DataGridColumn headerText="timestamp" dataField="address_timestamp" width="120" />	
+        </packages:columns>
+	</packages:DataGridNew>
+	<mx:Button id="toggleResultHeight" x="709" y="136" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="false"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="166" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="false"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="196" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="false"/>
+		
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>	
+</mx:Canvas>
+	
+<mx:HTTPService id="userRequestSaveTab" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+<mx:HTTPService id="requestCurrentTab" method="POST" fault="defaultFault(event)" result="currentTabResult(event)" />
+
+</local:popupAddressClass>

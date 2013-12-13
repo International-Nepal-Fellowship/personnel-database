@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="240" xmlns:local="packages.*"  height="385" initialize="loadData()" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	<mx:Script>
+	<![CDATA[
+		import mx.events.CloseEvent;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.collections.ArrayCollection;
+
+		
+		private var strPublicSearchIDs:String='';
+		private var strPrivateSearchIDs:String='';
+		[Bindable]public var enableDisableCheckBox:Boolean=false;
+		
+		private function defaultFault(event:FaultEvent):void {
+         	
+            var faultstring:String = event.fault.faultString;
+            Alert.show(faultstring);               
+        }
+        
+        private function defaultResult(event:ResultEvent):void {
+        	
+        	parentApplication.search.defaultResult(event);       	
+        }
+              
+		private function loadData():void{
+//Alert.show('loaddata');	
+			if(parentApplication.isAdmin())
+				enableDisableCheckBox=true;
+			else
+				enableDisableCheckBox=false;
+			
+			loadQueries();
+			
+		}
+	   
+	   private function loadCheckBoxes():void{
+			
+			//load admin level columns data for admin users
+			if(parentApplication.isAdmin()){
+		   		for each(var item:Object in dgSearchHistory.dataProvider){         		
+	         		if(item.search_4_all==1){ //if item is in array   			
+	         			strPublicSearchIDs+=item.id+',';
+	         			item.publicSrch=true;
+	         		}
+	         		else{
+	         			item.publicSrch=false;
+	         			strPrivateSearchIDs+=item.id+',';
+	         		}         		      		
+	         	}// end for         	
+		   		
+		   		if(strPublicSearchIDs!='')
+		   			strPublicSearchIDs=strPublicSearchIDs.slice( 0, -1 ); // delete the last comma character
+		   		if(strPrivateSearchIDs!='')
+		   			strPrivateSearchIDs=strPrivateSearchIDs.slice( 0, -1 );// delete the last comma character
+		   	}
+		   	// Now SHOW data field "publicSrch" to admin level  users and hide it to non-admin users
+		   	hideAdminColumns();
+		   		
+	   }
+	   
+	   	public function loadQueries():void{
+	   		
+	   		dgSearchHistory.dataProvider=parentApplication.getLoadQueriesResult();
+	   		//(dgSearchHistory.dataProvider).removeItemAt(0);// first row is junk to get it out
+	   		strPublicSearchIDs='';
+	   		strPrivateSearchIDs='';
+	   		
+	   		loadCheckBoxes();
+	   		 	   		 
+	   		if(dgSearchHistory.dataProvider.length){
+	   			dgSearchHistory.selectedIndex=0;
+	   			btnSearchDelete.enabled=parentApplication.isAdmin();
+	   			btnSearchOk.enabled=parentApplication.isAdmin();
+	   		}	   			
+	   		else{
+	   			btnSearchDelete.enabled=false;
+	   			btnSearchOk.enabled=false;
+	   		}
+		}
+	   
+	   	private function runSearchQuery():void{
+	   	
+	   		parentApplication.searching = true;
+	   		parentApplication.search.runSearchQuery(dgSearchHistory.selectedItem.id);
+	   	}
+	   
+	   	private function deleteRecord():void{
+	
+			var alertDelete:Alert = Alert.show("Are you sure?","Delete saved search",Alert.YES|Alert.CANCEL,this,onAlertDelete,null,Alert.NO);
+		}
+		
+		private function onAlertDelete(evt:CloseEvent):void {
+			
+            switch(evt.detail) {
+            	
+               case Alert.YES:              		
+           			//var parameters:Object=super.setSendParameters();
+           			var parameters:Object= new Object();      
+	           		parameters.id	=	dgSearchHistory.selectedItem.id; 
+	            	parameters.tableName	= 'search_history'; 
+	            	parameters.action	=	'Delete'; 
+           			parameters.nameID	=	parentApplication.getCurrentID(); 
+           			parameters.userID	= parentApplication.getCurrentUserID();            
+      //  Alert.show(parameters.id+" id:");    
+					userRequestDeleteTab1.useProxy = false;
+           			userRequestDeleteTab1.url	=	parentApplication.getPath()	+	"DeleteSavedSearch.php";
+           			parentApplication.searching=true;
+           			userRequestDeleteTab1.send(parameters);   			
+                	break;
+                	
+               case Alert.CANCEL:
+                   //do nothing
+                    break;              
+            }
+       	}
+		
+		private function deleteResult(event:ResultEvent):void {	
+			
+		//	super.defaultResult(event);
+
+			parentApplication.searching=false;
+			status_txt.text	=	userRequestDeleteTab1.lastResult.errors.error;
+			if(userRequestDeleteTab1.lastResult.errors.status=='success'){
+				status_txt.enabled=true;
+				if(dgSearchHistory.selectedItem)			
+					dgSearchHistory.dataProvider.removeItemAt(dgSearchHistory.selectedIndex);	
+				if(dgSearchHistory.dataProvider.length>0)
+		   			dgSearchHistory.selectedIndex=0;
+		   		else
+		   			btnSearchDelete.enabled=false;
+			}
+			else {
+				status_txt.enabled=false;
+				status_txt.text = "Cannot delete - used in default search";
+			}
+				
+			parentApplication.loadQueries();
+		}   	
+		
+		private function makeSearchPublic():void{
+			var finalPublicSearchIDs:String='';//gets all the search_id for which all users can view
+			var finalPrivateSearchIDs:String='';//gets all the search_id for which only restricted users can view(only the users who has saved the search can view)
+			
+			 for each(var item:Object in dgSearchHistory.dataProvider){
+         		
+         		if(item.publicSrch==true){       			
+         			
+         			finalPublicSearchIDs+=item.id+',';
+         		}
+         		else{
+         			finalPrivateSearchIDs+=item.id+',';
+         		}
+         		    		
+         	}// end for
+         	
+         	if(finalPrivateSearchIDs!='')
+         		     finalPrivateSearchIDs=finalPrivateSearchIDs.slice( 0, -1 ); //delete the last comma character
+         	if(finalPublicSearchIDs!='')
+         		    finalPublicSearchIDs=finalPublicSearchIDs.slice( 0, -1 );//delete the last comma character
+         		    
+         	var parameters:Object= new Object();           
+           	parameters.userID	= parentApplication.getCurrentUserID();  
+           	parameters.publicSearchIDs=strPublicSearchIDs;
+           	parameters.privateSearchIDs=strPrivateSearchIDs;
+           	parameters.finalPublicSearchIDs=finalPublicSearchIDs;
+           	parameters.finalPrivateSearchIDs=finalPrivateSearchIDs;
+ 			
+ 			strPublicSearchIDs=finalPublicSearchIDs;
+ 			strPrivateSearchIDs=finalPrivateSearchIDs;
+          	userRequestSpecifySearch4all.useProxy = false;
+           	userRequestSpecifySearch4all.url	=	parentApplication.getPath()	+	"specifySearch4all.php";
+           	parentApplication.searching=true;
+           	userRequestSpecifySearch4all.send(parameters);  
+		}	
+		
+		private function search4allResult(event:ResultEvent):void {	
+
+			parentApplication.searching=false;
+			//loadQueries();
+			status_txt.text	=	userRequestSpecifySearch4all.lastResult.errors.error;
+			if(	userRequestSpecifySearch4all.lastResult.errors.status=='success'){
+				status_txt.enabled=true;
+			}
+			else{
+				status_txt.enabled=false;
+				//load previous datagrid data since update failed
+				dgSearchHistory.dataProvider=parentApplication.getLoadQueriesResult();
+				loadCheckBoxes();
+			}					
+
+		}   
+		
+		private function hideAdminColumns():void  {
+					
+			   var aColumns:Array = dgSearchHistory.columns;
+	
+			   var dgc:DataGridColumn;
+			
+			   for (var i:int=0;i<aColumns.length;i++)  {
+		
+			     dgc = aColumns[i];
+			     
+			     if((dgc.dataField=='publicSrch')&&(parentApplication.isAdmin()))
+			      	dgc.visible = true;
+			     else if((dgc.dataField=='publicSrch')&&(! (parentApplication.isAdmin())))
+			      	dgc.visible = false;
+			        
+			   }// for (var i:
+			
+		}
+				
+	]]>
+	</mx:Script>
+	
+	<mx:Label x="0" y="0" text="Select Previously Saved Search" width="100%" fontWeight="bold" textAlign="center"/>
+
+	<local:DataGridNew id="dgSearchHistory" x="0" y="15" height="315" width="95%" variableRowHeight="true" showHeaders="false" doubleClickEnabled="true" doubleClick="runSearchQuery()" toolTip="Double click a row to load">
+		<local:columns>		
+			<mx:DataGridColumn dataField="id" width="100"  visible="false"/>
+			<mx:DataGridColumn dataField="name"  width="100" headerText="Name"/> 
+	
+		   	<mx:DataGridColumn headerText="Query" dataField="query" visible="false"/>
+		   	<mx:DataGridColumn headerText="Timestamp" dataField="timestamp" width="120" visible="false"/>
+		   	<mx:DataGridColumn headerText="?" dataField="search_4_all" visible="false"/>	
+		   	<mx:DataGridColumn dataField="publicSrch" editable="false" headerText="All" width="20">
+        		<mx:itemRenderer>
+					<mx:Component >
+						<mx:HBox  enabled="true" horizontalAlign="center" verticalAlign="middle" toolTip="Tick to make public"> 
+							<mx:CheckBox   click="data.publicSrch=!data.publicSrch" selected="{data.publicSrch}"/>		
+						</mx:HBox>	
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+		</local:columns>
+	</local:DataGridNew>
+
+	<mx:Button x="50" y="335" width="65" height="22" id="btnSearchDelete" icon="@Embed(source='../../files/images/delete.gif')" click="deleteRecord()" toolTip="Delete selected search" label="Delete" labelPlacement="left">
+		<mx:disabledIcon>@Embed(source='../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnSearchOk" click="makeSearchPublic()" icon="@Embed(source='../../files/images/save1.gif')" x="130" y="335" width="65" height="22" toolTip="Save search list" label="Save" labelPlacement="left">
+		<mx:disabledIcon>@Embed(source='../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Label x="0" y="359" width="100%" height="21" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+    
+    <mx:HTTPService id="userRequestSpecifySearch4all" useProxy="false" method="POST" fault="defaultFault(event)" result="search4allResult(event)"/>
+    <mx:HTTPService id="userRequestDeleteTab1" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+</mx:Canvas>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:packages="packages.*" xmlns:mx="http://www.adobe.com/2006/mxml" height="343" width="464" xmlns:local="components.admin.*">
+	
+</mx:Canvas>

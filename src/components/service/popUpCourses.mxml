@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupCoursesClass xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.service.*" xmlns:packages="packages.*" showCloseButton="true" width="520" close="removeMe()" borderAlpha="1" height="400" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Canvas height="100%" width="100%">
+	
+	<mx:FormItem x="77" y="65" label="Name:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="197" y="63" width="230" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="230" x="197" y="63" enabled="{listEnabled}" change="comboChange()"/>
+	<mx:Button x="432" y="63" height="23" icon="@Embed(source='../../../files/images/icon-more.gif')" width="23" id="btnCourseDetails" click="displayPopUpDoc()" enabled="{listEnabled}" toolTip="Course details"/>
+	
+	<mx:FormItem x="77" y="94" label="Type:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboAdminType" x="197" y="92" width="190" enabled="{inputEnabled}" change="checkValid(comboAdminType)"/>
+	<mx:Button x="395" y="92" label="+" width="32" height="22" click="displayPopUpCourseType('Course Type')" enabled="{addAdminEnabled}" visible="false"/>
+
+	<mx:FormItem x="77" y="123" label="Subject:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboAdminSubject" x="197" y="121" width="190" enabled="{inputEnabled}" change="checkValid(comboAdminSubject)"/>
+
+	<mx:FormItem x="77" y="152" label="Location:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="197" y="150" id="txtAdminLocation"  width="94" enabled="{inputEnabled}" maxChars="40" toolTip="40 chars" change="checkValid(txtAdminLocation)"/>
+	
+	<mx:FormItem x="77" y="181" label="Provider:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="197" y="179" id="txtAdminProvider" width="94" enabled="{inputEnabled}" maxChars="40" toolTip="40 chars" change="checkValid(txtAdminProvider)"/>
+	
+	<mx:FormItem x="77" y="210" label="Start Date:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="197" y="208" id="dateAdminStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateAdminStartDate)"/>
+	
+	<mx:FormItem x="77" y="239" label="End Date:" width="112" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<mx:DateField id="dateAdminEndDate" x="197" y="237" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateAdminEndDate)"/>
+	
+	<mx:CheckBox x="316" y="239" id="chkAdminFixedDates" label="Fixed Dates" enabled="{inputEnabled}"/>
+	
+	<packages:DataGridNew id="dgList"  x="10" y="213"	height="50" width="276" visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" width="50" dataField="id" />	
+			<mx:DataGridColumn headerText="Course" width="150" dataField="name" />	
+			<mx:DataGridColumn headerText="Type ID" width="30" dataField="course_type_id" />
+			<mx:DataGridColumn headerText="Location" width="30" dataField="location" />
+			<mx:DataGridColumn headerText="Provider" width="30" dataField="provider" />
+			<mx:DataGridColumn headerText="Start Date" width="30" dataField="date_from" />
+			<mx:DataGridColumn headerText="End Date" width="30" dataField="date_until" />
+			<mx:DataGridColumn headerText="Fixed Dates" width="30" dataField="dates_fixed" />	
+		</packages:columns>
+	</packages:DataGridNew> 
+	
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25"/>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273" width="75" height="25" />
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273" width="75" height="25"/>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25"/>
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	     
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+</mx:Canvas>
+
+<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+
+</local:popupCoursesClass>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:mysqlusersClass backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:packages="packages.*" xmlns:mx="http://www.adobe.com/2006/mxml" height="343" width="464" xmlns:local="components.admin.*">
+
+	<mx:FormItem x="32" y="68"  label="Login name:" width="80" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="120" y="67" maxChars="50" width="98" id="txtUserLogin" enabled="true" change="checkValid(txtUserLogin)" toolTip="50 chars"/>
+
+	<mx:FormItem x="32" y="99" id="lblPsw" label="Password:" width="80"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="120" y="98" maxChars="50" displayAsPassword="true" width="98" id="txtUserPassword" enabled="true" change="checkValid(txtUserPassword)" toolTip="50 chars"/>
+	
+	<mx:HTTPService id="requestSyncUsers"   useProxy="false" method="POST" fault="defaultFault(event)" result="syncResult(event)"/>
+	<packages:DataGridNew width="404" id="dgList" x="28" y="157" visible="false"/>				
+
+	<mx:Button id="btnOk" icon="@Embed(source='../../../files/images/ok.gif')" x="108" y="235" label="Ok" labelPlacement="left" width="75" height="25" enabled="{saveEnabled}" click="updateMysqlUsers()">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" width="75" height="25" visible="false"/>
+	
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" x="150" y="273"   width="75" height="25"  visible="false"/>
+		
+	<mx:Button id="btnOk0" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25" visible="false"/>
+		
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" width="75" height="25" visible="false"/>
+		
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+</local:mysqlusersClass>

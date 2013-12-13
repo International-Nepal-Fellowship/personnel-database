@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:visapostClass xmlns:mx="http://www.adobe.com/2006/mxml" height="343" backgroundColor="{parentApplication.lightBackgroundColour}" width="598" xmlns:local="components.personnel.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem x="23" y="42" label="Name:" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="134" y="39" width="160" enabled="{inputEnabled}" maxChars="60" toolTip="60 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="160" x="134" y="39" enabled="{listEnabled}" change="comboChange()"/>
+
+	<mx:FormItem label="Programme:" width="90" x="23" y="67" color="{parentApplication.mandatoryLabelColour}" />
+	<packages:ComboBoxNew x="134" y="64" width="160" id="comboAdminProgramme" enabled="{inputEnabled}" change="checkValid(comboAdminProgramme)"/>
+
+	<mx:FormItem label="Section:" width="90" x="23" y="92" />
+	<packages:ComboBoxNew x="134" y="89" width="160" id="comboAdminSection" enabled="{inputEnabled}" change="checkValid(comboAdminSection)"/>
+
+	<mx:FormItem label="Unit:" width="90" x="23" y="117" />
+	<packages:ComboBoxNew x="134" y="114" width="160" id="comboAdminUnit" enabled="{inputEnabled}" change="checkValid(comboAdminUnit)"/>
+
+	<mx:FormItem label="Status:" width="60" x="349" y="67"/>
+	<packages:ComboBoxNew x="419" y="64" width="160" id="comboAdminStatus" enabled="{inputEnabled}" />
+
+	<mx:FormItem label="Type:" width="60" x="349" y="92"/>
+	<packages:ComboBoxNew x="419" y="89" width="160" id="comboAdminType" enabled="false" />
+	
+	<mx:FormItem label="Hours:" width="60" x="349" y="117"/>
+	<packages:ComboBoxNew x="419" y="114" width="160" id="comboAdminHours" enabled="{inputEnabled}" />
+
+	<mx:FormItem label="Provisional:" width="70" x="25" y="142"/>
+	<packages:ComboBoxNew x="134" y="139" width="60" id="comboAdminProvisional" enabled="{inputEnabled}" />
+	
+	<mx:FormItem label="Active:" width="80" x="199" y="142"/>
+	<packages:ComboBoxNew x="284" y="139" width="60" id="comboAdminActive" enabled="{inputEnabled}" />
+	
+	<mx:FormItem label="Period:" width="60" x="349" y="142" id="comboLabelPeriod"/>
+	<packages:ComboBoxNew width="160" id="comboAdminPeriod" enabled="{inputEnabled}" x="419" y="139" change="checkValid(comboAdminPeriod)"/>
+
+	<mx:FormItem x="25" y="167" label="Email:" width="90" id="txtLabelEmail"/>
+	<mx:TextInput x="134" y="164" id="txtAdminEmail"  width="160" enabled="{inputEnabled}" maxChars="40" toolTip="40 chars" change="checkValid(txtAdminEmail)"/>
+
+	<mx:FormItem label="Manager:" width="60" x="349" y="167" id="comboLabelManager"/>
+	<packages:ComboBoxNew x="419" y="164" width="160" id="comboAdminManager" enabled="{inputEnabled}" />
+
+	<mx:Button x="293" y="86" label="+" width="32" height="22" click="displayPopUpProject('Project')" enabled="{addAdminEnabled}" visible="false"/>
+		
+	<mx:FormItem label="Medical Reviewer:" width="105" x="25" y="192" id="comboLabelMedicalReviewer"/>
+	<packages:ComboBoxNew x="134" y="189" width="60" id="comboAdminMedicalReviewer" enabled="{inputEnabled}" />
+
+	<mx:FormItem label="Job Reviewer:" width="85" x="199" y="192" id="comboLabelJobReviewer"/>
+	<packages:ComboBoxNew x="284" y="189" width="60" id="comboAdminJobReviewer" enabled="{inputEnabled}" />
+
+	<mx:FormItem label="Personnel Reviewer:" width="120" x="349" y="192" id="comboLabelPersonnelReviewer"/>
+	<packages:ComboBoxNew x="472" y="189" width="60" id="comboAdminPersonnelReviewer" enabled="{inputEnabled}" />
+
+	<mx:FormItem label="Description:" width="90" x="23" y="217" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextArea x="134" y="215" width="445" height="75" id="txtAdminDesc" enabled="{inputEnabled}" change="checkValid(txtAdminDesc)"/>
+		
+	<packages:DataGridNew id="dgList"  x="10" y="187"	height="88" width="569"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Title" width="150" dataField="name" />
+			<mx:DataGridColumn headerText="Programme ID" width="30" dataField="programme_id" />
+			<mx:DataGridColumn headerText="Section ID" width="30" dataField="section_id" />
+			<mx:DataGridColumn headerText="Unit ID" width="30" dataField="unit_id" />
+			<mx:DataGridColumn headerText="Status" width="150" dataField="status" />
+			<mx:DataGridColumn headerText="Type" width="150" dataField="type" />
+			<mx:DataGridColumn headerText="Hours" width="150" dataField="hours" />
+			<mx:DataGridColumn headerText="Email" width="150" dataField="email" />	
+			<mx:DataGridColumn headerText="Visa ID" width="150" dataField="visa_id" />
+			<mx:DataGridColumn headerText="Description" width="30" dataField="description" />
+			<mx:DataGridColumn headerText="Manager" width="150" dataField="manager" />	
+			<mx:DataGridColumn headerText="manager ID" width="150" dataField="manager_id" />
+			<mx:DataGridColumn headerText="Med Reviewer" width="150" dataField="medical_reviewer" />
+			<mx:DataGridColumn headerText="Job Reviewer" width="150" dataField="job_reviewer" />
+			<mx:DataGridColumn headerText="Personnel Reviewer" width="150" dataField="personnel_reviewer" />
+			<mx:DataGridColumn headerText="Provisional" width="150" dataField="provisional" />
+			<mx:DataGridColumn headerText="Active" width="150" dataField="active" />
+			<mx:DataGridColumn headerText="Period" width="150" dataField="agreement" />
+            <mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" />
+		</packages:columns>
+	</packages:DataGridNew> 
+	
+	<mx:Button x="67" y="293" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="293"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="293"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="293" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Label x="25" y="326" width="400" height="17" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	     
+	<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+	
+</local:visapostClass>

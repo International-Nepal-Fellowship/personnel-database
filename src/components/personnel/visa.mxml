@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:visaClass xmlns:mx="http://www.adobe.com/2006/mxml" height="343" backgroundColor="{parentApplication.lightBackgroundColour}" width="598" xmlns:local="components.personnel.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="23" y="41" label="Name:" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="127" y="38" width="230" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="230" x="127" y="38" enabled="{listEnabled}" change="comboChange()"/>
+
+	<packages:DataGridNew id="dgList"  x="10" y="213"	height="50" width="276"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Title" width="150" dataField="name" />
+            <mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" />
+		</packages:columns>
+	</packages:DataGridNew> 
+
+	<mx:Button x="67" y="67" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="67"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="67"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="67" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+
+	<mx:Label x="42" y="95" width="400" height="19" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+
+	<packages:DataGridNew id="dgDual" x="365" y="186" width="223" height="195"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="id"  dataField="__id" width="120" visible="false"/>
+			<mx:DataGridColumn headerText="Visa Id"  dataField="visa_id" width="120" visible="false"/>
+			<mx:DataGridColumn headerText="Status" width="150" dataField="status" />
+			<mx:DataGridColumn headerText="Type" width="150" dataField="type" />     
+			<mx:DataGridColumn headerText="Sub Type" width="150" dataField="subtype" />                       
+	        <mx:DataGridColumn headerText="Number" dataField="number" width="60"/>  
+	        <mx:DataGridColumn headerText="Issued" dataField="issue_date" width="100"/>
+	        <mx:DataGridColumn headerText="Expires" dataField="expiry_date" width="100"/>
+	        <mx:DataGridColumn headerText="Entry" dataField="entry_date" width="100"/>	
+	        <mx:DataGridColumn headerText="City" dataField="issue_city" width="100"/>                
+	        <mx:DataGridColumn headerText="Country" dataField="country" width="100"/>
+	        <mx:DataGridColumn headerText="Country" dataField="issue_country_id" width="100" visible="false"/>
+            <mx:DataGridColumn headerText="timestamp" dataField="visa_historytimestamp" width="120" visible="false"/>
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:CheckBox x="10" y="117" label="Visa History" click="toggleHideDualInfo()" enabled="{dualEnabled}" id="chkShowDualInfo"/>
+	<mx:Button x="332" y="117" icon="@Embed(source='../../../files/images/showDetail.gif')" toolTip="Toggle detail" enabled="{listEnabledDual}" click="{showDatagrid=!showDatagrid}" width="25" height="21" visible="{dualItemVisible}"/>
+
+	<mx:FormItem label="Number:" width="97" y="149" x="23" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:TextInput id="textNumber" x="128" y="146" change="checkDualValid(textNumber)" enabled="{inputEnabledDual}" toolTip="12 chars" maxChars="12" visible="{dualItemVisible}"/>
+	
+	<mx:FormItem label="Issue Date:" width="97" y="173" x="23" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:DateField x="128" y="170" id="dateIssueDate" change="checkDualValid(dateIssueDate)" formatString="{parentApplication.appDateFormat}"  yearNavigationEnabled="true" enabled="{inputEnabledDual}" visible="{dualItemVisible}"/>
+	
+	<mx:FormItem label="Expiry Date:" width="97" y="197" x="23" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:DateField x="128" y="194" id="dateExpiryDate" change="checkDualValid(dateExpiryDate)" formatString="{parentApplication.appDateFormat}" yearNavigationEnabled="true" enabled="{inputEnabledDual}" visible="{dualItemVisible}"/>
+
+	<mx:FormItem label="Entry Date:" width="97" y="221" x="23" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:DateField x="128" y="218" id="dateEntryDate" change="checkDualValid(dateEntryDate)" formatString="{parentApplication.appDateFormat}" yearNavigationEnabled="true" enabled="{inputEnabledDual}" visible="{dualItemVisible}"/>
+	
+	<mx:FormItem label="Issue Country:" width="97" y="149" x="300" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<packages:ComboBoxNew id="comboIssueCountry" x="409" y="146" change="checkDualValid(comboIssueCountry)" enabled="{inputEnabledDual}" width="128" visible="{dualItemVisible}"/>
+	<mx:Button x="545" y="86" label="+" width="32" height="22" click="displayPopUpCountry('Country')" enabled="{addAdminEnabled}" visible="false"/>
+		
+	<mx:FormItem label="Issue City:" width="97" y="173" x="300" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<mx:TextInput x="409" y="170" id="textIssueCity" change="checkDualValid(textIssueCity)" enabled="{inputEnabledDual}" toolTip="20 chars" maxChars="20" visible="{dualItemVisible}"/>
+
+	<mx:FormItem label="Status:" width="70" x="300" y="197" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<packages:ComboBoxNew x="409" y="194" width="160" id="comboStatus" enabled="{inputEnabledDual}" change="checkDualValid(comboStatus)" visible="{dualItemVisible}"/>
+		
+	<mx:FormItem label="Type:" width="70" x="300" y="221" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<packages:ComboBoxNew x="409" y="218" width="160" id="comboType" enabled="{inputEnabledDual}" change="checkValid(comboType)" visible="{dualItemVisible}"/>
+
+	<mx:FormItem label="Sub Type:" width="70" x="300" y="245" color="{parentApplication.mandatoryLabelColour}" visible="{dualItemVisible}"/>
+	<packages:ComboBoxNew x="409" y="242" width="160" id="comboSubType" enabled="{inputEnabledDual}" change="checkDualValid(comboType)" visible="{dualItemVisible}"/>
+ 
+	<mx:Button x="67" y="273" id="btnEditDual" icon="@Embed(source='../../../files/images/edit.gif')" click="editDualMode()" width="75" height="25" visible="{dualItemVisible}" enabled="{editEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNewDual"  icon="@Embed(source='../../../files/images/add.gif')" click="addDualMode()" x="150" y="273"   width="75" height="25"  visible="{dualItemVisible}" enabled="{addEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOkDual" click="sendDualData()" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25" visible="{dualItemVisible}" enabled="{saveEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancelDual" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewDualMode()" width="75" height="25" visible="{dualItemVisible}" enabled="{inputEnabledDual}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgDualList" x="10" y="146" width="560" height="163"  itemClick="fillDualValues()" visible="{showDatagrid}">
+		<packages:columns>
+			<mx:DataGridColumn headerText="id"  dataField="__id" width="20" visible="false"/>
+			<mx:DataGridColumn headerText="Visa Id"  dataField="visa_id" width="20" visible="false"/>
+			<mx:DataGridColumn headerText="Status" width="80" dataField="status" />
+			<mx:DataGridColumn headerText="Type" width="80" dataField="type" />     
+			<mx:DataGridColumn headerText="Sub Type" width="80" dataField="subtype" />                       
+	        <mx:DataGridColumn headerText="Number" dataField="number" width="100"/>  
+	        <mx:DataGridColumn headerText="Issued" dataField="issue_date" width="120"/>
+	        <mx:DataGridColumn headerText="Expires" dataField="expiry_date" width="120"/>
+	        <mx:DataGridColumn headerText="Entry" dataField="entry_date" width="100"/>	
+	        <mx:DataGridColumn headerText="City" dataField="issue_city" width="100"/>                
+	        <mx:DataGridColumn headerText="Country" dataField="country" width="100"/>
+	        <mx:DataGridColumn headerText="Country" dataField="issue_country_id" width="20" visible="false"/>
+            <mx:DataGridColumn headerText="timestamp" dataField="visa_historytimestamp" width="20" visible="false"/>
+        </packages:columns>
+	</packages:DataGridNew>
+	     
+	<mx:Label x="42" y="317" width="400" height="19" id="dual_status" enabled="false" visible="{dualItemVisible}" disabledColor="{parentApplication.statusDisabledColour}"/>
+	     
+	<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+	<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+
+	<mx:HTTPService id="userRequestGetDualData" method="POST" fault="defaultFault(event)" result="populateDual(event)"/>	    	
+	<mx:HTTPService id="userRequestSaveDualData" method="POST" fault="defaultFault(event)" result="requestDualData()"/>	
+	
+</local:visaClass>

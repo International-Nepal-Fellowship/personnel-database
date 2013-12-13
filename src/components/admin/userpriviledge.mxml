@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:userpriviledgeClass initialize="loadData();" xmlns:mx="http://www.adobe.com/2006/mxml" height="383" backgroundColor="{parentApplication.lightBackgroundColour}" width="586" xmlns:local="components.admin.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="32" y="16" id="lblGroup" label="Current Group:" width="87" />
+	<mx:Button x="32" y="40" width="85" id="btnCurrentGroup" enabled="false"/>
+
+	<mx:FormItem x="127" y="16" label="Assign Group:" width="80" />
+	<packages:ComboBoxNew id="userGroup" width="100" x="124" y="39" enabled="{inputEnabled}" change="callAlert()" click="checkValid(null)"/>
+
+	<mx:FormItem x="233" y="16" label="User Name:" width="70" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="230" y="38" maxChars="50" toolTip="50 chars" width="100" id="txtNewName" enabled="{inputEnabled}" visible="{showAddUser}" change="nameChanged=true;checkValid(txtNewName)" focusOut="checkDBValues('checkUserName')"/>
+	<packages:ComboBoxNew id="comboNames" width="100" x="230" y="38" change="changeCombo()" visible="{!showAddUser}"/>
+
+	<mx:FormItem x="336" y="16" label="Main Tab:" width="70" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboMainTabs" width="100" x="336" y="40" change="fillUserPermission(modeState)" click="checkValid(null)"/>
+	<mx:FormItem x="260" y="70" id="lblPswMandatory" label="Password:" width="70" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:FormItem x="260" y="70" id="lblPswBlack" label="Password:" width="70"/>
+	<mx:FormItem x="32" y="68"  label="Email:" width="41" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="72" y="67" maxChars="100" width="164" id="txtUserEmail" enabled="{inputEnabled}" change="nameChanged=false;checkValid(txtUserEmail)" toolTip="100 chars (double-click to send email)" doubleClick="parentApplication.goToEmail(txtUserEmail.text)" doubleClickEnabled="true"/>
+
+	<mx:FormItem x="32" y="66" id="lblPsw" label="Password:" width="67"  visible="false"/>
+	<mx:TextInput x="338" y="67" maxChars="50"   width="98" id="txtUserPassword" enabled="{inputEnabled}" visible="{inputEnabled}" change="checkValid(txtUserPassword)"/>
+
+	<mx:CheckBox x="244" y="69" label="Reset Password" id="ckResetPassword" visible="false" click="generateRandomString()" enabled="false"/>
+
+	<packages:DataGridNew width="404" id="dgList" x="32" y="97" height="220" sortableColumns="false"  enabled="{inputEnabled}">
+		<packages:columns>
+			<mx:DataGridColumn headerText="Tab Name" dataField="tabName" width="200"/>
+			<mx:DataGridColumn headerText="Add" dataField="addStatus"  width="50">
+				<mx:itemRenderer>
+					<mx:Component >
+						<mx:HBox horizontalAlign="center"> 
+							<mx:CheckBox  enabled = "{outerDocument.enableDisableCheckBox}" click="data.addStatus=!data.addStatus" selected="{data.addStatus}"/>		
+						</mx:HBox>	
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="Delete" dataField="deleteStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox  horizontalAlign="center">
+							<mx:CheckBox enabled = "{outerDocument.enableDisableCheckBox}" click="data.deleteStatus=!data.deleteStatus"  selected="{data.deleteStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="Edit" dataField="editStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">
+							<mx:CheckBox enabled = "{outerDocument.enableDisableCheckBox}" click="data.editStatus=!data.editStatus"  selected="{data.editStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="View" dataField="viewStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">	
+							<mx:CheckBox  enabled = "{outerDocument.enableDisableCheckBox}"  click="data.viewStatus=!data.viewStatus"  selected="{data.viewStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+		</packages:columns>			
+	</packages:DataGridNew>
+	
+	<mx:Button x="67" y="323" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click=" editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode(),refresh()" x="150" y="323"   width="75" height="25"  enabled="{addEnabled}">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="323"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="323" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+
+	<mx:Label x="32" y="351" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+					
+	<mx:HTTPService id="requestSaveAdmin"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>  
+	<mx:HTTPService id="requestCurrentPermission" method="POST" fault="defaultFault(event)" result="currentUserPermissionResult(event)" />
+	<mx:HTTPService id="userRequestCheckDBUserName"  method="POST" result="{handleDBUserResult(event)}" fault="{defaultFault(event)}"/>       
+	<mx:HTTPService id="userRequestCheckDBUserEmail"  method="POST" result="{handleDBUserEmailResult(event)}" fault="{defaultFault(event)}"/>       
+
+</local:userpriviledgeClass>

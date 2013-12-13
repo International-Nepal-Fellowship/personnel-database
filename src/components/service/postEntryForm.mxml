@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+        showCloseButton="true" width="598" close="removeMe();" borderAlpha="1" height="398" backgroundColor="{parentApplication.lightBackgroundColour}">
+ 
+    <mx:Script>
+        <![CDATA[
+            import mx.controls.TextInput;
+            import mx.managers.PopUpManager;
+            
+            // Variables whose values are set by the main application.
+            // Data provider array for the component's ComboBox control.
+            [Bindable]
+            public var myArray:Array;
+            // A reference to the TextInput control in which to put the result.
+            public var targetComponent:TextInput;
+
+            // OK button click event listener.
+            // Sets the target component in the application to the 
+            // selected ComboBox item value.
+            private function submitData():void {
+                targetComponent.text = String(cb1.selectedItem);
+                removeMe();
+            }
+
+            // Cancel button click event listener.
+            private function removeMe():void {
+                PopUpManager.removePopUp(this);
+            }
+        ]]>
+    </mx:Script>
+    <mx:Button label="OK" click="submitData();"/>
+    <packages:ComboBoxNew id="cb1" dataProvider="{myArray}"/>
+    <mx:Button label="Cancel" click="removeMe();"/>
+  
+</mx:TitleWindow> 

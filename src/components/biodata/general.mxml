@@ -1,0 +1,1997 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas  xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:packages="packages.*">
+	<mx:Script>
+	<![CDATA[
+		import mx.messaging.channels.StreamingAMFChannel;
+		import mx.collections.IViewCursor;
+		import mx.events.CloseEvent;
+		import mx.controls.DataGrid;
+		import components._admin;
+        
+  		import mx.rpc.soap.SOAPFault;         
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.controls.Alert;
+   		import mx.collections.ArrayCollection;
+   		import mx.managers.PopUpManager;
+   		import mx.containers.TitleWindow;
+   		import flash.net.navigateToURL;
+   		import components.popUpWindow;
+   		import components.biodata.popUpCountries;
+   		import components.application.popUpOrganisation;
+   		import packages.DateUtils;
+   		import mx.events.ListEvent;
+   		import packages.DataGridDataExporter;
+   		
+   		//for alerting when non mandatory fields are empty   
+	    public var nonMandatoryTextFields:ArrayCollection;
+		public var nonMandatoryDateFields:ArrayCollection;
+		public var nonMandatoryComboFields:ArrayCollection;
+		public var checkEmptyNonMandatoryFields:Boolean=true;
+   		private var deletingOption:String='Delete';
+   		
+  		[Bindable]private var saveEnabled:Boolean = false;
+		[Bindable]public var inputEnabled:Boolean = false;
+		[Bindable]public var relationEnabled:Boolean = false;
+  		[Bindable]public var addEnabled:Boolean = false;
+		[Bindable]public var editEnabled:Boolean = false;
+		[Bindable]public var deleteEnabled:Boolean = false;
+		[Bindable]private var navEnabled:Boolean = true;
+		[Bindable]protected var addAdminEnabled:Boolean = false;
+		[Bindable]protected var editAdminEnabled:Boolean = false;
+		[Bindable]protected var addAdminVisible:Boolean = false;
+		[Bindable]protected var addEmbassyVisible:Boolean = false;
+		
+		[Bindable]private var surnameComboVisible:Boolean = false;
+		[Bindable]private var nationalityComboVisible:Boolean = false;
+		[Bindable]private var nationalityTextVisible:Boolean = false;
+		//[Bindable]private var currentEmailVisible:Boolean = false;
+		private var savePreviousSurname:Boolean = false;
+		private var savePreviousNationality:Boolean = false;
+		
+		private var lastNOK:int = -1;
+		private var savedIndex:int = -1;
+		private var storeIndex:int = -1;
+		private var lastID:int = -1;
+		
+		private var reloadStaff:Boolean = false;
+		private var staffDeleted:Boolean = false;
+		private var reloadRelative:Boolean = false;
+		private var relativeDeleted:Boolean = false;
+		private var refreshRelatives:Boolean = true;
+		private var sendingData:Boolean = false;
+	    
+		private var titleWindowInstance:TitleWindowData ;
+		[Bindable]public var dpList:ArrayCollection;
+
+		public  var listSearchBy:Array 		=	new Array(); 
+	   	public	var listSearchWhom:Array 	=	new Array();
+
+		private function exportCSV():void{
+			
+			DataGridDataExporter.exportCSV (dgList);
+		}
+
+		[Bindable]private var defaultListHeight:uint = 140;
+		[Bindable]private var expandedListHeight:uint = 210;
+				
+		private function toggleExpandedList(forceSmall:Boolean=false):void{
+	 	
+	 		this.focusManager.setFocus( dgList );	
+	 		if(forceSmall || (dgList.height == expandedListHeight)){
+	 			dgList.height = defaultListHeight;
+	 			displayRelRecord(false);
+	 			//toggleResultHeight.label = "->";
+	 		}
+	 		else {
+	 			dgList.height = expandedListHeight;
+	 			//toggleResultHeight.label = "<-";
+	 		}	 			
+	 	}
+	 	
+		public function popupClosed(fromCloseButton:Boolean):void{
+			//Alert.show(fromCloseButton.toString()+": "+parentApplication.getAppMode());
+			if (parentApplication.getAppMode()=="Add New") {
+				saveOK();
+			}
+		}
+				    	
+    	private function copyErrorToClipBoard(eventObj:Object):void{
+
+	   // Use the eventObj parameter 
+	   // to capture the event type.
+	      if (eventObj.type == "click"){
+	
+	      /* Send the value of this to the Output panel.
+	      Because copyErrorToClipBoard is a function that is not defined 
+	      on a listener object, this is a reference to the 
+	      component instance to which copyErrorToClipBoard is registered
+	      (myButton). Also, since this doesn't reference an 
+	      instance of the Cart class, myGrid is undefined. 
+	      */ 
+	      	 	System.setClipboard(status_txt.text);        
+      		}
+  		 }   	
+    	
+    	 private function keyPressHandler( e:KeyboardEvent ):void {
+
+          	if( e.ctrlKey ){    //ctrl key pressed
+                
+                //trace(e.charCode+" at "+e.currentTarget);
+                if(( e.charCode == 68 ) || (( e.charCode == 100) && e.altKey)){//D or ALT-d 
+               	//  Delete
+                   
+                    deletingOption='Delete';
+                    if( e.altKey){  
+                    	deletingOption='Force Delete';
+                    }
+                    //trace(deletingOption);
+                    if(btnDelete.enabled)
+                    {
+                    	this.focusManager.setFocus( btnDelete );
+                       	deleteRecord();
+                   	}             
+               	}  
+    	 	
+               	if( e.charCode == 97) {//a	
+                    if(btnAddNew.enabled)
+                    {
+                    	this.focusManager.setFocus( btnAddNew );
+                       	addMode();
+                    }    
+                }
+                
+               	if( e.charCode == 122) {//z	
+                   	if(btnCancel.enabled)
+                   	{
+                   		this.focusManager.setFocus( btnCancel );
+                   		viewMode();
+                   	}                       
+                }
+                                
+               	if( e.charCode == 101) {// e
+                    if(btnEdit.enabled)
+                    {
+                       	this.focusManager.setFocus( btnEdit );
+                    	editMode();
+                    }    
+                }
+                 
+               	if( e.charCode == 115) {// s
+                    if(btnOk.enabled)
+                    {
+                        this.focusManager.setFocus( btnOk );
+                    	sendData();                       
+                    }    
+                }
+                
+               }//end of if( e.ctrlKey)
+            }
+    	
+    	
+    	//for customizing the search window as per the page's content in the search.mxml
+		 public function pushSearchVariables():void{
+	 
+	 		//dataProvider for combo 'searchBy' in search.mxml		 		   				
+			listSearchBy.push({ label: "surname",data:"surname"});
+			listSearchBy.push({ label: "forenames",data:"name"}); 
+			listSearchBy.push({ label: "relationship",data:"relation"});
+			if (!parentApplication.patientSystem) {
+        		listSearchBy.push({ label: "status",data:"staff"});
+        		listSearchBy.push({ label: "archived",data:"inf_staff"});
+        	}
+        	else {
+        		listSearchBy.push({ label: "archived",data:"patient_inf"});
+        	}
+			listSearchBy.push({ label: "title",data:"name"});		
+        	listSearchBy.push({ label: "gender",data:"name"});
+			listSearchBy.push({ label: "known_as",data:"name"});
+			listSearchBy.push({ label: "dob",data:"name"});
+			listSearchBy.push({ label: "marital_status",data:"name"});
+			listSearchBy.push({ label: "address",data:"address"});		
+        	listSearchBy.push({ label: "city_town",data:"address"});
+        	listSearchBy.push({ label: "state_province",data:"address"});
+        	//listSearchBy.push({ label: "qualification",data:"education"});
+        	listSearchBy.push({ label: "staff_type",data:"staff_type"});
+        	                 		           	
+        	//listSearchBy.push({ label: "grade",data:"education"});
+        	if (parentApplication.patientSystem) {
+				listSearchBy.push({ label: "religion",data:"patient_inf"});//this points to religion_id in inf_staff
+				listSearchBy.push({ label: "ethnicity",data:"patient_inf"});// caste_id in inf_staff
+        	}
+        	else {
+				listSearchBy.push({ label: "religion",data:"inf_staff"});//this points to religion_id in inf_staff
+				listSearchBy.push({ label: "ethnicity",data:"inf_staff"});// caste_id in inf_staff 
+				listSearchBy.push({ label: "nationality",data:"nationality"});    		
+        	}
+        	if (parentApplication.personnelNepalSystem) {
+        		listSearchBy.push({ label: "citizenship",data:"inf_staff"});
+        	}
+        	if (parentApplication.personnelWorldwideSystem) {
+        		listSearchBy.push({ label: "embassy_reg",data:"inf_staff"});
+        		listSearchBy.push({ label: "embassy",data:"inf_staff"});   
+        	}
+             
+        	// dataprivider for the datagrid 'dg' in the form fieldname ('fields: "title") and table name(data:"name")       		
+			listSearchWhom.push({ fields: "surname",data:"surname"});
+			listSearchWhom.push({ fields: "forenames",data:"name"});
+			listSearchWhom.push({ fields: "relationship",data:"relation"});
+			if (!parentApplication.patientSystem) {
+				listSearchWhom.push({ fields: "status",data:"staff"});
+        		listSearchWhom.push({ fields: "archived",data:"inf_staff"});
+  			}
+  			else {
+  				listSearchWhom.push({ fields: "archived",data:"patient_inf"});
+  			}			 
+			listSearchWhom.push({ fields: "title",data:"name"});		   
+        	listSearchWhom.push({ fields: "gender",data:"name"});
+			listSearchWhom.push({ fields: "known_as",data:"name"});
+			listSearchWhom.push({ fields: "dob",data:"name"});
+			listSearchWhom.push({ fields: "marital_status",data:"name"});
+			listSearchWhom.push({ fields: "blood_group",data:"name"});	
+			listSearchWhom.push({ fields: "birth_town",data:"name"});
+			listSearchWhom.push({ fields: "birth_district",data:"name"});
+			listSearchWhom.push({ fields: "birth_country",data:"name"});						
+			if (parentApplication.patientSystem) {
+				listSearchWhom.push({ fields: "religion",data:"patient_inf"});
+				listSearchWhom.push({ fields: "ethnicity",data:"patient_inf"});
+			}
+			else {	
+				listSearchWhom.push({ fields: "religion",data:"inf_staff"});
+				listSearchWhom.push({ fields: "ethnicity",data:"inf_staff"});	
+				listSearchWhom.push({ fields: "nationality",data:"nationality"});			
+			}
+			if (parentApplication.personnelNepalSystem) {
+        		listSearchWhom.push({ fields: "citizenship",data:"inf_staff"});
+        	}
+			if (parentApplication.personnelWorldwideSystem) {					
+				listSearchWhom.push({ fields: "embassy_reg",data:"inf_staff"});
+				listSearchWhom.push({ fields: "embassy",data:"inf_staff"}); 
+			}
+	 	}
+		
+		private function showRelativesWindow():void {
+
+ 				parentApplication.setRelativeMode(true); 				
+	     		titleWindowInstance =  TitleWindowData(PopUpManager.createPopUp(this,  TitleWindowData, false));     //instantiate and show the title window
+  		 		//PopUpManager.centerPopUp(titleWindowInstance);
+  		 		titleWindowInstance.title = "Relatives";
+  		 			
+  				 //built-in property  
+  				titleWindowInstance.mainApp = this; //Reference to the main app scope
+  				titleWindowInstance.dg2.columns=	dgList.columns;
+  				titleWindowInstance.dg2.columns[0].visible = false;
+		     	       		     		
+ 				displayRelRecord();
+ 				setButtonState();
+ 				//setSurnameVariablesVisibility();
+ 		}
+
+		private function showMatchesWindow():void {
+ 				
+	     		titleWindowInstance =  TitleWindowData(PopUpManager.createPopUp(this,  TitleWindowData, false));     //instantiate and show the title window
+  		 		//PopUpManager.centerPopUp(titleWindowInstance);
+  		 		titleWindowInstance.title = "Matching records - choose one";
+  		 			
+  				 //built-in property  
+  				titleWindowInstance.mainApp = this; //Reference to the main app scope
+  				titleWindowInstance.dg2.columns=	dgList.columns;
+  				titleWindowInstance.dg2.columns[0].visible = false;
+ 		}
+ 		
+		public function toggleRelativeMode():void {
+
+			parentApplication.toggleRelativeMode();
+ 			setButtonState();
+ 			//	setSurnameVariablesVisibility();
+ 			lblDob.visible=!(lblDob.visible);
+ 			lblDobRel.visible=!(lblDobRel.visible);
+ 			
+ 			lblMaritalStatus.visible=!(lblMaritalStatus.visible);
+ 			lblMaritalStatusRel.visible=!(lblMaritalStatusRel.visible);	
+ 			
+ 		}
+ 		 		
+ 		public function findListOfRelatives():void{
+
+ 			var parameters:Object= new Object();
+ 			
+           	parameters.fieldName	=	"name.id";
+           	parameters.fieldValue	=	parentApplication.getCurrentStaffID();           			
+           	parameters.fieldNames	=	"name.id,name.forenames,relation.relationship,surname.surname,relation.relation_timestamp";
+           	parameters.action		=	"Search Relatives";
+          	//parameters.selfForename =	parentApplication.searchResult.selectedItem.forenames;
+
+			trace("general.findListOfRelatives: "+parameters.fieldValue+": "+parentApplication.getAppMode()); 				
+           			
+           	userRequestGetRelatives.url	=	parentApplication.getPath()	+	"search.php";
+           			
+ 			userRequestGetRelatives.useProxy	= false;
+ 			userRequestGetRelatives.send(parameters); 		
+ 		}
+ 		
+ 		private function displayRelatives(event:ResultEvent):void{
+		
+ 			dgList.dataProvider	=	userRequestGetRelatives.lastResult.relation.relative;
+			dpList	=	dgList.dataProvider as ArrayCollection;
+	
+			if(dgList.dataProvider.length>0){
+				var savedRelIndex:int = parentApplication.getLastSelectedRelativeIndex();	
+				if (savedRelIndex > -1)
+					dgList.selectedIndex = savedRelIndex;
+				else
+		     		dgList.selectedIndex	=	dgList.dataProvider.length - 1; //default to last (self)
+		    }
+		    else {
+		    	dgList.selectedIndex	=	-1;
+		    }
+		    
+		    trace("displayRelatives1: "+savedIndex+", "+savedRelIndex+", "+lastID+", "+dgList.selectedIndex); 	
+		    trace("displayRelatives1: "+parentApplication.isRelativeMode()+", "+parentApplication.getAppMode()); 		
+		    
+		    if (parentApplication.isRelativeMode()){     		     		
+ 				setButtonState();
+ 				if (reloadRelative) { //newly added relative
+					savedIndex = -1;
+					reloadRelative = false;
+					parentApplication.setRecord(lastID,true);
+					lastID = -1;
+ 				}
+ 				else {
+ 					if (relativeDeleted) { //relative has been deleted
+						savedIndex = -1;
+						relativeDeleted = false;
+						parentApplication.setRecord(lastID,true);
+						lastID = -1;
+ 					}
+ 					else {
+ 						if (parentApplication.getAppMode() == "View") {
+ 							parentApplication.setRecord(lastID,false); //just reset the index
+							lastID = -1;
+							displayRelRecord(false);
+						}
+ 					}
+ 				}
+ 				//setSurnameVariablesVisibility();
+/*
+	 			//added on march 2009		
+ 				var currentlySelectedRelative:String=	parentApplication.getCurrentRelativeID();
+ 				if(currentlySelectedRelative!='') {//if the relative's id is set			
+					parentApplication.setCurrentID(currentlySelectedRelative);
+ 					dgList.selectedIndex =	parentApplication.getDatagridIndex(dgList,currentlySelectedRelative);
+ 					displayRelRecord();
+ 				}
+*/
+		    }
+		    //trace("displayRelatives2: "+savedIndex+", "+savedRelIndex+", "+lastID+", "+dgList.selectedIndex); 	
+		    //trace("displayRelatives "+this.focusManager.getFocus()+" mode="+parentApplication.getAppMode());
+	  	
+ 			if (parentApplication.isTempStaffMode()) {
+ 				parentApplication.setTempStaffMode(false);
+ 				displayRelRecord();
+ 			}
+ 		}
+		
+ 		public function initialiseListOfRelatives():void{
+
+ 			var parameters:Object= new Object();
+ 			
+ 			//trace("general.initialiseListOfRelatives");
+           	parameters.action		=	"Initialise Relatives";				
+           			
+           	userRequestInitialiseRelatives.url	=	parentApplication.getPath()	+	"search.php";
+           			
+ 			userRequestInitialiseRelatives.useProxy	= false;
+ 			userRequestInitialiseRelatives.send(parameters); 		
+ 		}
+ 		
+ 		public function initialiseRelatives(event:ResultEvent):void{
+//Alert.show('initialiseRelatives() -> userRequestInitialiseRelatives');		
+ 			dgList.dataProvider	=	userRequestInitialiseRelatives.lastResult.relation.relative;
+ 		}
+
+		public function refreshData():void{
+
+			trace("tab refreshData(personal) "+parentApplication.getAppMode());
+			var nameIndex:int = parentApplication.getComboData(comboCountry,comboCountry.text);			
+			//trace("before: "+comboCountry.text+", "+comboCountry.selectedIndex+", "+nameIndex);
+			comboCountry.dataProvider	=  parentApplication.getUserRequestNameResult().countries.country;
+			parentApplication.setComboData(comboCountry,nameIndex);
+			//trace("after: "+comboCountry.text+", "+comboCountry.selectedIndex+", "+nameIndex);
+			
+			nameIndex = parentApplication.getComboData(comboCaste,comboCaste.text);			
+			comboCaste.dataProvider	=  parentApplication.getUserRequestNameResult().casts.caste;
+			parentApplication.setComboData(comboCaste,nameIndex);
+			
+			nameIndex = parentApplication.getComboData(comboReligion,comboReligion.text);			
+			comboReligion.dataProvider	=  parentApplication.getUserRequestNameResult().religions.religion;
+			parentApplication.setComboData(comboReligion,nameIndex);
+			
+			nameIndex = parentApplication.getComboData(comboEmbassy,comboEmbassy.text);			
+			comboEmbassy.dataProvider	=	parentApplication.getUserRequestNameResult().organisations.embassy;
+			parentApplication.setComboData(comboEmbassy,nameIndex);
+
+			//trace("refreshdata "+this.focusManager.getFocus());
+			//this.focusManager.setFocus(this.focusManager.getFocus());
+			if (parentApplication.getAppMode() != "View")
+			{
+				if ((parentApplication.isRelativeMode()) && (parentApplication.getAppMode() == "Add Existing")) {
+		    		if (comboRelation.enabled) this.focusManager.setFocus(comboRelation);
+		  		}
+		  		else {
+					if (comboTitle.enabled) this.focusManager.setFocus(comboTitle);
+		  		}
+				if (this.focusManager.getFocus() != null) this.focusManager.getFocus().drawFocus(true);
+			}
+			//trace("refreshdata "+this.focusManager.getFocus());
+		}
+		
+        public function loadData():void{
+
+			trace("general.loadData: "+parentApplication.isInitialised());
+			if (!parentApplication.isInitialised()) {
+				parentApplication.loadTypes(); // workaround for refresh - force loadnames and relogin
+				return;
+			}
+			trace("general.loadData");
+			this.addEventListener( KeyboardEvent.KEY_DOWN, keyPressHandler );//for keyboard functions
+			btnDelete.addEventListener( MouseEvent.CLICK, deleteClickEvent );//for click on search button
+
+			dgList.toolTip = "Shift + click to copy selected row, ctrl + click to copy cell to clipboard"; 				
+			
+			parentApplication.getUserPermission('personal');
+			pushSearchVariables();
+			initialiseListOfRelatives();	
+			status_txt.addEventListener("click", copyErrorToClipBoard);//click is handled in each status_txt			
+			status_txt.toolTip = "Click to copy to clipboard";
+			btnCancel.label = "Cancel";
+			btnCancel.labelPlacement = "left";
+			btnEdit.label = "Edit";
+			btnEdit.labelPlacement = "left";
+			btnAddNew.label = "Add";
+			btnAddNew.labelPlacement = "left";
+			btnOk.label = "Save";
+			btnOk.labelPlacement = "left";	
+			btnDelete.label = "Delete";
+			btnDelete.labelPlacement = "left";
+
+			comboCountry.dataProvider	=  parentApplication.getUserRequestNameResult().countries.country;
+       		comboCaste.dataProvider	=	parentApplication.getUserRequestNameResult().casts.caste;
+       		comboEmbassy.dataProvider	=	parentApplication.getUserRequestNameResult().organisations.embassy;
+       		comboReligion.dataProvider	=	parentApplication.getUserRequestNameResult().religions.religion;
+       		comboMaritalStatus.dataProvider	=	parentApplication.getUserRequestTypeResult().maritalstatus;
+      		comboTitle.dataProvider	=	parentApplication.getUserRequestTypeResult().title;
+       		comboGender.dataProvider	=	parentApplication.getUserRequestTypeResult().gender;
+       		comboBloodGroup.dataProvider	=	parentApplication.getUserRequestTypeResult().bloodgroup;
+       		comboRelation.dataProvider	=	parentApplication.getUserRequestTypeResult().relation;
+			comboNextToKin.dataProvider	=	parentApplication.getUserRequestTypeResult().nexttokin;
+    			
+		//	parentApplication.setAppMode("View");
+		//	setButtonState();
+		////	setSurnameVariablesVisibility();
+			
+/*			
+			if (parentApplication.getCurrentID() != "") { 
+			// nasty hack to cope with reloading web page in browser
+			// search is done BEFORE general is initialised and before login, so result cannot be displayed
+			// this line forces a refresh after login
+				boundField();
+    		}
+*/
+    		// if(parentApplication.isIncompleteWarningOn()) 	
+				loadNonMandatoryFields();
+				addValidationForNonMandatoryTextFields();
+        }
+
+		private function deleteClickEvent(evt:MouseEvent): void {
+			
+			if (evt.altKey) {
+				deletingOption='Force Delete';
+			}
+			else {
+				deletingOption='Delete';
+			}
+			deleteRecord();
+		}
+		       
+        public function activate(resetSearch:Boolean=false):void{
+        	
+			//trace("general.activate");        	
+        	if (parentApplication.search != null) {
+        		
+        		if (resetSearch) {
+        			parentApplication.search.pageSpecificSearchInitialization(listSearchBy,listSearchWhom,'dummy');
+        		} else {
+        			parentApplication.search.pageSpecificSearchInitialization(listSearchBy,listSearchWhom,'general');
+ 		    		//parentApplication.setAppMode("View");
+ 		    		//setButtonState();
+ 		    		//refreshData();
+					//boundField();
+					viewMode(false);
+        		}
+        	}    
+        }   
+
+		private function store():void{
+		
+			var dgObject:DataGridNew;
+           	dgObject = parentApplication.returnSelectedObject();
+           	
+			savedIndex = dgObject.selectedIndex; // store current index
+			//trace("General store index: "+savedIndex);
+		}
+
+		private function genderChange():void{
+		
+			if (parentApplication.isRelativeMode()) {
+				var currentRelation:String = comboRelation.text;
+				if (comboGender.selectedItem == "Male") comboRelation.dataProvider = parentApplication.getUserRequestTypeResult().malerelation;
+ 				if (comboGender.selectedItem == "Female") comboRelation.dataProvider = parentApplication.getUserRequestTypeResult().femalerelation;
+ 				comboRelation.selectedItem = currentRelation;
+ 				if (comboRelation.selectedIndex == -1) {
+ 					comboRelation.selectedIndex = 0;
+ 				}
+			}
+			checkValid(comboRelation);
+		}	
+		
+		private function setValues():void{
+	//if(parentApplication.biodatas.portals.selectedIndex!=0) return;
+			var dgObject:DataGridNew;
+           	dgObject = parentApplication.returnSelectedObject();
+           	
+           	trace("General.setValues: "+savedIndex+", "+parentApplication.getAppMode());
+			if (savedIndex > -1) {
+				trace("General restore index: "+savedIndex);
+				dgObject.selectedIndex = savedIndex;
+				refreshRelatives = true;
+				savedIndex = -1;
+			}
+			else { 
+				if (savedIndex == -2) { //has been reset - find newest (highest id value)
+					var maxID:int = 0;
+					var currentID:int;
+					for (var i:int = 0; i < dgObject.dataProvider.length; i++) {
+						currentID = dgObject.dataProvider[i].zzzid;
+						if(currentID > maxID) {
+							savedIndex = i;
+							maxID = currentID;
+						}	
+					}
+					trace("General find index: "+savedIndex);
+					dgObject.selectedIndex = savedIndex;
+					refreshRelatives = true;
+					savedIndex = -1;
+				}
+			}
+			
+			trace("general.setValues: "+savedIndex+", "+refreshRelatives);
+           	
+/*
+Alert.show('address timestamp: '+parentApplication.getUserRequestResult().address_timestamp);
+Alert.show('name timestamp: '+parentApplication.getUserRequestResult().name_timestamp);
+Alert.show('surname timestamp: '+parentApplication.getUserRequestResult().surname_timestamp);
+Alert.show('nationality timestamp: '+parentApplication.getNationalityTimestamp());
+Alert.show('inf_staff timestamp: '+parentApplication.searchUserRequest.lastResult.inf_staff_timestamp);
+*/
+			textCurrentPhone.text=	parentApplication.getUserRequestResult().phone;
+			textCurrentEmail.text=	parentApplication.getUserRequestResult().email;
+			textSurName.text	 =	parentApplication.getUserRequestResult().surname;
+           	textForeName.text	 =	parentApplication.getUserRequestResult().forenames;
+           	textKnownAs.text	 =	parentApplication.getUserRequestResult().known_as;
+           	
+			comboCaste.text		 =	parentApplication.getUserRequestResult().caste_id;
+           	comboReligion.text	 =	parentApplication.getUserRequestResult().religion_id;
+           	textNationality.text =	parentApplication.getUserRequestResult().nationality;//comboNationalityHistory.text;        
+           	
+           //	var tempBirthPlace:String	=	parentApplication.getUserRequestResult().birth_place;           		
+          // 	var birthPlace:Array	=	new Array();
+           			
+         //  	birthPlace	=	tempBirthPlace.split("/");
+          // 	textBirthPlaceCounty.text	=	birthPlace[0];           	
+         //  	textBirthPlaceTown.text	=	birthPlace[1];           		
+         //  	var tempCountry:String = birthPlace[2];   
+            
+            textBirthPlaceCounty.text=	parentApplication.getUserRequestResult().birth_district;         	
+           	textBirthPlaceTown.text	=	parentApplication.getUserRequestResult().birth_town;       		
+           	var tempCountry:String = parentApplication.getUserRequestResult().birth_country_id;  	
+        // Alert.show('CountryID: '+parentApplication.getUserRequestResult().birth_country_id); 	       		
+           	var nameIndex:int = Number(tempCountry);
+
+       		if (isNaN(nameIndex) || (nameIndex < 0) || ((nameIndex == 0) && (tempCountry != "0"))) { // a string (old data)
+       			nameIndex = parentApplication.getComboData(comboCountry,tempCountry);
+       		}
+           		
+			parentApplication.setComboData(comboCountry,nameIndex);
+			//trace(tempCountry+", "+nameIndex+", "+comboCountry.text);
+           	
+			parentApplication.setComboData(comboEmbassy,parentApplication.getUserRequestResult().embassy_id);
+			    	
+           	dateEmbassyRegistration.text = DateUtils.stringToDateFieldString(parentApplication.getUserRequestResult().embassy_reg,dateEmbassyRegistration,parentApplication.dateFormat);	
+       		dateBirthDate.text		=	DateUtils.stringToDateFieldString(parentApplication.getUserRequestResult().dob,dateBirthDate,parentApplication.dateFormat);
+       		dateConversionADBS();
+       		getAge();
+       		//DateConversionADBS('dateAD');
+          		
+       		comboBloodGroup.selectedItem	=	parentApplication.getUserRequestResult().blood_group;
+         //  	textMedicalInsurance.text	=	parentApplication.getUserRequestResult().medical_insurance;
+           	//comboCaste.selectedIndex	=	parentApplication.findInDataArray(parentApplication.getUserRequestNameResult().casts.caste,parentApplication.getUserRequestResult().caste_id);
+           	//comboReligion.selectedIndex	=	parentApplication.findInDataArray(parentApplication.getUserRequestNameResult().religions.religion, parentApplication.getUserRequestResult().religion_id);
+
+           	textCitizenShip.text	=	parentApplication.getUserRequestResult().citizenship;
+           	comboGender.selectedItem	=	parentApplication.getUserRequestResult().gender;
+           	comboMaritalStatus.selectedItem	=	parentApplication.getUserRequestResult().marital_status;
+           	comboTitle.selectedItem	=	parentApplication.getUserRequestResult().title;
+           	trace("staff: "+parentApplication.getCurrentStaffID() +", current: "+parentApplication.getCurrentID());
+           	if (parentApplication.getCurrentStaffID() == parentApplication.getCurrentID()) {//store NOK if staff
+           		lastNOK = parentApplication.getUserRequestResult().next_of_kin_id;
+				//trace("Setting NOK to: "+lastNOK);
+			}
+			
+			if (parentApplication.isRelativeMode()) {
+				
+				genderChange();
+				 						
+				if (dgList.selectedItem != null) {
+ 					comboNextToKin.text	= (lastNOK==dgList.selectedItem.zzzid)?"Yes":"No";
+ 					if (dgList.selectedItem.relationship == "Self") {
+ 						comboRelation.selectedItem = "";
+ 						relationEnabled = false;
+ 					}
+ 					else {
+ 						relationEnabled = inputEnabled;
+ 						//comboRelation.text = dgList.selectedItem.relationship;
+           				comboRelation.selectedItem	=	dgList.selectedItem.relationship;				
+      				}
+      				//trace("relation enabled: "+relationEnabled+ ": "+comboRelation.text+" - "+dgList.selectedItem.relationship);
+    			}
+    			if (parentApplication.getAppMode() == "Add Existing") {
+    				comboNextToKin.text = "No";
+    				comboRelation.selectedItem = "";
+    				relationEnabled = true;
+   				}
+   			}
+   			
+   			checkValid(null);
+
+    		if (refreshRelatives) findListOfRelatives();
+		}		
+		
+        public function boundField(fromRelative:Boolean=false):void{
+           	
+           	//trace("general.boundField");
+           	var dgObject:DataGridNew;
+           	if (!fromRelative) {
+           		refreshRelatives = true;
+           		dgObject = parentApplication.searchResult;
+    	    }	
+           	else
+           		dgObject = dgList;
+           	
+           	storeIndex = dgList.selectedIndex;
+           	trace("general.boundField: "+storeIndex+", "+fromRelative+", "+refreshRelatives+", "+parentApplication.getAppMode());
+           	//setButtonState();
+           		
+           	if ((dgObject.selectedIndex == -1) || (parentApplication.getUserRequestResult()==null)){
+				refresh();
+			}
+			else {           	
+				setValues();
+			}
+			setButtonState();
+			//setSurnameVariablesVisibility();
+        }
+           
+	    private function showErrorDialog(event:FaultEvent):void { 	        	           	
+	            // Handle operation fault.
+	            Alert.show(event.fault.faultString, "Error");
+	    }
+            
+        private function defaultFault(event:FaultEvent):void {
+            	
+                // Handle service fault.
+                if (event.fault is SOAPFault) {
+                     var fault:SOAPFault	=	event.fault as SOAPFault;
+                     var faultElement:XML	=	fault.element;
+        		}
+                
+                Alert.show(event.fault.faultString, "Error");                       
+        }
+       
+        //converts a date string to actionscript date format
+  		public static function parseIsoDate(dateStr:String):Date
+		{
+			dateStr = dateStr.replace(/-/g, "/");
+			dateStr = dateStr.replace("T", " ");
+			dateStr = dateStr.replace("Z", " GMT-0000");
+			const i:Number = Date.parse(dateStr);
+
+			return new Date(i);
+		}
+   
+        private function getAge():void{
+        	
+            textAge.text ='';
+       		var birthDate:Date = parseIsoDate(dateBirthDate.text);
+       		var currentDate:Date = new Date;
+       		var age:int = currentDate.getFullYear() - birthDate.getFullYear();
+       		var currentMonth:int = currentDate.getMonth();
+       		var birthMonth:int = birthDate.getMonth();
+       		if (currentMonth < birthMonth){
+       		  		age = age-1;
+       		} else {
+       		  		if (currentMonth == birthMonth){
+       		  			if (currentDate.getDate() < birthDate.getDate()){
+       		  				age = age - 1;
+       		  			}
+       		  		}
+       		}
+            textAge.text=age.toString();						
+				
+        }
+  
+        public function dateOperation(datepart:String = "", number:Number = 0, date:Date = null):Date {
+		    date = date == null ? new Date() : new Date(date.time);
+
+		    switch(datepart.toLocaleLowerCase()) {
+
+		    	case "y":
+		    	case "fullyear":
+		        case "yyyy":
+		        case "year":
+		            datepart = "fullYear";
+		            break;
+
+		        case "m":
+		        case "month":
+		            datepart = "month";
+		            break;
+
+		        case "d":
+		        case "day":
+		        case "date":
+		            datepart = "date";
+		            break;
+
+		        case "h":
+		        case "hours":
+		            datepart = "hours";
+		            break;
+
+	            case "minutes":
+		        case "n":
+		            datepart = "minutes";
+		            break;
+
+	            case "seconds":
+		        case "s":
+		            datepart = "seconds";
+		            break;
+
+		        case "milliseconds":
+		        case "l":
+		            datepart = "milliseconds";
+		            break;
+	            default:
+		            datepart = null;
+		    }
+
+		    if(datepart != null)
+		    	date[datepart]  += number;
+		    return date;
+		}
+
+ 		private function changeToNepali():void{
+        	
+        		var parameters:Object=new Object();
+           		userRequestDate.useProxy	=	false;
+           		parameters.englishdate		=	DateUtils.dateFieldToString(dateBirthDate,parentApplication.dateFormat);
+           		userRequestDate.url			=	parentApplication.getPath()	+	"retDate.php";
+       
+           		userRequestDate.send(parameters);           		           		
+        }
+        
+        private function dateConversionADBS(dateHolder:String='dateAD'):void{
+        	//Alert.show('dateHolder: '+dateHolder.text);
+        	//var userPermissionInfo:Array = new Array();
+        	
+        	var dateOk:Boolean = true;
+        	var parameters:Object=new Object();
+        	
+           	userRequestDate.useProxy	=	false;
+           	if(dateHolder=='dateBS'){
+           		parameters.englishdate		=	'';
+           		parameters.nepalidate		=	dateNepaliBirthDate.text;
+           	}
+           	else{
+           		dateOk = parentApplication.CheckValidDate(dateBirthDate);
+				parameters.englishdate		=	DateUtils.dateFieldToString(dateBirthDate,parentApplication.dateFormat);
+           		parameters.nepalidate		=	'';
+           	}
+           	//parameters.myArray = userPermissionInfo;
+           	if (dateOk) {
+           		userRequestDate.url			=	parentApplication.getPath()	+	"retDate.php";
+           		userRequestDate.send(parameters); 
+           	}          		           		
+        }
+        
+        private function fillConvertedDate():void{        		
+        		
+       		dateNepaliBirthDate.text	=	userRequestDate.lastResult.nepdate;		
+       		dateBirthDate.text			=   DateUtils.stringToDateFieldString(userRequestDate.lastResult.engdate,dateBirthDate,parentApplication.dateFormat);
+       		textAge.text				=	userRequestDate.lastResult.age;	
+       		checkValid(null);
+       		//if(int(textAge.text)<0) Alert.show("Invalid Birth Date!");		
+        }
+		
+		private function updateBirthDate():void{
+       		
+     	  	dateBirthDate.text=DateDisplay.format(dateOperation("fullYear", -int(textAge.text)));     	  	    	
+        }    
+		
+		private function sendData():void{
+			
+			sendingData = true;
+			checkDbEntry();
+		}
+		
+		private function saveOK():void{
+		
+			if(!sendingData)
+				return;
+				
+			sendingData = false;
+			
+			if(!sendDataReady())
+				return;
+
+			reloadRelative = parentApplication.isRelativeMode(); // && (parentApplication.getAppMode() == "Add New");
+			reloadStaff = (!parentApplication.isRelativeMode()) && (parentApplication.getAppMode() != "Edit");
+		
+			if (parentApplication.getAppMode() != "Edit")  {
+				savedIndex = -2;
+				trace("Clear index: "+savedIndex);
+			}
+			addNewSurname();
+		}
+
+		private function doSendData():void{
+								
+				var parameters:Object=new Object();
+				userRequestSaveGeneral.useProxy	=	false;
+											
+				if(savePreviousSurname)
+					parameters.oldSurname	=	parentApplication.getUserRequestResult().surname;
+				else
+					parameters.oldSurname	=	'';
+					
+				if(savePreviousNationality)
+					parameters.oldNationality	=	parentApplication.getUserRequestResult().nationality;//comboNationalityHistory.text;
+				else
+					parameters.oldNationality	=	'';
+				
+				parameters.userID	= parentApplication.getCurrentUserID();
+//Alert.show('userID:' + parameters.userID);
+				parameters.title	= comboTitle.text;
+				parameters.surname	=	textSurName.text;
+				parameters.nationality	=	textNationality.text;
+				parameters.forename	=	textForeName.text;
+				parameters.knownas	=	textKnownAs.text;
+				parameters.gender	=	comboGender.text;
+				parameters.dob	=	DateUtils.dateFieldToString(dateBirthDate,parentApplication.dateFormat);
+				parameters.birthplacecounty	=	textBirthPlaceCounty.text;
+				parameters.birthplacetown	=	textBirthPlaceTown.text;
+				parameters.birthplacecountryID	=	comboCountry.value;	
+				//parameters.birthplacecountry	=	comboCountry.text;				
+				parameters.maritalstatus	=	comboMaritalStatus.text;
+				parameters.bloodgroup	=	comboBloodGroup.text;
+				parameters.action	=	parentApplication.getAppMode();	
+				//parameters.religionid	=	comboReligion.value;
+				//parameters.casteid	=	comboCaste.value;	
+				parameters.religion	=	comboReligion.text;
+				parameters.caste	=	comboCaste.text;
+		//		parameters.medicalinsurance	=	textMedicalInsurance.text;
+				parameters.citizenship	=	textCitizenShip.text;
+				parameters.nexttokin	=	comboNextToKin.text;
+				parameters.relation	=	comboRelation.text;
+				parameters.embassy_reg	=	DateUtils.dateFieldToString(dateEmbassyRegistration,parentApplication.dateFormat);
+				parameters.id	=	parentApplication.getCurrentID();
+				parameters.embassy_id	=	comboEmbassy.value;
+				
+				if(parentApplication.getAppMode() != "Add New"){
+					
+					if(parentApplication.getAppMode() == "Add Existing")
+						parameters.relation_timestamp	=	'null';
+					else
+						parameters.relation_timestamp	= dgList.selectedItem.relation_timestamp;
+					if(parentApplication.getUserRequestResult().address_timestamp==null)
+						parameters.address_timestamp	=	'null';
+					else					
+						parameters.address_timestamp	=	parentApplication.getUserRequestResult().address_timestamp;
+					if(parentApplication.getUserRequestResult().name_timestamp==null)
+						parameters.name_timestamp		= 'null';
+					else
+						parameters.name_timestamp		=	parentApplication.getUserRequestResult().name_timestamp;
+					if(parentApplication.getUserRequestResult().surname_timestamp==null)
+						parameters.surname_timestamp	= 	'null';
+					else
+						parameters.surname_timestamp	= 	parentApplication.getUserRequestResult().surname_timestamp;
+					if (parentApplication.patientSystem) {
+						if(parentApplication.getUserRequestResult().patient_inf_timestamp==null)
+							parameters.patient_inf_timestamp	= 'null';
+						else
+							parameters.patient_inf_timestamp	=	parentApplication.getUserRequestResult().patient_inf_timestamp;
+					}
+					else {
+						if(parentApplication.getUserRequestResult().inf_staff_timestamp==null)
+							parameters.inf_staff_timestamp	= 'null';
+						else
+							parameters.inf_staff_timestamp	=	parentApplication.getUserRequestResult().inf_staff_timestamp;						
+					}
+					if(parentApplication.getUserRequestResult().nationality_timestamp==null)
+						parameters.nationality_timestamp =	'null';
+					else
+						parameters.nationality_timestamp =	parentApplication.getUserRequestResult().nationality_timestamp; //parentApplication.getNationalityTimestamp();
+				//Alert.show('A:'+parameters.address_timestamp+'N:'+parameters.name_timestamp +'S:'+parameters.surname_timestamp  +'I:'+ parameters.inf_staff_timestamp +'Nt'+parameters.nationality_timestamp);
+				} 
+					
+				if(parentApplication.isRelativeMode()){
+					//For relative mode dont Alert for empty values for these fields. SO fill with some junk values
+           			textCitizenShip.text='none';
+           			comboReligion.selectedIndex=1;
+           			comboCaste.selectedIndex=1;
+           			comboEmbassy.selectedIndex=1;
+					
+					//trace("NOK = "+parameters.nexttokin);
+					if (parameters.nexttokin == "Yes") {// store last NOK when record saved
+						lastNOK = parameters.id;
+						//trace("Setting NOK to: "+lastNOK);
+					}
+					parameters.staffid	=	parentApplication.getCurrentStaffID();
+					parameters.mode = 'relative';
+					userRequestSaveGeneral.url	=	parentApplication.getPath()	+	"requestSaveGeneral.php";  
+           		
+				}else {		
+					parameters.mode = 'staff';							
+					userRequestSaveGeneral.url	=	parentApplication.getPath() +	"requestSaveGeneral.php";    
+				}
+
+				parentApplication.searching=true;
+           		userRequestSaveGeneral.send(parameters);                   			
+        }
+			
+		private function display():void{
+		
+				//Alert.show(comboGender.value.toString(),"Item selected");				
+		}
+						
+		private function refresh():void{
+			
+			//trace("general.refresh");
+			refreshData();	
+			textSurName.text	=	"";
+			textKnownAs.text	=	"";
+			//comboCountry.text	=	"";
+			textCurrentEmail.text='';
+			textCurrentPhone.text='';
+			textBirthPlaceCounty.text	=	"";
+			textBirthPlaceTown.text	=	"";
+			textForeName.text	=	"";
+			dateBirthDate.text	=	"";
+			textCitizenShip.text	=	"";
+			textNationality.text 	=	"";
+	//		textMedicalInsurance.text	=	"";
+			dateNepaliBirthDate.text	=	"";			
+			textAge.text="";
+           	comboEmbassy.selectedIndex	=	0;
+   			dateEmbassyRegistration.text	=	"";
+			comboBloodGroup.selectedIndex	=	0;
+	        comboCaste.selectedIndex	=	0;
+           	comboReligion.selectedIndex	=	0;
+           	comboGender.selectedIndex	=	0;           		
+           	comboMaritalStatus.selectedIndex	=	0;           		
+           	comboTitle.selectedIndex	=	0;
+           	comboCountry.selectedIndex	=	0;
+           	comboRelation.selectedIndex	=	0;
+           	comboNextToKin.selectedIndex	=	0;	
+            comboSurnameHistory.dataProvider = null;
+			comboNationalityHistory.dataProvider=null;               
+			//comboNationalityHistory.visible		= 	false;
+			//parentApplication.setAppMode("Add New");
+		}
+		
+		private function defaultResult(event:ResultEvent):void{
+			
+			parentApplication.searching=false;
+			status_txt.data="";
+			status_txt.data=userRequestSaveGeneral.lastResult.errors.error;
+			
+			if(userRequestSaveGeneral.lastResult.errors.status=='success'){
+				//status_txt.data = 'Successfully updated database(0).';
+				
+				//dgList.selectedItem.forenames = textForeName.text;
+				//dgList.selectedItem.relationship = comboRelation.selectedItem;
+				//trace(comboRelation.text+ " - " +comboRelation.selectedItem);
+				status_txt.enabled=true;
+				lastID = userRequestSaveGeneral.lastResult.lastID;
+			}
+			else
+				status_txt.enabled=false;			
+			
+			viewMode(false);       
+		}	
+		
+		private function checkValid(inputObject:Object):void{
+			
+			//parentApplication.changeToUpper(inputObject);
+				
+			saveEnabled	= inputEnabled;
+           	
+           	// To check if the text fields contains invalid characters (<, >)
+           	if(inputObject != null) {
+				var txtCheck:String = inputObject.text ;
+				inputObject.errorString = "";
+				if(txtCheck.length > 0){ 
+					if(parentApplication.invalidChars(txtCheck))
+					{
+						inputObject.errorString = "Remove invalid characters: <, >";
+                   		saveEnabled = false;
+                 	}
+   				}
+   			}
+   			
+			if (parentApplication.CheckValidDate(dateBirthDate) == false){
+				saveEnabled = false;
+			}					
+			if (parentApplication.CheckValidDate(dateEmbassyRegistration) == false){
+				saveEnabled = false;
+			}
+			if((textForeName.text	==	"") || (textSurName.text ==	"") || (textKnownAs.text ==	"")){				
+				saveEnabled	= false;								
+	  		}
+	  		if((comboGender.selectedIndex	==	0) || (comboGender.selectedItem == null)){ 
+	  			saveEnabled	= false;
+	  		}
+	  		if (!parentApplication.isRelativeMode()) {
+	  			if(dateBirthDate.text	==	""){				
+					saveEnabled	= false;								
+	  			}
+           		if((comboMaritalStatus.selectedIndex	==	0) || (comboMaritalStatus.selectedItem == null)){ 
+           			saveEnabled	= false;
+           		}   
+     		}      		
+           	if((comboTitle.selectedIndex	==	0) || (comboTitle.selectedItem == null)){
+           		saveEnabled	= false;
+           	}
+           	if((comboTitle.selectedItem == "Mr") && (comboGender.selectedItem == "Female")){
+           		saveEnabled	= false;
+           	}
+           	if(((comboTitle.selectedItem == "Mrs") || (comboTitle.selectedItem == "Miss")) && (comboGender.selectedItem == "Male")){
+           		saveEnabled	= false;
+           	}
+           	if((comboTitle.selectedItem == "Miss") && (comboMaritalStatus.selectedItem == "Married")){
+           		saveEnabled	= false;
+           	}
+           	if (relationEnabled) {
+           		if((comboRelation.selectedIndex	==	0) || (comboRelation.selectedItem == null)){
+           			saveEnabled	= false;
+           		}
+           	}
+
+			//trace("general.checkValid: "+parentApplication.getAppMode()+" save="+saveEnabled);
+	  	}
+	  
+	  	private function getDgSearchResultIndex(nameID:String):int{
+			//var data:String = "";
+			var column:DataGridColumn;
+
+			var rowCount:int = dgList.dataProvider.length;
+			var columns:Array = dgList.columns;
+			var columnCount:int = columns.length;			
+			
+			var cursor:IViewCursor = dgList.dataProvider.createCursor ();
+			var j:int = 0;
+			
+			//loop through rows
+			while (!cursor.afterLast)
+			{
+				var obj:Object = null;
+				obj = cursor.current;
+				
+				//loop through all columns for the row
+				for(var k:int = 0; k < columnCount; k++)
+				{
+					column = columns[k];
+					
+					//Exclude column  other than id
+					if(k==(columnCount-1))
+					{	
+				//	Alert.show('columnCount: '+columnCount+'srched: '+column.itemToLabel(obj)+' NAMEID: '+nameID);				
+						if(nameID==column.itemToLabel(obj))
+						return j;//j is the searchResult index which have the needed data											
+					}
+				}	
+				j++;
+				cursor.moveNext ();
+			}
+			return(-1);
+		}
+	  
+	    private function onAlertClose(evt:CloseEvent):void {
+            switch(evt.detail) {
+               case Alert.OK:
+
+					dgListDup.dataProvider = userRequestCheckDb.lastResult.users.user;
+               		if (dgListDup.dataProvider.length == 1) {
+               			addExistingMode();
+               			parentApplication.runQueryForID(dgListDup.dataProvider[0].zzzid,dgListDup.dataProvider[0].zzzstaffid);
+               		}
+               		else {
+						titleWindowInstance =  TitleWindowData(PopUpManager.createPopUp(this,  TitleWindowData, true));     //instantiate and show the title window
+  		 				PopUpManager.centerPopUp(titleWindowInstance);
+  		 				titleWindowInstance.title = "Select Matching Record";
+  		 			
+  					 //built-in property  
+  						titleWindowInstance.mainApp = this; //Reference to the main app scope
+  						titleWindowInstance.dg2.dataProvider = userRequestCheckDb.lastResult.users.user;
+  						//parentApplication.assignDgColumnOrder(dgListDup,"surname,forenames,dob,zzzid,zzzstaffid",titleWindowInstance.dg2);
+  						titleWindowInstance.dg2.columns = dgListDup.columns;
+  						// hide zzzid and zzzstaffid
+  						//titleWindowInstance.dg2.columns[3].visible = false; 
+  						//titleWindowInstance.dg2.columns[4].visible = false;               
+               		}
+
+
+               /*
+              		var noOfRecords:int;
+            		parentApplication.searchResult.dataProvider	=	userRequestCheckDb.lastResult.users.user;	
+            		noOfRecords	=	parentApplication.searchResult.dataProvider.length;
+            		parentApplication.txtNoOfRecords.text	= noOfRecords	; 					     
+            		Alert.show(userRequestCheckDb.lastResult.users.count+' similar matches found!');				     
+				
+             		parentApplication.searchResult.selectedIndex	=	0;  
+             		parentApplication.returnID(parentApplication.searchResult);
+           			viewMode(); 
+           			var duplicateNameIDs:Array = (userRequestCheckDb.lastResult.users.duplicateNameIDs).split( "," );
+           			
+           			if(parentApplication.isRelativeMode()){
+           				
+           				
+              		}
+               */
+   /*           		var noOfRecords:int;
+            	//	parentApplication.searchResult.dataProvider	=	userRequestCheckDb.lastResult.users.user;	
+            	//	noOfRecords	=	parentApplication.searchResult.dataProvider.length;
+            	//	parentApplication.txtNoOfRecords.text	= noOfRecords	; 					     
+					
+ //   Alert.show(userRequestCheckDb.lastResult.users.duplicateNameIDs); 
+           			 var duplicateNameIDs:Array = (userRequestCheckDb.lastResult.users.duplicateNameIDs).split( "," );
+						//duplicateNameIDs always contains '0' as the first element which is junk value, so the actual IDs are stored from the second place
+	//Alert.show(duplicateNameIDs[1]+' '+ duplicateNameIDs.length);
+					var indx:int=parentApplication.searchResult.selectedIndex;//currently selected person in the searchResult
+					
+					if(parentApplication.isStaff(duplicateNameIDs[1])){//i.e. if inf staff
+						 indx=getDgSearchResultIndex(duplicateNameIDs[1]);
+						 Alert.show('indx: '+indx);
+						 parentApplication.searchResult.selectedIndex	=	indx;//	 getDgSearchResultIndex(duplicateNameIDs[1]);	
+						 viewMode(); 
+						// parentApplication.searchResult.selectedIndex	=indx;//	 getDgSearchResultIndex(duplicateNameIDs[1]);	
+					}
+					else{//i.e. this is relative. Now select the respective staff in the searchResult
+					
+						indx=getDgSearchResultIndex(parentApplication.getRelativeStaff(duplicateNameIDs[1]));
+						Alert.show('Relative mode indx: '+indx);
+						parentApplication.searchResult.selectedIndex	=	indx;//	 getDgSearchResultIndex(duplicateNameIDs[1]);	
+						viewMode(); 
+						//parentApplication.searchResult.selectedIndex	=	indx;
+						
+						//toggleRelativeMode();
+						//dgList.selectedIndex=0;
+						//displayRelRecord();
+						//displaySelfRecord();
+						
+						//if(!parentApplication.isRelativeMode()) toggleRelativeMode();
+						
+					}
+           
+*/
+                	break;
+                	
+               case Alert.CANCEL:
+                   //do nothing
+                    break;
+               
+            }
+       }	
+	  	
+	   private function checkDbResult(event:ResultEvent):void{
+			
+			if(userRequestCheckDb.lastResult.users.duplicateUser=='yes'){					
+       			//var alert:Alert = Alert.show("View existing match(es)","A match for this name already exists!",Alert.OK|Alert.CANCEL,this,onAlertClose);
+    
+				titleWindowInstance =  TitleWindowData(PopUpManager.createPopUp(this,  TitleWindowData, true));     //instantiate and show the title window
+  		 		PopUpManager.centerPopUp(titleWindowInstance);
+  		 		titleWindowInstance.title = "Select Matching Record";
+  		 			
+  				//built-in property  
+  				titleWindowInstance.mainApp = this; //Reference to the main app scope
+  				titleWindowInstance.dg2.dataProvider = userRequestCheckDb.lastResult.users.user;
+ 				//titleWindowInstance.dg2.columns = dgListDup.columns;    
+            }
+            else {
+	    		saveOK();
+	    	}				
+		}	
+	  
+	    private function checkDbEntry():void{
+	    	
+	    	if((textForeName.text	!=	"")&&(textSurName.text	!=	"")&&(parentApplication.getAppMode()=="Add New")){	
+	    		
+	    		var parameters:Object	=	new Object();        	
+        		parameters.id	=	parentApplication.getCurrentID();
+        		parameters.staffid	=	parentApplication.getCurrentStaffID();
+        		parameters.surName		=	textSurName.text;
+        		parameters.forename		=	textForeName.text;
+        		parameters.requester	=	'existing_names';
+        	   	
+        		userRequestCheckDb.url	=	parentApplication.getPath()	+	"requestCheckDb.php";
+        		userRequestCheckDb.send(parameters);       	 
+	    	}
+	    	else {
+	    		saveOK();
+	    	}	    		
+	    }    
+	    
+	    private function handleNewSurname(evt:CloseEvent):void {
+	    	
+            switch(evt.detail) {
+               case Alert.OK:
+              		
+              		savePreviousSurname = true;
+                	break;
+                	
+               case Alert.CANCEL:
+                   	
+                   	savePreviousSurname = false;
+                    break;              
+            }
+            addNewNationality();
+       	}	
+
+		private function handleNewNationality(evt:CloseEvent):void {
+	    	
+            switch(evt.detail) {
+               case Alert.OK:
+              		
+              		savePreviousNationality = true;
+                	break;
+                	
+               case Alert.CANCEL:
+                   	
+                   	savePreviousNationality = false;
+                    break;              
+            }
+            doSendData();
+       	}
+       	        
+		protected function displayPopUpReligion(strTitle:String,editMode:Boolean=false):void{		
+		
+			if((comboReligion.selectedIndex > 0) || (!editMode)){
+				var pop1:popUpWindow = popUpWindow(PopUpManager.createPopUp(this, popUpWindow, true));
+				PopUpManager.centerPopUp(pop1);
+				pop1.showCloseButton=true;
+				if (editMode){
+					if (editAdminEnabled && inputEnabled){
+						pop1.title="Edit "+strTitle;
+						pop1.setup('religion',true,comboReligion.text,true);
+					}
+					else {
+						pop1.title="View "+strTitle;
+						pop1.setup('religion',true,comboReligion.text,false);
+					}
+				}
+				else
+				{
+					pop1.title="Add New "+strTitle;
+					pop1.initialise('religion',true);
+				}
+  			}
+		}
+		
+		protected function displayPopUpCaste(strTitle:String,editMode:Boolean=false):void{		
+		
+			if((comboCaste.selectedIndex > 0) || (!editMode)){
+				var pop1:popUpWindow = popUpWindow(PopUpManager.createPopUp(this, popUpWindow, true));
+				PopUpManager.centerPopUp(pop1);
+				pop1.showCloseButton=true;
+				if (editMode){
+					if (editAdminEnabled && inputEnabled){
+						pop1.title="Edit "+strTitle;
+						pop1.setup('caste',true,comboCaste.text,true);
+					}
+					else {
+						pop1.title="View "+strTitle;
+						pop1.setup('caste',true,comboCaste.text,false);
+					}
+				}
+				else
+				{
+					pop1.title="Add New "+strTitle;
+					pop1.initialise('caste',true);
+				}
+  			}
+		}
+
+		protected function displayPopUpCountry(strTitle:String,editMode:Boolean=false):void{		
+		
+			if((comboCountry.selectedIndex > 0) || (!editMode)){
+				var pop1:popUpCountries = popUpCountries(PopUpManager.createPopUp(this,popUpCountries, true));
+				PopUpManager.centerPopUp(pop1);
+				pop1.showCloseButton=true;
+				if (editMode){
+					if (editAdminEnabled && inputEnabled){
+						pop1.title="Edit "+strTitle;
+						pop1.setup('country',true,comboCountry.text,true);
+					}
+					else {
+						pop1.title="View "+strTitle;
+						pop1.setup('country',true,comboCountry.text,false);
+					}
+				}
+				else
+				{
+					pop1.title="Add New "+strTitle;
+					pop1.initialise('country',true);
+				}
+  			}
+		}
+			  
+	  private function editMode():void{	  
+	   
+ 	  	parentApplication.setAppMode("Edit");
+ 	  	store();
+		setButtonState();
+		refreshData();
+	  }
+	  
+	  private function addMode():void{
+	  	
+	  	parentApplication.setAppMode("Add New");
+	  	store();	  	
+		setButtonState();
+		refresh();
+	  }
+
+	  private function addExistingMode():void{
+	  	
+	  	lastID = parseInt(parentApplication.getCurrentID());
+	  	parentApplication.setAppMode("Add Existing");
+	  }
+	  	  	
+	  private function viewMode(fromCancel:Boolean=true):void{
+	  	
+	  	if (fromCancel) {
+	  		status_txt.text = '';
+		 	status_txt.enabled = true;
+	  	}		  	
+	  	parentApplication.setAppMode("View");
+	   	setButtonState();
+	   	checkEmptyNonMandatoryFields=true;
+		if (reloadStaff) { //newly added non-relative
+			savedIndex = -1;
+			reloadStaff = false;
+			parentApplication.insertRecord(lastID,textForeName.text,textSurName.text,lastID);
+			parentApplication.setRecord(lastID,true);
+			lastID = -1;
+			//parentApplication.search.rerunLastSearchQuery(lastID);
+		}
+		else {
+			if (staffDeleted) {
+				savedIndex = -1;
+				staffDeleted = false;
+				parentApplication.setRecord(lastID,true);
+				lastID = -1;
+				//parentApplication.search.rerunLastSearchQuery(lastID);
+			}
+			else {
+				parentApplication.setToInitialStage();	
+			}  
+		} 	
+	  }
+	  	
+	private function setButtonState():void{
+		
+		parentApplication.getUserPermission('personal');
+		//trace("general.setButtonState: "+parentApplication.getAppMode()+", "+parentApplication.isRelativeMode());
+		addAdminEnabled 	= 	parentApplication.allowedToAddAdmin();
+  		editAdminEnabled 	= 	parentApplication.allowedToEditAdmin();
+  		addAdminVisible		=	addAdminEnabled && !parentApplication.relativeMode;
+  		addEmbassyVisible	=	addAdminVisible && parentApplication.embassyEnabled;
+
+		switch(parentApplication.getAppMode()) {
+		
+		case "Add Existing":
+		    if (parentApplication.isRelativeMode()) this.focusManager.setFocus(comboRelation);
+		case "Add New":
+			inputEnabled	=	true;
+			relationEnabled =	parentApplication.relativeMode;
+	  		editEnabled		=	false;
+	  		deleteEnabled	=	false;
+	  		addEnabled		=	false;
+	  		navEnabled		=	false;
+	  		parentApplication.setBiodataEnabled(false);
+			checkValid(null);
+	  		break;
+	  		
+	  	case "Edit":
+	  		inputEnabled	=	true;
+	  		relationEnabled =	parentApplication.relativeMode && (dgList.selectedItem.relationship != "Self");
+	  		editEnabled		=	false;	
+	  		deleteEnabled	=	false;	
+	  		addEnabled		=	false;
+	  		navEnabled		=	false;
+	  		parentApplication.setBiodataEnabled(false);
+			checkValid(null);
+	  		break;
+	  		
+	  	case "View":
+	  		inputEnabled	=	false;
+	  		relationEnabled =	false;
+	  		addEnabled 		= 	parentApplication.allowedToAdd();
+	  		navEnabled		=	!(parentApplication.isNoRecord());
+	  		deleteEnabled	=	navEnabled && parentApplication.allowedToDelete();
+	  		editEnabled 	= 	navEnabled && parentApplication.allowedToEdit();
+	  		parentApplication.setBiodataEnabled(navEnabled);
+			saveEnabled		=	false;
+			  	
+		//Extra setting for editEnabled since the Relative displaying DataGrid always displays the INF Staff as 'SELF' relation
+		// Actually the "SELF" case is dealt in non-relative mode for staff
+
+			if(parentApplication.isRelativeMode() && (dgList.selectedIndex > -1)){  
+				//editEnabled 	= 	navEnabled && parentApplication.allowedToEdit()&& Boolean(dgList.dataProvider.length -1);	
+	  			//if(dgList.dataProvider.length-1==dgList.selectedIndex){
+	  			if(dgList.selectedItem.relationship == "Self"){
+	  				deleteEnabled	=	false;
+	  				if (parentApplication.isStandardModeEnabled()) editEnabled = false;
+	  			}	  		
+	  		}
+	  		
+	  		if (!navEnabled) // no record
+	  			refresh();
+	  			
+			if (btnCancel.enabled) this.focusManager.setFocus(btnCancel);
+	  		if (btnAddNew.visible && addEnabled) this.focusManager.setFocus(btnAddNew);
+	  		if (btnEdit.visible && editEnabled) this.focusManager.setFocus(btnEdit);
+	  		if (dgList.visible && navEnabled) this.focusManager.setFocus(dgList);
+	  		checkValid(null);
+	  		break;
+	  	}
+	  		  	
+	  	trace("setButtonState "+this.focusManager.getFocus()+" mode="+parentApplication.getAppMode());
+	  	trace(relationEnabled+ ": "+comboRelation.text);	
+	  	if (this.focusManager.getFocus() != null)
+		  	this.focusManager.getFocus().drawFocus(true);				
+	  	setSurnameVariablesVisibility();
+	  	setNationalityVariablesVisibility();					
+	 // 	setCurrentEmailVisibility();				
+	}
+	
+	private function displayRelRecord(refreshRel:Boolean=true):void{	
+		//Alert.show(dgList.selectedIndex.toString());	
+		refreshRelatives = refreshRel;
+		trace("general.displayRelRecord: "+refreshRelatives);
+		parentApplication.returnID(dgList);	
+		setButtonState();			
+	}
+
+	private function displaySelfRecord():void{
+	//the last item in the datagrid is the INF STAFF and the other are his/her relatives	
+		//if(dgList.selectedIndex==dgList.dataProvider.length-1) toggleRelativeMode();
+	}
+
+	public function moveTo(event:KeyboardEvent):void{
+	
+		var keyCode:int = event.keyCode;
+		//trace("moveto: "+keyCode);			
+		//trace("key down: "+event.type+" + "+parentApplication.shiftKeyDown()+" : "+parentApplication.ctrlKeyDown());
+	
+		if((keyCode	==	40) || (keyCode == 38) || (keyCode == 13))
+	  		displayRelRecord(false);
+	}
+	
+	private function updateGender():void{
+		
+		//var currentGender:String = comboGender.text;
+		//trace("title: "+comboTitle.text+" old gender: "+comboGender.text);
+		if(comboTitle.text == "Mr"){
+			comboGender.selectedItem = "Male";
+		}
+		if((comboTitle.text == "Mrs")||(comboTitle.text == "Miss")){
+			comboGender.selectedItem = "Female";
+		}
+		//trace("new gender: "+comboGender.text);
+		//if(currentGender != comboGender.text){
+			genderChange();
+		//}
+		checkValid(comboGender);
+	}
+	
+	private function updateKnownAs():void{
+		
+		if(textKnownAs.text == ""){
+			var endOfFirstName:int = textForeName.text.length;
+			var endOfFirstNameSpace:int = textForeName.text.indexOf(" ");
+			var endOfFirstNameComma:int = textForeName.text.indexOf(",");
+			
+			if (endOfFirstNameSpace > 0) endOfFirstName = Math.min(endOfFirstName,endOfFirstNameSpace);
+			if (endOfFirstNameComma > 0) endOfFirstName = Math.min(endOfFirstName,endOfFirstNameComma);
+			textKnownAs.text = textForeName.text.substring(0,endOfFirstName);
+			textKnownAs.text = textForeName.text.replace(" ","");
+			textKnownAs.text = textForeName.text.replace(",","");
+		}
+		checkValid(textKnownAs);
+	}
+	
+	private function addNewSurname():void{
+
+	  	var oldSurname:String;
+	  	if (parentApplication.getUserRequestResult().surname == null) {
+	  		oldSurname = '';
+	  	}
+	  	else {
+	  		oldSurname = parentApplication.getUserRequestResult().surname;
+	  	}
+	  	
+	    if((textSurName.text != oldSurname)&&(parentApplication.getAppMode()=="Edit"))	    		
+	    { 
+	    	var alert:Alert = Alert.show("Save previous surname","Surname changed!",Alert.OK|Alert.CANCEL,this,handleNewSurname);	    	
+	    }
+	    else {
+	    	addNewNationality();
+	    }
+	}
+
+	private function addNewNationality():void{
+	  
+	  	var oldNationality:String;
+	  	if (parentApplication.getUserRequestResult().nationality == null) {
+	  		oldNationality = '';
+	  	}
+	  	else {
+	  		oldNationality = parentApplication.getUserRequestResult().nationality;
+	  	}
+	  	
+	    if((textNationality.text != oldNationality)&&(parentApplication.getAppMode()=="Edit")&&(oldNationality != ''))	    		
+	    { 
+	    	var alert:Alert = Alert.show("Save previous nationality","Nationality changed!",Alert.OK|Alert.CANCEL,this,handleNewNationality);	    	
+	    }
+	    else {
+	    	doSendData();
+	    }
+	}
+
+/*	private function setCurrentEmailVisibility():void{
+		currentEmailVisible=false;
+		if((parentApplication.getAppMode()=='View'))
+			currentEmailVisible=true;
+		
+	}
+*/
+		
+	private function setSurnameVariablesVisibility():void{
+		
+		if(parentApplication.getAppMode()=='View'){
+			surnameComboVisible=(comboSurnameHistory.dataProvider.length>1);		
+		}			
+		else {
+			surnameComboVisible	=	false;
+		}		
+	}
+	
+	private function setNationalityVariablesVisibility():void{
+	
+		if(parentApplication.nationalityEnabled) {
+			if(parentApplication.getAppMode()=='View'){
+				nationalityComboVisible=(comboNationalityHistory.dataProvider.length>1);		
+			}			
+			else {
+				nationalityComboVisible	=	false;
+			}
+			nationalityTextVisible = !nationalityComboVisible;
+		}
+	}
+
+	protected function checkEmptyFields(comboFields:ArrayCollection ,dateFields:ArrayCollection ,textFields:ArrayCollection):Boolean{
+        	
+        	var alertMessage:String='';
+        	//Alert.show(dateFields.length.toString())
+        	
+        	//check if any text fields are empty
+        	if(textFields)//check to see if calle has send data in this arrayCollection
+        	for(var count:int = 0; count < textFields.length; count++){
+				var fieldObject:Object=textFields.getItemAt(count).data;
+        		 if(fieldObject.text=='')
+        		 	 alertMessage += textFields.getItemAt(count).label+'\n';           		 
+        	} 
+          	//check if any date fields are empty
+        	if(dateFields)
+        	for(count = 0; count < dateFields.length; count++){
+				 fieldObject=dateFields.getItemAt(count).data;
+        		 if(fieldObject.text=='')
+        		 	 alertMessage += dateFields.getItemAt(count).label+'\n';           		 
+        	} 
+        	//check if any ComboBox value is not selected
+     		if(comboFields)
+        	for(count = 0; count < comboFields.length; count++){
+				 fieldObject=comboFields.getItemAt(count).data;
+        		 if(fieldObject.selectedIndex==0)
+        		 	 alertMessage += comboFields.getItemAt(count).label+'\n';           		 
+        	} 
+        	if(alertMessage!=''){
+        	  		Alert.show(alertMessage,'Values not assigned for the following fields:');
+        	  		return false;
+        	}
+        	else 
+        		return true;        	
+        }
+        
+       protected function sendDataReady():Boolean{
+        	
+        	var invalidMsg:String=parentApplication.checkValidFields(nonMandatoryTextFields);
+        	
+        	if(invalidMsg!=''){//if invalid characters found
+        		Alert.show(invalidMsg);
+        		return false;
+        	}
+        
+       //For relative mode dont Alert for empty values for these fields. SO fill with some junk values
+			if(parentApplication.isRelativeMode()){
+           		textCitizenShip.text='none';
+           		comboReligion.selectedIndex=1;
+           		comboCaste.selectedIndex=1;
+        	 }
+        	
+        	if(parentApplication.isIncompleteWarningOn()){
+        		var notEmpty:Boolean=false;	
+        		if(!checkEmptyNonMandatoryFields){        		
+        			return true;
+        		}
+        		else{       	
+        			notEmpty=checkEmptyFields(nonMandatoryComboFields,nonMandatoryDateFields,nonMandatoryTextFields);
+        			checkEmptyNonMandatoryFields = false;
+       			}
+       		
+      			return notEmpty;     		
+        	}
+        	else
+          		return true;
+        }
+      
+	 	protected function loadNonMandatoryFields():void{
+	 		
+	 		if (parentApplication.personnelWorldwideSystem) {
+	 			nonMandatoryComboFields = new ArrayCollection([{label:"Country", data:comboCountry},{label:"Religion",data:comboReligion}, {label:"Blood Group",data:comboBloodGroup}, {label:"Ethnicity", data:comboCaste}, {label:"Embassy", data:comboEmbassy}]);
+       			nonMandatoryTextFields  = new ArrayCollection([{label:"District",data:textBirthPlaceCounty},{label:"Town",data:textBirthPlaceTown}]);
+				nonMandatoryDateFields = new ArrayCollection([{label:"Embassy Registration", data:dateEmbassyRegistration}]);
+	 		}
+	 		if (parentApplication.personnelNepalSystem) {
+	 			nonMandatoryComboFields = new ArrayCollection([{label:"Country", data:comboCountry},{label:"Religion",data:comboReligion}, {label:"Blood Group",data:comboBloodGroup}, {label:"Ethnicity", data:comboCaste}]);
+       			nonMandatoryTextFields  = new ArrayCollection([{label:"District",data:textBirthPlaceCounty},{label:"Citizenship",data:textCitizenShip},{label:"Town",data:textBirthPlaceTown}]);
+				nonMandatoryDateFields = new ArrayCollection;
+	 		}
+	 		if (parentApplication.patientSystem) {
+         		nonMandatoryComboFields = new ArrayCollection([{label:"Country", data:comboCountry},{label:"Religion",data:comboReligion}, {label:"Blood Group",data:comboBloodGroup}, {label:"Ethnicity", data:comboCaste}]);
+       			nonMandatoryTextFields  = new ArrayCollection([{label:"District",data:textBirthPlaceCounty},{label:"Town",data:textBirthPlaceTown}]);
+				nonMandatoryDateFields = new ArrayCollection;
+	 		}
+        }
+        
+        private function addValidationForNonMandatoryTextFields():void{
+        	
+        	if(nonMandatoryTextFields)//check to see if caller has added data to this arrayCollection
+        	for(var count:int = 0; count < nonMandatoryTextFields.length; count++){
+				var fieldObject:Object=nonMandatoryTextFields.getItemAt(count).data;
+				fieldObject.addEventListener( Event.CHANGE, checkValidEvent );          		 
+        	} 
+        }
+
+		private function checkValidEvent(event:Event):void {
+			
+			//trace(event.currentTarget.toString()+" "+event.target.toString());
+			checkValid(event.currentTarget);	
+		}
+		
+		protected function deleteResult(event:ResultEvent):void {	
+		
+			parentApplication.searching=false;
+			
+			status_txt.text	=	userRequestDeleteTab.lastResult.errors.error;
+		
+			if(userRequestDeleteTab.lastResult.errors.status=='success'){
+			
+				status_txt.enabled=true;
+				
+				var dgObject:Object = new Object();
+				
+				if(parentApplication.isRelativeMode()){
+					relativeDeleted = true;
+					
+					//if (deletingOption == 'Force Delete') {
+						parentApplication.removeRecord(dgList.selectedItem.zzzid);
+					//}
+					dgObject = dgList;
+				}
+				else {
+					staffDeleted = true;
+					dgObject = parentApplication.searchResult;
+				}	
+				
+				savedIndex = dgObject.selectedIndex;
+				if (savedIndex == dgObject.dataProvider.length - 1) {
+					savedIndex--;
+				}
+				else {
+					savedIndex++;
+				}
+				if (savedIndex > -1) lastID = dgObject.dataProvider[savedIndex].zzzid;
+				dgObject.dataProvider.removeItemAt(dgObject.selectedIndex);
+				//dgObject.selectedIndex=0;
+			}
+			else
+				status_txt.enabled=false;
+			
+			deletingOption='Delete';	
+			viewMode(false);			
+		} 
+		  
+		private function onAlertDelete(evt:CloseEvent):void {
+		 	
+            switch(evt.detail) {
+               case Alert.YES:     
+               		var parameters:Object= new Object();  
+               		parameters.action	=	deletingOption;    
+               		parameters.userID	= 	parentApplication.getCurrentUserID();
+               		if(parentApplication.isRelativeMode()) {           				   
+	           			parameters.id	=	dgList.selectedItem.zzzid; 
+	            		parameters.tableName	=	'relation'; 
+           				parameters.nameID	=	parentApplication.getCurrentStaffID();   
+           				
+           				//Alert.show('relID: '+parameters.id+' staff:'+parameters.nameID);          
+               		}
+               		else{
+               			parameters.id	=	parentApplication.getCurrentStaffID();//parentApplication.searchResult.zzzid; 
+	            		parameters.tableName	=	'name'; 
+           				parameters.nameID	=	parentApplication.getCurrentStaffID();
+           				//Alert.show('sid: '+parameters.id+' staff:'+parameters.nameID); 
+               		}
+       
+					userRequestDeleteTab.useProxy = false;
+           			userRequestDeleteTab.url	=	parentApplication.getPath()	+	"requestDeleteTab.php";
+           			parentApplication.searching=true;
+           			userRequestDeleteTab.send(parameters);   
+			
+                	break;
+                	
+               case Alert.CANCEL:
+                   //do nothing
+                    break;              
+            }
+        }		
+		
+		protected function deleteRecord():void{
+	
+			var alertString:String;
+			if (deletingOption == "Force Delete") {
+				alertString = "Delete all records associated with this record";
+			}
+			else {
+				alertString = "Delete this record";
+			}
+			var alertDelete:Alert = Alert.show("Are you sure?",alertString,Alert.YES|Alert.NO,this,onAlertDelete,null,Alert.NO);
+		}		
+  	
+  		protected function displayPopUpOrganisation(strTitle:String,comboOrganisation:ComboBoxNew,editMode:Boolean=false):void{		
+		//return;
+			if((comboOrganisation.selectedIndex > 0) || (!editMode)){
+				var pop1:popUpOrganisation = popUpOrganisation(PopUpManager.createPopUp(this,popUpOrganisation, true));
+				PopUpManager.centerPopUp(pop1);
+				pop1.showCloseButton=true;
+				if (editMode){
+					if (editAdminEnabled && inputEnabled){
+						pop1.title="Edit "+strTitle;
+						pop1.setup('organisation',true,comboOrganisation.text,true);
+					}
+					else {
+						pop1.title="View "+strTitle;
+						pop1.setup('organisation',true,comboOrganisation.text,false);
+					}					
+				}
+				else
+				{
+					pop1.title="Add New "+strTitle;
+					pop1.initialise('organisation',true);
+				}
+  			}
+		}
+
+  		private function dgItemClick(event:ListEvent):void {
+		
+			// single-click always fires first, so store state of shift/ctrl keys for double-click
+			//trace("item click: "+event.type+" + "+dgList.selectedIndex+" : "+storeIndex);	
+			if ((!parentApplication.shiftKeyDown()) && (!parentApplication.ctrlKeyDown())) {
+				dgList.height = defaultListHeight;
+				displayRelRecord(false);
+			}
+			else dgDoubleClick(event);
+		}
+  		
+  		private function dgDClick(event:ListEvent):void {
+		
+			// list event doesn't have state of shift/ctrl keys so take from previous single-click mouse event
+			if ((parentApplication.shiftKeyDown()) || (parentApplication.ctrlKeyDown())) return;
+						
+			trace("double click: "+event.type+" : "+storeIndex);
+			var staffID:int = -1;
+			if (dgList.selectedItem.status != null) staffID = dgList.selectedItem.zzzid;
+			parentApplication.setRelativeMode(false);
+			parentApplication.insertRecord(dgList.selectedItem.zzzid,dgList.selectedItem.forenames,dgList.selectedItem.surname,staffID);
+			parentApplication.setRecord(dgList.selectedItem.zzzid,true);				
+		}	
+
+  		private function dgDoubleClick(event:ListEvent):void {
+		
+			// list event doesn't have state of shift/ctrl keys so take from previous single-click mouse event
+			if ((!parentApplication.shiftKeyDown()) && (!parentApplication.ctrlKeyDown())) return;
+			
+			trace("double click: "+event.type+" : "+storeIndex);	
+			// Get the target of this event (Datagrid)
+			var myGrid:DataGrid = event.target as DataGrid;
+			
+			parentApplication.copyRow(event, myGrid);
+			parentApplication.copyCell(event, myGrid);
+
+			dgList.selectedIndex = storeIndex;	
+			//trace("double click: "+dgList.selectedIndex);				
+		}
+					
+    ]]>
+	</mx:Script>
+
+ 	<mx:FormItem  label="Title:" x="10" y="12" width="84" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<packages:ComboBoxNew id="comboTitle" enabled="{inputEnabled}" width="89"  x="102" y="9" change="checkValid(comboTitle)" focusOut="updateGender()"/>
+
+ 	<mx:FormItem label="Gender:" x="227" y="12"  width="84" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<packages:ComboBoxNew enabled="{inputEnabled}" id="comboGender" width="89" x="319" y="9" change="checkValid(comboGender)" focusOut="genderChange()"/>
+ 	 
+ 	<mx:FormItem label="Relation:" visible="{parentApplication.relativeMode}" x="444" y="12" width="84" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew visible="{parentApplication.relativeMode}" enabled="{relationEnabled}" width="128" x="536" y="9" id="comboRelation" change="checkValid(comboRelation)"/>
+	
+	<mx:FormItem label="Next Of Kin:" visible="{parentApplication.relativeMode}" x="444" y="36" width="84"/>
+	<packages:ComboBoxNew visible="{parentApplication.relativeMode}" enabled="{inputEnabled}" width="128" x="536" y="33" id="comboNextToKin"/>
+
+	<mx:FormItem label="Email:" visible="{!parentApplication.relativeMode}" x="444" y="12" width="84" />
+	<mx:TextInput id="textCurrentEmail"  x="536" y="9" enabled="false" visible="{!parentApplication.relativeMode}" editable="false" doubleClick="parentApplication.goToEmail(textCurrentEmail.text)" doubleClickEnabled="true" toolTip="Double-click to send email"/>
+	
+	<mx:FormItem label="Phone:" visible="{!parentApplication.relativeMode}" width="84" x="444" y="36"/>
+	<mx:TextInput id="textCurrentPhone"  x="536" y="33" enabled="false" visible="{!parentApplication.relativeMode}" restrict="_0123456789()+ \-" editable="false"/>
+		 	 
+ 	<mx:FormItem label="Surname:"  x="10" y="36"  width="84" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<mx:TextInput id="textSurName"  x="102" y="33" visible="{!surnameComboVisible}" change="checkValid(textSurName)" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars" keyFocusChange="checkDbEntry()"/>
+	<packages:ComboBoxNew id="comboSurnameHistory" width="160" x="102" y="33" visible="{surnameComboVisible}"/>	
+	 	 
+ 	<mx:FormItem label="Forename(s):" x="10" y="60"  width="84" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<mx:TextInput id="textForeName" y="57" x="102" change="checkValid(textForeName)" enabled="{inputEnabled}" maxChars="50" width="250" toolTip="50 chars" keyFocusChange="updateKnownAs(),checkDbEntry()"/>
+ 	 
+ 	<mx:FormItem label="Known As:"  x="444" y="60" width="84" color="{parentApplication.mandatoryLabelColour}"/>
+ 	<mx:TextInput id="textKnownAs"  x="536" y="57" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"  change="checkValid(textKnownAs)"/>
+
+	<mx:FormItem label="Birth Date:" x="10" y="84" width="84"   id="lblDobRel" visible="false"/>
+ 	<mx:FormItem label="Birth Date:" x="10" y="84" width="84"  color="{parentApplication.mandatoryLabelColour}" id="lblDob" visible="true"/>
+ 	<mx:DateField id="dateBirthDate" x="102" y="81" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" keyUp="checkValid(dateBirthDate)" focusOut="dateConversionADBS(),getAge()" yearNavigationEnabled="true" editable="true"/>
+
+ 	<mx:FormItem label="Nepali Date:" x="227" y="84" width="84" />
+ 	<mx:TextInput id="dateNepaliBirthDate" width="89" x="319" y="81" enabled="{inputEnabled}" restrict="0123456789/\-"  focusOut="dateConversionADBS('dateBS'),getAge()" change="checkValid(dateBirthDate)"/>
+ 	 
+	<mx:FormItem label="Age:" width="40" x="444" y="84"/>
+ 	<mx:TextInput id="textAge" width="40" x="536" y="81" enabled="{inputEnabled}" change="updateBirthDate(),dateConversionADBS(),checkValid(dateBirthDate)" restrict="0123456789" toolTip="Age in years" maxChars="3"/>
+ 	
+	<mx:FormItem label="Marital Status:" x="10" y="108" width="84" color="{parentApplication.mandatoryLabelColour}" id="lblMaritalStatusRel"/> 	
+ 	<mx:FormItem label="Marital Status:" x="10" y="108" width="84" id="lblMaritalStatus" visible="false"/>
+ 	<packages:ComboBoxNew id="comboMaritalStatus" width="89" x="102" y="106" enabled="{inputEnabled}" change="checkValid(comboMaritalStatus)"/>
+ 
+ 	<mx:FormItem label="Blood Group:" x="444" y="108" width="84"/>
+ 	<packages:ComboBoxNew id="comboBloodGroup" enabled="{inputEnabled}" width="89" x="536" y="105"/>
+
+ 	<mx:FormItem label="Birth Place (Town/District/Country):" x="10" y="132"  width="252"/>
+ 	<mx:TextInput id="textBirthPlaceTown" width="116" x="10" y="150" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars">
+ 	  	 <mx:change>parentApplication.changeToUpper(textBirthPlaceTown)</mx:change>
+ 	</mx:TextInput>
+	<mx:TextInput id="textBirthPlaceCounty" width="116"  x="128" y="150" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars">
+	  	 <mx:change>parentApplication.changeToUpper(textBirthPlaceCounty)</mx:change>
+	</mx:TextInput>
+ 	<packages:ComboBoxNew id="comboCountry" width="128" x="246" y="150" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country',true)" toolTip="Double-click for details"/>
+	<mx:Button x="376" y="150" label="+" width="32" height="22" click="displayPopUpCountry('Country')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+ 	
+ 	<mx:FormItem label="Nationality:"  x="444" y="132" visible="{parentApplication.nationalityEnabled}" width="65"/>
+ 	<mx:TextInput id="textNationality"  x="536" y="129" visible="{nationalityTextVisible}" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+	<packages:ComboBoxNew id="comboNationalityHistory" width="160" x="536" y="129" visible="{nationalityComboVisible}"/>
+	  	 
+ 	<mx:FormItem label="Ethnicity:" visible="{!parentApplication.relativeMode}" x="10" y="180" width="84"/>
+ 	<packages:ComboBoxNew visible="{!parentApplication.relativeMode}" enabled="{inputEnabled}" id="comboCaste" width="128" x="102" y="177" doubleClickEnabled="true" doubleClick="displayPopUpCaste('Ethnicity',true)" toolTip="Double-click for details"/>
+	<mx:Button visible="{addAdminVisible}" x="238" y="177" label="+" width="32" height="22" click="displayPopUpCaste('Ethnicity')" enabled="{!inputEnabled}"/>
+ 	 
+ 	<mx:FormItem label="Religion:" visible="{!parentApplication.relativeMode}"   x="10" y="204" width="84"/>
+ 	<packages:ComboBoxNew visible="{!parentApplication.relativeMode}" enabled="{inputEnabled}" id="comboReligion" width="128" x="102" y="201" doubleClickEnabled="true" doubleClick="displayPopUpReligion('Religion',true)" toolTip="Double-click for details"/>
+	<mx:Button visible="{addAdminVisible}" x="238" y="201" label="+" width="32" height="22" click="displayPopUpReligion('Religion')" enabled="{!inputEnabled}"/>
+	
+ 	<mx:FormItem label="Citizenship:" visible="{parentApplication.citizenshipEnabled}" x="10" y="228" width="84"/>
+ 	<mx:TextInput id="textCitizenShip" visible="{parentApplication.citizenshipEnabled}" x="102" y="225" change="parentApplication.changeToUpper(textCitizenShip)" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars"/>
+
+	<mx:FormItem label="Embassy:" x="11" y="228"  width="84"  visible="{parentApplication.embassyEnabled}"/>
+	<packages:ComboBoxNew enabled="{inputEnabled}" id="comboEmbassy" width="128" x="103" y="225" doubleClickEnabled="true"  visible="{parentApplication.embassyEnabled}" doubleClick="displayPopUpOrganisation('Embassy',comboEmbassy,true)"/>
+	<mx:Button visible="{addEmbassyVisible}" x="238" y="225" label="+" width="32" height="22" click="displayPopUpOrganisation('Embassy',comboEmbassy)" enabled="{!inputEnabled}"/>
+	
+	<mx:FormItem label="Embassy Registration:" visible="{parentApplication.embassyEnabled}" x="10" y="252" width="139" />
+	<mx:DateField id="dateEmbassyRegistration" x="154" y="249" visible="{parentApplication.embassyEnabled}" formatString="{parentApplication.appDateFormat}" enabled="{inputEnabled}" yearNavigationEnabled="true" editable="true" keyUp="checkValid(dateEmbassyRegistration)"/>
+
+	<mx:Button x="9" y="318" id="btnPrev" visible="false" tabEnabled="false" click="parentApplication.goTo('Prev')" icon="@Embed(source='../../../files/images/previous.gif')" enabled="{navEnabled}" width="75" height="25"/>
+	<mx:Button x="92" y="318" id="btnNext" visible="false" tabEnabled="false" click="parentApplication.goTo('Next')" icon="@Embed(source='../../../files/images/next.gif')" enabled="{navEnabled}" width="75" height="25"/>
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25" toolTip="CTRL + e">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25"  toolTip="CTRL + a">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25" toolTip="CTRL + D (+ALT to delete all)">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25" toolTip="CTRL + s">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25" toolTip="CTRL + z">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button> 
+	<mx:Button x="690" y="326" id="btnRelatives" enabled="{parentApplication.relativeToggleEnabled}" width="11" click="toggleRelativeMode()" toolTip="Toggle relative mode (CTRL + R)" height="11" tabEnabled="false">
+		<mx:icon>@Embed(source='../../../files/images/relationship.gif')</mx:icon>
+		<mx:disabledIcon>@Embed(source='../../../files/images/relationshipDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" tabEnabled="{parentApplication.relativeMode}" itemClick="dgItemClick(event)" visible="{parentApplication.relativeMode}" x="10" y="176" width="700" height="{defaultListHeight}" keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" itemDoubleClick="dgDClick(event)" doubleClickEnabled="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="Forename(s)" dataField="forenames" width="80" />
+			<mx:DataGridColumn  headerText="Surname" dataField="surname" width="80" />	
+			<mx:DataGridColumn  headerText="Relationship"  dataField="relationship" width="80" />
+			<mx:DataGridColumn  headerText="Status" dataField="status" width="80" visible="{!parentApplication.patientSystem}"/>		
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="zzzid" width="30"/>
+			<mx:DataGridColumn  headerText="timestamp" visible="false"  dataField="relation_timestamp" width="30"/>
+		</packages:columns>
+	</packages:DataGridNew>
+
+	<mx:Button id="toggleResultHeight" x="709" y="176" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list" visible="{parentApplication.relativeMode}"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="206" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard" visible="{parentApplication.relativeMode}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="236" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data" visible="{parentApplication.relativeMode}"/>
+
+	<packages:DataGridNew id="dgListDup" tabEnabled="{parentApplication.relativeMode}" itemClick="dgItemClick(event)" x="10" y="176" width="700" height="140" keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true" itemDoubleClick="dgDoubleClick(event)" doubleClickEnabled="true" visible="false">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="Forename(s)" dataField="forenames" width="140" />
+			<mx:DataGridColumn  headerText="Surname" dataField="surname" width="100" />	
+			<mx:DataGridColumn  headerText="DOB"  dataField="dob" width="80" />
+			<mx:DataGridColumn  headerText="StaffID" dataField="zzzstaffid" width="30" visible="false"/>		
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="zzzid" width="30"/>
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+		 
+	<!--server request -->
+	<mx:HTTPService id="userRequestSaveGeneral"  method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="userRequestDate" method="POST" fault="defaultFault(event)" result="fillConvertedDate()"/>	    
+	<mx:HTTPService id="userRequestCheckDb" method="POST" fault="defaultFault(event)" result="checkDbResult(event)"/>	    	
+	<mx:HTTPService id="userRequestGetRelatives"  method="POST" fault="defaultFault(event)" result="displayRelatives(event)"/>
+	<mx:HTTPService id="userRequestInitialiseRelatives"  method="POST" fault="defaultFault(event)" result="initialiseRelatives(event)"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+	<mx:DateFormatter id="DateDisplay" formatString="{parentApplication.appDateFormat}"/>	
+	
+</mx:Canvas>

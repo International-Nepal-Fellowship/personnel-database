@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabLeaveClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.service.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Type:" x="10" y="12" width="47" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew x="65" y="9" id="comboLeaveType" width="128" enabled="{inputEnabled}"  change="checkValid(comboLeaveType)" doubleClickEnabled="true" doubleClick="displayPopUpLeaveType('Leave Type',true)" toolTip="Double-click for details"/>
+	<mx:Button x="203" y="9" label="+" width="32" height="22" click="displayPopUpLeaveType('Leave Type')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	
+	<mx:FormItem label="Start Date:" x="10" y="36" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="95" y="33" id="dateLeaveStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateLeaveStartDate),CheckSingleDateValidity(dateLeaveStartDate),calcDays()" editable="true"/>
+
+	<mx:FormItem label="End Date:" x="10" y="60" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="95" y="57" id="dateLeaveEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateLeaveEndDate),calcDays()" editable="true"/>
+
+	<mx:FormItem label="Replacement:" x="10" y="84" width="77" />
+	<packages:ComboBoxNew x="95" y="81" id="comboLeaveReplacement" width="93" enabled="{inputEnabled}"/>
+
+	<mx:CheckBox x="193" y="35" id="chkHalfStart"  label="Half Day" enabled="{inputEnabled}" selected="false" click="calcDays()"/>
+	<mx:CheckBox x="193" y="59" id="chkHalfEnd"  label="Half Day" enabled="{inputEnabled}" selected="false" click="calcDays()"/>
+
+	<mx:FormItem label="Allowance:" x="287" y="12" width="84" />
+	<mx:FormItem label="Carried Forward:" x="287" y="36" width="100" />
+	<mx:FormItem label="Used:" x="287" y="60" width="84" />
+	<mx:FormItem label="Remaining:" x="287" y="84" width="84" />
+	
+	<mx:TextInput id="totalLeaveDays" width="89" x="392" y="9" enabled="false"/>
+	<mx:TextInput id="adjustLeaveDays" width="89" x="392" y="33" restrict="-0123456789." enabled="false"/>
+	<mx:TextInput id="usedLeaveDays" width="89" x="392" y="57" enabled="false"/>
+	<mx:TextInput id="remainingLeaveDays" width="89" x="392" y="81" enabled="false"/>
+
+	<mx:FormItem label="Days:" x="532" y="12" width="84" />
+	<mx:TextInput id="currentLeaveDays" width="89" x="624" y="9" enabled="false"/>
+	
+	<mx:CheckBox x="530" y="93" id="chkShowAll" label="Include Family Leave" click="showAll()" enabled="{!inputEnabled}"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Movement Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<packages:DataGridNew id="dgList" x="10" y="116"	height="{defaultListHeight}" width="700" visible="true"		
+		keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>	
+			<mx:DataGridColumn  headerText="Type" dataField="leave_type"  width="120"/>
+			<mx:DataGridColumn  headerText="leave_type_id" visible="false" dataField="leave_type_id" width="30" />
+			<mx:DataGridColumn  headerText="Start"  dataField="date_from" width="100" />
+			<mx:DataGridColumn  headerText="Half Day"  dataField="half_day_from" width="70" />	
+			<mx:DataGridColumn  headerText="End"  dataField="date_until" width="100" />	
+			<mx:DataGridColumn  headerText="Half Day"  dataField="half_day_until" width="70" />			
+			<mx:DataGridColumn  headerText="Replacement"  dataField="replacement" visible="true" width="100"/>
+			<mx:DataGridColumn  headerText="Days"  dataField="leave_days" visible="true" width="100"/>						
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>			
+			<mx:DataGridColumn  headerText="timestamp"  dataField="leave_timestamp" width="120" visible="false" />									
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="116" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="146" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="178" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	<mx:HTTPService id="userRequestCalcLeave" useProxy="false" method="POST" fault="defaultFault(event)" result="calcResult(event)"/>	
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+		
+</local:tabLeaveClass>

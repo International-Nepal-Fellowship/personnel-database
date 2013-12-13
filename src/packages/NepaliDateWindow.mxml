@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TitleWindowData.mxml
+  A sample custom pop-up that extends TitleWindow-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical"  xmlns:packages="packages.*"
+  creationComplete="initComponent()"
+  showCloseButton="true"
+  close="closeWindow()" x="100" y="100" height="90" width="140" borderStyle="inset" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Script><![CDATA[
+
+	import mx.controls.TextInput;
+	import mx.controls.DateField;
+	import mx.managers.PopUpManager;
+	import mx.rpc.events.FaultEvent;
+	import mx.rpc.soap.SOAPFault;         
+    import mx.controls.Alert;
+ 
+ 	[Bindable]public var mainApp:Object = null;
+ 	[Bindable]public var mainTarget:Object = null; 
+ 
+ //not really used by anything in this example, but its just my habit
+ private function initComponent():void
+ {
+ }
+
+ private function getEnglishDate():void{
+
+    if (nepaliDate.enabled) { 
+ 		var parameters:Object=new Object();
+
+ 		parameters.englishdate		=	'';
+ 		parameters.nepalidate		=	nepaliDate.text;
+    
+    	userRequestEnglishDate.useProxy	=	false;
+    	userRequestEnglishDate.url			=	parentApplication.getPath()	+	"retDate.php";
+ 		userRequestEnglishDate.send(parameters);  
+    }
+    else
+    	closeWindow();
+ }
+
+ public function init(target:Object):void {
+ 	
+ 	mainTarget = target;
+ 	nepaliDate.enabled = mainTarget.enabled; 
+ 	this.addEventListener( KeyboardEvent.KEY_UP, keyPress ); 
+ 	getNepaliDate(mainTarget.text); 		
+ } 
+ 
+ private function getNepaliDate(engText:String):void{
+ 
+ 	var parameters:Object=new Object();
+ 	var engDate:DateField = new DateField();
+ 	engDate.formatString = parentApplication.dateFormat; 
+
+	parameters.englishdate		=	DateUtils.stringToDateFieldString(engText,engDate,parentApplication.appDateFormat);
+    parameters.nepalidate		=	'';
+
+    userRequestNepaliDate.useProxy	=	false;
+    userRequestNepaliDate.url			=	parentApplication.getPath()	+	"retDate.php";
+ 	userRequestNepaliDate.send(parameters);          		           		
+ }
+        
+ private function setEnglishDate():void{        		
+
+ 	var engDate:DateField = new DateField();
+ 	engDate.formatString = parentApplication.appDateFormat;
+ 	        		
+ 	nepaliDate.text	=	userRequestEnglishDate.lastResult.nepdate;	
+ 	var dateText:String = DateUtils.stringToDateFieldString(userRequestEnglishDate.lastResult.engdate,engDate,parentApplication.dateFormat);		
+    engDate.text = dateText;
+	if (dateText != "") {
+		mainTarget.text = dateText;
+		closeWindow();
+	}
+	else {
+		Alert.show("Cannot convert: "+nepaliDate.text, "Invalid Nepali Date");
+	}
+	mainApp.setDate();
+ }
+
+ private function setNepaliDate():void{        		
+        		
+ 	nepaliDate.text	=	userRequestNepaliDate.lastResult.nepdate;
+ 	if (nepaliDate.enabled) {
+ 		this.focusManager.setFocus(nepaliDate); 
+ 		if (this.focusManager.getFocus() != null)
+	  		this.focusManager.getFocus().drawFocus(true);			
+ 	}
+ 	else { //dummy button to pick up the Enter/ESC keyboard shortcut in view mode
+ 		this.focusManager.setFocus(dummy);
+ 		if (this.focusManager.getFocus() != null)
+	  		this.focusManager.getFocus().drawFocus(false);	
+ 	}
+ 	
+ }
+
+//called by the close event raised byclicking the close button
+ private function closeWindow():void
+ {
+   	PopUpManager.removePopUp(this);
+ }
+
+////****************Fault Event function for allt he httpservice calls**************////
+ private function defaultFault(event:FaultEvent):void {
+        	
+   	// Handle service fault.
+    if (event.fault is SOAPFault) {                	
+        var fault:SOAPFault	=	event.fault as SOAPFault;
+        var faultElement:XML	=	fault.element;
+    }
+            
+    Alert.show(event.fault.faultString, "Error");                    
+ }
+ 
+ private function keyPress( e:KeyboardEvent ):void {
+
+	if( e.charCode == 13){ //enter key
+         getEnglishDate();
+	}
+	if( e.charCode == 27){ //enter key
+         closeWindow();
+	}	
+ }
+
+////****************************end of fault event********************////
+          
+]]></mx:Script>
+	<mx:TextInput id="nepaliDate" width="90" toolTip="ENTER to save, ESC to cancel"/>
+	<mx:Button id="dummy" label="" width="1" height="1" tabEnabled="false"/>
+
+<mx:HTTPService id="userRequestNepaliDate" method="POST" fault="defaultFault(event)" result="setNepaliDate()"/>	    
+<mx:HTTPService id="userRequestEnglishDate" method="POST" fault="defaultFault(event)" result="setEnglishDate()"/>	    
+	 
+</mx:TitleWindow>

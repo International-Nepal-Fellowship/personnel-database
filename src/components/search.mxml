@@ -1,0 +1,1083 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="240" xmlns:local="packages.*"  height="385" initialize="loadData()" verticalScrollPolicy="off" horizontalScrollPolicy="off" defaultButton="{btnSearchSearch}">
+	<mx:Script>
+	<![CDATA[
+	
+		import mx.events.ListEvent;
+		import mx.controls.List;	        
+		import mx.rpc.soap.SOAPFault;         
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.collections.ArrayCollection;
+		import mx.controls.dataGridClasses.DataGridColumn;
+  		import mx.controls.DataGrid;
+  		import mx.events.DataGridEvent;
+  		import mx.events.FlexEvent; 
+  		
+  		import mx.managers.PopUpManager;
+  		import components.DGIR_DynamicDP; 
+  		import packages.CheckBoxRenderer;
+  		
+  		[Bindable]public var arrMoreSearchFields:Array;
+  		[Bindable]public var currentSearchFields:Array;
+  		public var moreFieldsFrom:String='';// if more fields are added in the search from the popup then it contains the tab names from which more fields are added
+       // public var siteType:String='';
+         	
+     //	[Bindable]private var temp:Array;
+     //	[Bindable]private var isValid:Boolean=true;
+ 		private var listField:Array =new Array();
+ 		private var currentSearchInvoker:String='general';
+ 		private var searchWhichPeople:String='Staff only';
+ 		private var initialSearch:Boolean=true;
+ 		
+ 		private var currentIndex:int = -1;
+ 		
+ 		private var savedSearchBy:Array =new Array();
+ 		private var savedSearchWhom:Array =new Array();
+ 		private var lastSearchParameters:Object = new Object();
+ 		
+     //   private var operationArray:Array=new Array; 
+        
+        [Bindable] protected var arrCollParameters:ArrayCollection;  
+                 
+        private var newQueriesInserted:Boolean;    //if new queries saved into database it is set to true       
+												//this variable is checked to reload queries displayed in report canvas i.e. searchHistory.mxml	
+		
+		private function searchReset():void {
+
+			var searchInvoker:String = currentSearchInvoker;
+			currentSearchInvoker = 'dummy';
+			pageSpecificSearchInitialization(savedSearchBy,savedSearchWhom,searchInvoker);
+			searchResult();
+		}
+		
+		private function isToggle(fieldName:String):Boolean {
+			
+			if (fieldName == "archived") return true;
+			if (fieldName == "include_all") return true;
+			if (fieldName == "include_family") return true;
+			return false;
+		}
+
+		private function enterPressHandler( e:KeyboardEvent ):void {
+    	 	
+    	 	if(parentApplication.duringAlert()) return; 
+    	 	   	 	
+           	if( e.charCode == 13){   //enter key pressed  
+
+                if(btnSearchSearch.enabled) {
+                    this.focusManager.setFocus( btnSearchSearch );
+                    if (e.altKey) {
+						searchWhichPeople = "All";
+					}
+					else {
+						searchWhichPeople = "Staff only";
+					}
+                    searchResult(false,dg.selectedIndices.toString(),searchBy.selectedIndex);
+                }    
+            }
+        }
+        		
+		private function keyPressHandler( e:KeyboardEvent ):void {
+    	 	
+    	 	if(parentApplication.duringAlert()) return;   	 	
+           	if( e.ctrlKey){   //ctrl key pressed  
+				
+				if(( e.charCode == 81 )||( e.charCode == 113)) {//Q or q
+                    if(btnSearchCancel.enabled) {                    	
+                        this.focusManager.setFocus( btnSearchCancel );
+                      	if (e.altKey) {
+							rerunLastSearchQuery();
+						}
+						else {
+							searchReset();
+						}                      
+                    }    
+                }  
+
+            	if(( e.charCode == 63)||( e.charCode == 47)) {// ? or /
+                    if(btnSearchSearch.enabled) {
+                        this.focusManager.setFocus( btnSearchSearch );
+                        if (e.altKey) {
+							searchWhichPeople = "All";
+						}
+						else {
+							searchWhichPeople = "Staff only";
+						}
+                        searchResult(false,dg.selectedIndices.toString(),searchBy.selectedIndex);
+                    }    
+            	}
+            }
+        }
+		
+	   	public function pageSpecificSearchInitialization(listSearchBy:Array,listSearchWhom:Array,searchInvokedBy:String='default'):void{
+			
+			currentIndex = -1;
+			
+			var noRecord:Boolean	= parentApplication.isNoRecord();
+      		if (noRecord) return;
+      		
+			if (searchInvokedBy != currentSearchInvoker){ //update only if invoker changed
+				//trace("initialising search for "+searchInvokedBy);
+				
+				moreFieldsFrom='';//clear this variable since the fields in the search window is also initialized
+				arrCollParameters.removeAll();
+			
+				if(listSearchBy.length < 1)
+					listSearchBy	=	listField;
+				if(listSearchWhom.length < 1)
+					listSearchWhom	=	arrCombined; //arr
+				
+				//added to combine search
+				var listSearchCombined:Array = new Array;
+				
+				for(var i:uint=0;i<listSearchWhom.length;i++) {
+					if ((listSearchWhom[i].fields == "surname") || (listSearchWhom[i].fields == "forenames")) {
+						listSearchCombined.push({ fields: listSearchWhom[i].fields,data:listSearchWhom[i].data,operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+					} else {
+						if (isToggle(listSearchWhom[i].fields)) {
+							listSearchCombined.push({ fields: listSearchWhom[i].fields,data:listSearchWhom[i].data,operation:' ',valuesArray:[' ','X'], srchValue:""});
+						}
+						else {
+							listSearchCombined.push({ fields: listSearchWhom[i].fields,data:listSearchWhom[i].data,operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+						}
+					}
+				}
+				// end
+				
+				parentApplication.search.lblSearchSearchValue.visible= false;	 	
+	 			parentApplication.search.searchValue.visible=false;
+	 			parentApplication.search.searchValue.enabled=false;	 	 	
+	   			
+	   			//Store in case of searchReset()
+	   			savedSearchBy = listSearchBy;
+	   			savedSearchWhom = listSearchCombined;
+	   			
+	   			dg.dataProvider			=	listSearchCombined; //listSearchWhom;
+	   			searchBy.dataProvider	=	listSearchBy;
+	   			currentSearchInvoker	=	searchInvokedBy; 
+	   			currentSearchFields		= 	listSearchCombined;  			
+	  		}	
+	   	}
+	
+      	private function removeSelectedRow():void {
+      		if(dgSearch.selectedItem){
+        			var item:Object = dgSearch.selectedItem;
+           			var idx:int = arrCollParameters.getItemIndex(item);
+          			 //Alert.show(dgSearch.selectedItem.name+' '+dgSearch.selectedItem.srchValue +' '+dgSearch.selectedItem.field);
+
+            		arrCollParameters.removeItemAt(idx);
+            		if(arrCollParameters.length==0)
+             		 	btnRemove.visible=false;
+            		else 
+             	 	 	dgSearch.selectedIndex=0; 
+             	 	 	
+             	 	dgSearch.dataProvider=arrCollParameters;     	              	
+        		}
+        	else
+        		Alert.show("Please select the row to remove");
+        }
+        
+        
+   
+/*	
+	private function getOperationsArray():void
+	{
+	  var sTemp:String = "";
+	
+	  for (var i:int=0;i<arrCollParameters.length;i++)  {
+	    sTemp +=""+ arrCollParameters.getItemAt(i).operation +",";
+	 	operationArray=sTemp.split(",");//Array of operations
+	  }
+	
+	Alert.show("Operns: "+ sTemp);
+	}	
+  */      
+      	private function addRow():void {
+      
+      		var isDuplicate:Boolean=false;
+     
+      		for each(var item:Object in dgSearch.dataProvider)
+      		{
+      			if(item.name == searchBy.selectedItem.label){
+      				isDuplicate=true;
+      				break;
+      			}	
+      		}
+      		
+     		if(!isDuplicate){
+     		
+     			arrCollParameters.addItem({name: searchBy.text ,operation:'=',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:"", field: searchBy.value});
+        		btnRemove.visible=true;
+          		dgSearch.selectedIndex=arrCollParameters.length-1;  
+          		dgSearch.dataProvider=arrCollParameters;
+     		}
+	 	 
+        	//  Alert.show((arrCollParameters.length).toString());             
+      	}      
+      
+      	private function initdgSearch():void{
+      	
+        	arrCollParameters = new ArrayCollection();
+      	}
+ 		
+ 		// dataprivider for the datagrid inthe form fieldname ('fields: "title") and table name(data:"name")
+		private var arr:Array = [      		
+		{ fields: "surname",data:"surname",isKnown:false},  		
+		{ fields: "forenames",data:"name",isKnown:false},
+		{ fields: "relationship",data:"relation",isKnown:false},
+		//{ fields: "status",data:"inf_staff",isKnown:false},
+		{ fields: "title",data:"name",isKnown:false},
+		{ fields: "known_as",data:"name",isKnown:false},
+		{ fields: "gender",data:"name",isKnown:false},		
+		{ fields: "dob",data:"name",isKnown:false},
+		{ fields: "marital_status",data:"name",isKnown:false},
+		{ fields: "blood_group",data:"name",isKnown:false},
+		//{ fields: "birth_place",data:"name",isKnown:false},
+		//{ fields: "citizenship",data:"inf_staff",isKnown:false},
+		//{ fields: "medical_insurance",data:"inf_staff",isKnown:false},
+		{ fields: "birth_country",data:"name",isKnown:false},
+		{ fields: "birth_town",data:"name",isKnown:false},
+		{ fields: "birth_district",data:"name",isKnown:false},
+		//{ fields: "religion",data:"inf_staff",isKnown:false},
+		//{ fields: "caste",data:"inf_staff",isKnown:false},
+		//{ fields: "embassy_reg",data:"inf_staff",isKnown:false},
+		//{ fields: "qualification",data:"education"},
+	//	{ fields: "need",data:"training_needs"},//added august 1 for training_needs table
+		];
+		
+		private var arrCombined:Array = new Array();
+						
+        private function loadData():void{
+        	
+        	//trace("search.loadData");
+        	dg.addEventListener( KeyboardEvent.KEY_DOWN, enterPressHandler );//for keyboard functions
+        	stage.addEventListener( KeyboardEvent.KEY_DOWN, keyPressHandler );//for keyboard functions
+        	btnSearchSearch.addEventListener( MouseEvent.CLICK, searchClickEvent );//for click on search button
+        	btnSearchCancel.addEventListener( MouseEvent.CLICK, resetClickEvent );//for click on search button
+        	
+        	newQueriesInserted=false;
+        	//siteType=parentApplication. getuserLoginInfo('siteType');
+        	//Search all records during the application starts i.e. DEFAULT SEARCH
+
+			arrCombined.push({ fields: "surname",data:"surname",operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "forenames",data:"name",operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "relationship",data:"relation",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+
+			if (!parentApplication.patientSystem) {
+				arrCombined.push({ fields: "status",data:"staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});			
+				arrCombined.push({ fields: "archived",data:"inf_staff",operation:' ',valuesArray:[' ','X'], srchValue:""});
+			}
+			else {
+				arrCombined.push({ fields: "archived",data:"patient_inf",operation:' ',valuesArray:[' ','X'], srchValue:""});
+			}
+			arrCombined.push({ fields: "title",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "gender",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});	
+			arrCombined.push({ fields: "known_as",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "dob",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "marital_status",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "blood_group",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			//{ fields: "birth_place",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "birth_town",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "birth_district",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			arrCombined.push({ fields: "birth_country",data:"name",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			//{ fields: "medical_insurance",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			if (parentApplication.patientSystem) {
+				//arrCombined.push({ fields: "citizenship",data:"patient_inf",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+				arrCombined.push({ fields: "religion",data:"patient_inf",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+				arrCombined.push({ fields: "ethnicity",data:"patient_inf",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			}
+			else {
+				arrCombined.push({ fields: "religion",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+				arrCombined.push({ fields: "ethnicity",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+				arrCombined.push({ fields: "nationality",data:"nationality",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			}
+			if (parentApplication.personnelNepalSystem) {
+				arrCombined.push({ fields: "citizenship",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			}
+			if (parentApplication.personnelWorldwideSystem) {	
+				arrCombined.push({ fields: "embassy_reg",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+				arrCombined.push({ fields: "embassy",data:"inf_staff",operation:' ',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+			}
+			//{ fields: "qualification",data:"education"});
+			//{ fields: "need",data:"training_needs"},//added august 1 for training_needs table
+        
+			listField.push({ label: "surname",data:"surname"});
+			listField.push({ label: "forenames",data:"name"});
+			listField.push({ label: "relationship",data:"relation"});  
+			if (!parentApplication.patientSystem) {
+				listField.push({ label: "status",data:"staff"});
+				listField.push({ label: "archived",data:"inf_staff"}); 
+			}
+			else {
+				listField.push({ label: "archived",data:"patient_inf"}); 
+			}
+			listField.push({ label: "title",data:"name"}); 
+        	listField.push({ label: "gender",data:"name"});
+			listField.push({ label: "known_as",data:"name"});
+			listField.push({ label: "dob",data:"name"});
+			listField.push({ label: "marital_status",data:"name"});
+			listField.push({ label: "blood_group",data:"name"});
+			//listField.push({ label: "address",data:"address"});
+			//listField.push({ label: "city_town",data:"address"});
+        	//listField.push({ label: "state_province",data:"address"});			
+        	//listField.push({ label: "staff_type",data:"staff_type"});       
+        	listField.push({ label: "birth_town",data:"name"});
+        	listField.push({ label: "birth_district",data:"name"});
+        	listField.push({ label: "birth_country",data:"name"});           		           	
+        	//listField.push({ label: "medical_insurance",data:"inf_staff"});
+			if (parentApplication.patientSystem) {
+				//listField.push({ label: "citizenship",data:"patient_inf"});
+				listField.push({ label: "religion",data:"patient_inf"});//this points to religion_id in inf_staff
+				listField.push({ label: "ethnicity",data:"patient_inf"}); 
+			}
+			else {				
+				listField.push({ label: "religion",data:"inf_staff"});//this points to religion_id in inf_staff
+				listField.push({ label: "ethnicity",data:"inf_staff"}); 
+				listField.push({ label: "nationality",data:"nationality"}); 
+			}
+			if (parentApplication.personnelNepalSystem) {
+				listField.push({ label: "citizenship",data:"inf_staff"});
+			}
+			if (parentApplication.personnelWorldwideSystem) {	
+				listField.push({ label: "embassy_reg",data:"inf_staff"});
+				listField.push({ label: "embassy",data:"inf_staff"});
+			}        	
+        	
+        	currentSearchFields=arrCombined;
+        	searchBy.dataProvider=listField;
+        //data provider for the combobox
+		//it displays field name as the display value and table name as the data value.
+		//for e.g gender.name, known_as.name
+
+			searchResult();      
+        }		
+        
+        ////***************default fault function***************////
+        private function defaultFault(event:FaultEvent):void {
+         	
+                var faultstring:String = event.fault.faultString;
+                Alert.show(faultstring);
+                
+        }
+		////***************************************************////
+		//double clicking in a dataGrid row adds another row to dataGrid with the contents available in the selected row
+		 public function duplicateSelectedField(event:MouseEvent):void	{			 
+    	/*
+    	  uniqueString field is added in the datagrid since,
+    	  when the datagrid row is duplicated the newly added row jsut acts as
+    	  a mirror of original row , so that when something is changed in a row 
+    	  then exactly the same thing occurs in the duplicate row and vice versa.
+    	  Hence, to solve this problem, the uniqueString field is added so that 
+    	  every row in the datagrid will have unique values in this field
+    	  */
+		
+	    var selectedRow:Object = dg.selectedItem;	
+	    var strField:String= selectedRow.fields;
+	  	var strData:String= selectedRow.data;
+	  	var uniqueString:String	=	new Date().getTime().toString();	 	
+	  //  arrDP.push({ uniqueString:uniqueString,fields:selectedRow.fields,data:selectedRow.data, operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""});
+	  //  dg.dataProvider=arrDP;
+	  	if (!isToggle(strField))
+	    	dg.dataProvider.addItemAt({ uniqueString:uniqueString,fields:strField,data:selectedRow.data, operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:""},dg.selectedIndex+1); 			
+	}
+	    ////********************** it search the list of all the staff with all the other related details**********////    	   
+	   
+	    private function searchResult(reset:Boolean=true,displayVal:String="",selIndex:uint=0):void{
+	      	         
+	    	var fieldNames:String=""; 
+	    	var arrIndex:uint=0;
+	    	//var searchingTables:String="surname";//commented on feb 23
+	    	var searchingTables:String="";
+	    	var saveInvoker:String;
+	    	
+	    	if (reset){
+	    		saveInvoker = currentSearchInvoker;
+	    		currentSearchInvoker = 'default';
+	    	}
+	    	
+	    	//trace("search invoker "+currentSearchInvoker+" ("+saveInvoker+"): reset is "+reset);
+	    	
+	    	/* //original code -------------------
+	    	if (displayVal == "") displayVal = "1,0"; // use first two (forename/surname) if none specified
+	    	
+	    	//trace("searching for "+displayVal+" in "+currentSearchInvoker);
+	    	var words:Array = displayVal.split(",");//selected indices willbe in the form '1,2,3,4,5,8,9' and it will be splited and assigned to the array
+ 		     	
+         	for (var i:uint; i < words.length; i++){	
+				arrIndex	=	words[i];
+				//it concatenates tablename and field name
+				//eg known_as.name,surname.name
+				//if arrIndex=1 then,
+				//arr[arrIndex].data is equals to arr[1].data
+				//it returns the value of the data from the 'arr' array.
+				//similarly	arr[1].fields returns the value of fields from the 'arr' array.
+				//the value returned by arr[1].data is the table name and by arr[1].fields is the field name.
+
+				if(fieldNames	!=	""){
+    				fieldNames	=	fieldNames	+	","	+	dg.dataProvider[arrIndex].data	+	"."	+	dg.dataProvider[arrIndex].fields;
+    				searchingTables += ","+ dg.dataProvider[arrIndex].data;
+    			}
+    			else{
+    				fieldNames	=	"name.id,"	+	dg.dataProvider[arrIndex].data	+	"."	+	dg.dataProvider[arrIndex].fields;
+    				searchingTables += ","+ dg.dataProvider[arrIndex].data;
+    			}				
+			}   
+	    	//---------------------end original code*/
+	    	
+	    	var whereFields:String="";
+        	var whereValues:String="";
+        	var whereOperations:String="";
+        	var whereAndOrOperations:String="AND,";	
+        	var includeArchive:Boolean = false;
+        	var includeLevel:String = "";
+        	//AND operation added since the first operation is always AND not OR. And shifting each operation to one position back  for matching the logic
+
+        	var counter:int=0;
+        
+        	/* //original code -------------------
+        	for each(var item:Object in dgSearch.dataProvider)
+         	{	
+         	   	counter++;
+         		if(item.srchValue!=""){//if the searchBy's value is not empty
+          			if((dgSearch.dataProvider).length > counter){
+            			whereFields += item.field +"."+ item.name  +",";
+            			whereValues +=item.srchValue  +",";
+            			searchingTables += ","+ item.field;
+            			whereOperations+= arrCollParameters.getItemAt(counter-1).operation +",";
+            		}
+            		else{
+            			whereFields += item.field +"."+ item.name;
+            			whereValues +=item.srchValue;
+            			searchingTables += ","+ item.field;
+            			whereOperations+= arrCollParameters.getItemAt(counter-1).operation;
+            		}
+            	}
+            }
+            //---------------------end original code*/
+            
+            // new code for combined
+            for each(var item:Object in dg.dataProvider)
+         	{	 		
+         	  	if(item.operation!=" "){//if the searchBy's value is not empty
+         	   	
+         	   		if(item.fields == "archived") {
+         	   			includeArchive = true;
+         	   			continue;
+         	   		}
+         	   		if(item.fields == "include_all") {
+         	   			includeLevel = "name";
+         	   			continue;
+         	   		}
+         	   		if(item.fields == "include_family") {
+         	   			includeLevel = "family";
+         	   			continue;
+         	   		}         	   	
+         	//   	Alert.show("oper : "+item.operation);
+         	   		if(fieldNames	!=	""){
+         	   			if (item.operation.charAt(0) != "@")
+    						fieldNames	=	fieldNames	+	","	+	item.data	+	"."	+ item.fields;
+    					searchingTables += ","+ item.data;
+    				}
+    				else{
+    					fieldNames	=	"name.id,"	+	item.data	+	"."	+	item.fields;
+    					//searchingTables = "surname," + item.data;//commented on feb 23
+    					searchingTables = item.data;
+    				}	
+    			
+         			if(item.operation!="*"){//if the searchBy's value is not all
+          				if(counter>0){
+            				whereFields += ",";
+            				whereValues += ",";           				
+            				whereOperations+= ",";
+            				whereAndOrOperations+=",";
+            			}
+            			
+            			whereFields += item.data + "." + item.fields;
+            			whereValues +=item.srchValue.replace("*","%").replace("*","%").replace("*","%").replace("*","%");
+            			whereOperations+= item.operation;
+            			whereAndOrOperations+=(item.orStatus==true)?'OR':'AND';// if the checkbox is selected then OR else AND
+            			searchingTables += ","+ item.data;
+            			counter++;
+            		}
+            	}
+            }
+            // end new code
+        // Alert.show("whereFields: "+whereFields +"whereValues: " +whereValues+ "\n whereAndOrOperations:"+whereAndOrOperations);
+            
+           // the last operation(i.e either AND or OR ) is of no use so chop it out  
+			var index:int =  whereAndOrOperations.lastIndexOf( "," );
+			whereAndOrOperations=whereAndOrOperations.substr( 0, index );
+			
+			if (searchingTables == "") {
+				Alert.show("Please select some search parameters","Empty search");
+				return;
+			}
+			parentApplication.searching=true;
+			
+			if(currentSearchInvoker!='default'){   	    
+			     pageSpecificSearch(whereOperations,whereValues,whereFields,fieldNames,searchingTables,currentSearchInvoker,whereAndOrOperations,includeArchive,includeLevel);              		         
+  		  	}
+          	else{  
+   				runSearchQuery(parentApplication.getuserLoginInfo('searchID'),fieldNames,searchValue.text,searchBy.value.toString()+"."+searchBy.text);     
+     	  	}
+     	  	
+     	  	if (reset){
+	    		currentSearchInvoker = saveInvoker;
+	    	}   	 
+       	} 
+
+	    public function rerunLastSearchQuery(targetID:int=-1):void{
+	   		
+	   		if (lastSearchParameters == null) return;
+	   		
+	   		lastSearchParameters.targetID = targetID;
+	   		if (lastSearchParameters.searchType == "custom") {  	
+   				customSearch.url=parentApplication.getPath()+"pageSpecificSearch.php";  
+				customSearch.send(lastSearchParameters);
+	   		}
+	   		else { //lastSearchParameters.searchType = "basic";
+	   			searchUserRequest.url=parentApplication.getPath()+"search.php"; 	
+              	searchUserRequest.send(lastSearchParameters);
+	   		}
+	    }
+	    
+	    public function runSearchQuery(saveQueryIndex:uint,fieldNames:String='name.id,surname.surname,name.forenames',fieldName:String='1',fieldValue:String='1'):void{
+	   		
+	   		//trace("runSearchQuery: "+saveQueryIndex);
+	   		var parameters:Object	=	new Object();	
+	   		
+	   		parameters.recLimit	=	txtLimit.text; 
+	   		parameters.requester	=	'inf';  
+	   		
+	   		if (parentApplication.isLimited())
+              	parameters.limited = parentApplication.getuserLoginInfo('userNameID');
+           	else
+            	parameters.limited = "";
+	   		
+	   		if (saveQueryIndex == 0) {
+	   			
+	   			if (fieldName == '') {
+	   				fieldName = '1';
+	   				fieldValue = '1';
+	   			}
+	   			parameters.fieldValue	=	fieldValue;   	
+        		parameters.fieldName	=	fieldName;
+      	       
+      	        parameters.action	=	"Search All";    
+				parameters.fieldNames	=	fieldNames; 
+				parameters.searchWhom	=	'Staff'; //staff only
+      			
+				searchUserRequest.url	=	parentApplication.getPath()	+	"search.php"; 
+				
+              	lastSearchParameters = parameters;
+              	lastSearchParameters.searchType = "basic";
+              	lastSearchParameters.targetID = -1;
+              	//parameters.searchType = "";
+              		     			
+              	searchUserRequest.send(parameters); 
+	   		}
+	   		else {
+	   			
+         		parameters.preparedQueryAvailable='yes';
+		    	parameters.query = saveQueryIndex;//provides the query ID 
+         	        	
+   				customSearch.url=parentApplication.getPath()+"pageSpecificSearch.php";  
+				
+				lastSearchParameters = parameters;
+				lastSearchParameters.searchType = "custom";
+				lastSearchParameters.targetID = -1;
+				//parameters.searchType = "";
+            	
+				customSearch.send(parameters);
+	   		}
+	    }
+	              
+       	private function pageSpecificSearch(whereOperations:String,whereValues:String,whereFields:String,fieldNames:String,searchingTables:String,searchRequestor:String,whereAndOrOperations:String,includeArchive:Boolean=false,includeLevel:String=""):void{
+			
+		//AND operation added since the first operation is always AND not OR. And shifting each operation to one position back  for matching the logic
+		//whereAndOrOperations	=	'AND,'+whereAndOrOperations;//the last operation value (ie.either AND or OR) is NOT used at all
+		    if(txtSearchDescription.text!='')	
+		    	newQueriesInserted=true;
+		    	
+		    //trace("search desc :"+txtSearchDescription.text+" "+newQueriesInserted);
+		   		    	
+			var parameters:Object	=	new Object();
+			parameters.fieldNames	=	fieldNames;//+',leave.replacement';        		
+         	parameters.tables		=	searchingTables;//+',leave';
+         	parameters.requester	=	searchRequestor;
+         	parameters.whereFields	=	whereFields; 
+         	parameters.whereValues	=	whereValues;
+         	parameters.whereOperations=	whereOperations; 
+         	parameters.whereAndOrOperations=whereAndOrOperations;
+         	parameters.includeArchive = (includeArchive)?"Yes":"No";
+         	parameters.includeLevel = includeLevel;
+         	parameters.searchDescription	=	txtSearchDescription.text;
+         	parameters.userID	=	parentApplication.getCurrentUserID();
+         	parameters.blob = dg.dataProvider;
+         	parameters.nameID	=	parentApplication.getCurrentID();
+         	parameters.searchWhichPeople = searchWhichPeople;
+         	parameters.moreFieldsFrom	 =	 moreFieldsFrom.slice( 0, -1 );//passes more fields by removing the comma from the end of the string
+			parameters.preparedQueryAvailable='no';
+//Alert.show('more: '+parameters.moreFieldsFrom+"\n moreFieldsFrom: "+moreFieldsFrom+"\n whereFields: "+parameters.whereFields+' WhereValues:'+parameters.whereValues+' FieldNames:'+parameters.fieldNames);
+			txtSearchDescription.text='';
+			parameters.recLimit	=	txtLimit.text;
+   			customSearch.url=parentApplication.getPath()+"pageSpecificSearch.php";   
+			lastSearchParameters = parameters;
+			lastSearchParameters.searchType = "custom";
+			lastSearchParameters.targetID = -1;
+			//parameters.searchType = "";
+			
+			if (parentApplication.isLimited())
+            	parameters.limited = parentApplication.getuserLoginInfo('userNameID');
+            else
+            	parameters.limited = "";
+            	
+			customSearch.send(parameters);				 	
+		}
+ 
+       //result event of the search action
+	 	public function defaultResult(event:ResultEvent,custom:Boolean=false):void {
+
+			//trace("search.defaultResult: "+custom);	 		
+	 		//it sets the searchResult datagrid of the parent application
+           	var result:Object = event.result;
+           	var provider:Object;
+           	var dgColumns:String;
+           	
+            if (custom){
+				
+				if (customSearch.lastResult.rootTag != null) {
+            		provider=customSearch.lastResult.rootTag.subTag;
+            		
+            		//now populate the search parameters in the datagrid
+            		var searchParameters:String=customSearch.lastResult.searchHistorySaved;
+            		if(searchParameters != null && (provider.length > 0))
+            			resetSearchParameters(customSearch.lastResult.searchHistorySaved);
+            		}
+            	else {
+            		provider=null;
+            	}
+            	dgColumns = customSearch.lastResult.dgColumns;				
+            }        
+            else {
+	   			provider=searchUserRequest.lastResult.users.user;
+            	dgColumns = searchUserRequest.lastResult.dgColumns;
+    		}
+            
+            parentApplication.processSearchResult(provider,dgColumns,txtLimit.text,lastSearchParameters.targetID);
+
+/*       		if (parentApplication.searchResult.visible) {
+       			parentApplication.focusManager.setFocus( parentApplication.searchResult ); 
+       			this.focusManager.getFocus().drawFocus(true);
+       		} */
+           	
+           	//trace("newqueries: "+newQueriesInserted);
+           	if(newQueriesInserted) {	
+		    	newQueriesInserted=false;
+		    	parentApplication.loadQueries();
+       		}
+           	//trace("search: "+this.focusManager.getFocus()); 
+      /*    
+           if(parentApplication.runUserDefinedSearch){
+           		parentApplication.runDefaultSearchQuery();
+           		parentApplication.runUserDefinedSearch=false;
+           }      	
+           */
+        }
+        
+       ////****************************************end of search***********************************/////
+       	
+      	private function emptyAll():void{
+      	
+      		searchValue.text="";
+      	}
+      	     	
+      	protected function displayPopUpDoc(strTitle:String,fieldName:String):void{			
+				
+			var pop1:popupSearch = popupSearch(PopUpManager.createPopUp(this, popupSearch, true));
+			PopUpManager.centerPopUp(pop1);
+			pop1.showCloseButton=true;		
+			pop1.title=strTitle;				
+			pop1.move(200,20);				
+			pop1.defaultSearchFields=currentSearchFields;	
+			//pop1.siteType=parentApplication.getuserLoginInfo('siteType');
+			pop1.mainApp = this;        
+			pop1.parentINF= this.parentApplication;											
+		}    
+				
+		private function applyDefaultClickOperation(event:ListEvent):void{
+
+			if(dg.selectedIndex == -1) return;
+			
+			trace("click: "+event.rowIndex+" "+event.columnIndex+" "+currentIndex);
+			
+			if ((event.columnIndex == 2) && (!isToggle(dg.dataProvider[dg.selectedIndex].fields))) {// srchValue
+				trace("text 2: "+dg.dataProvider[dg.selectedIndex].srchValue);
+			
+				if (dg.dataProvider[dg.selectedIndex].operation == " ") {
+					dg.dataProvider[dg.selectedIndex].operation = "*";
+					if (dg.dataProvider[dg.selectedIndex].srchValue != "") {
+						dg.dataProvider[dg.selectedIndex].operation = "=";
+					}
+					dg.invalidateList();
+				} 
+			}
+			if (event.columnIndex == 3) {// orStatus
+				trace("text 3: "+dg.dataProvider[dg.selectedIndex].srchValue);
+			
+				if ((dg.dataProvider[dg.selectedIndex].operation == "*") ||
+            		(dg.dataProvider[dg.selectedIndex].operation == " ") ||
+            		(dg.dataProvider[dg.selectedIndex].operation == "X")) {
+					dg.dataProvider[dg.selectedIndex].orStatus = false;
+					dg.invalidateList();
+				} 
+			}
+			trace(dg.dataProvider[dg.selectedIndex].operation);
+			trace(dg.dataProvider[dg.selectedIndex].orStatus);
+		}	
+		
+		private function dgChange(event:ListEvent):void{
+			
+			if (currentIndex > -1) {
+				trace("change "+event.rowIndex+" "+event.columnIndex+" "+currentIndex);
+				if ((dg.dataProvider[currentIndex].operation == "*") ||
+            		(dg.dataProvider[currentIndex].operation == " ") ||
+            		(dg.dataProvider[currentIndex].operation == "X")) {
+            		dg.dataProvider[currentIndex].srchValue = "";
+            		dg.dataProvider[currentIndex].orStatus = false;
+            		//dg.invalidateList();
+            	}
+			}
+			currentIndex = event.rowIndex;			
+		}
+		
+		private function applyDefaultKeyboardOperation(event:KeyboardEvent):void{
+
+			if(dg.selectedIndex == -1) return;
+			//trace(event.keyCode + " "+event.charCode);
+			
+			if(event.ctrlKey && event.altKey){   //ctrl and alt keys pressed  
+				
+				if(event.charCode == 32) {// space
+                    dg.dataProvider[dg.selectedIndex].operation = " ";
+					dg.invalidateList();
+                }   
+                
+                if (isToggle(dg.dataProvider[dg.selectedIndex].fields)) {
+                	if((event.charCode == 88) || (event.charCode == 120)){// x
+                    	dg.dataProvider[dg.selectedIndex].operation = "X";
+						dg.invalidateList();
+                	}
+                }
+                else {
+                	if((event.charCode == 42) || (event.charCode == 56)){// star or 8
+                    	dg.dataProvider[dg.selectedIndex].operation = "*";
+						dg.invalidateList();
+                	}   
+                               
+                	if((event.charCode == 33) || (event.charCode == 49)) {// exclamation or 1
+                    	dg.dataProvider[dg.selectedIndex].operation = "!=";
+						dg.invalidateList();
+                	}
+                
+                	if((event.charCode == 61) || (event.charCode == 43)) {// equals or plus
+                    	dg.dataProvider[dg.selectedIndex].operation = "=";
+						dg.invalidateList();
+                	}
+                	
+                	if((event.charCode == 126) || (event.charCode == 35)) {// tilde or hash
+                    	if(dg.dataProvider[dg.selectedIndex].operation == "@=") dg.dataProvider[dg.selectedIndex].operation = "=";
+						if(dg.dataProvider[dg.selectedIndex].operation == "@!=") dg.dataProvider[dg.selectedIndex].operation = "!=";
+						if(dg.dataProvider[dg.selectedIndex].operation == "@>") dg.dataProvider[dg.selectedIndex].operation = ">";
+						if(dg.dataProvider[dg.selectedIndex].operation == "@<") dg.dataProvider[dg.selectedIndex].operation = "<";
+						if(dg.dataProvider[dg.selectedIndex].operation == "@>=") dg.dataProvider[dg.selectedIndex].operation = ">=";
+						if(dg.dataProvider[dg.selectedIndex].operation == "@<=") dg.dataProvider[dg.selectedIndex].operation = "<=";
+						dg.invalidateList();
+                	}
+                	                	
+                	if((event.charCode == 64) || (event.charCode == 39)) {// at or apostrophe
+                    	if(dg.dataProvider[dg.selectedIndex].operation == "=") dg.dataProvider[dg.selectedIndex].operation = "@=";
+						if(dg.dataProvider[dg.selectedIndex].operation == "!=") dg.dataProvider[dg.selectedIndex].operation = "@!=";
+						if(dg.dataProvider[dg.selectedIndex].operation == ">") dg.dataProvider[dg.selectedIndex].operation = "@>";
+						if(dg.dataProvider[dg.selectedIndex].operation == "<") dg.dataProvider[dg.selectedIndex].operation = "@<";
+						if(dg.dataProvider[dg.selectedIndex].operation == ">=") dg.dataProvider[dg.selectedIndex].operation = "@>=";
+						if(dg.dataProvider[dg.selectedIndex].operation == "<=") dg.dataProvider[dg.selectedIndex].operation = "@<=";
+						dg.invalidateList();
+                	}
+                }	
+            }
+            else { 
+            	if(	( event.charCode > 47 && event.charCode < 58 ) || ( event.charCode == 32 ) || // alphanumeric or space
+				   	( event.charCode > 64 && event.charCode < 91 ) ||
+					( event.charCode > 96 && event.charCode < 123 ) ) {
+					if (isToggle(dg.dataProvider[dg.selectedIndex].fields)) {
+						if (dg.dataProvider[dg.selectedIndex].operation == " ") {
+							dg.dataProvider[dg.selectedIndex].operation = "X";
+							dg.invalidateList();
+						}
+					}
+					else {
+						if ((dg.dataProvider[dg.selectedIndex].operation == "*") || (dg.dataProvider[dg.selectedIndex].operation == " ")) {
+							dg.dataProvider[dg.selectedIndex].operation = "=";
+							dg.invalidateList();
+						}
+					}
+				}
+            }
+            if (event.currentTarget.itemEditorInstance != null) {// editing text rather than combobox
+				if( ( event.charCode == 8 ) || ( event.charCode == 127 ) ) {//backspace or delete	
+					if (event.currentTarget.itemEditorInstance.text == "") {
+						if (isToggle(dg.dataProvider[dg.selectedIndex].fields)) {
+							dg.dataProvider[dg.selectedIndex].operation = " ";
+						}
+						else {
+							dg.dataProvider[dg.selectedIndex].operation = "*";
+						}
+						dg.invalidateList();
+					}
+            	}
+            }
+            if ((dg.dataProvider[dg.selectedIndex].operation == "*") ||
+            	(dg.dataProvider[dg.selectedIndex].operation == " ") ||
+            	(dg.dataProvider[dg.selectedIndex].operation == "X")) {
+            	dg.dataProvider[dg.selectedIndex].orStatus = false;
+            	dg.invalidateList();
+            }
+		}
+				
+		private function radio_change(evt:Event):void {
+			
+        	var group:RadioButtonGroup = evt.currentTarget as RadioButtonGroup;
+            searchWhichPeople = group.selection.label;       
+        }
+
+		private function resetClickEvent(evt:MouseEvent): void {
+			
+			if (evt.altKey) {
+				rerunLastSearchQuery();
+			}
+			else {
+				searchReset();
+			}
+		}
+		
+		private function searchClickEvent(evt:MouseEvent): void {
+			
+			if (evt.altKey) {
+				searchWhichPeople = "All";
+				parentApplication.setRelativeMode(true,true);
+			}
+			else {
+				searchWhichPeople = "Staff only";
+				parentApplication.setRelativeMode(false,true);
+			}
+			searchResult(false,dg.selectedIndices.toString(),searchBy.selectedIndex);
+		}
+		
+		private function checkDuplicateSearchName():void{
+			
+			if(txtSearchDescription.text==''){
+				btnSearchSearch.enabled = true;
+				return;
+			}
+			parentApplication.searching=true;
+			btnSearchSearch.enabled = false;
+			
+			//parameters.searchName=txtSearchDescription.text;
+			
+			var parameters:Object=new Object();	
+	 		parameters.searchName=txtSearchDescription.text;
+	 		parameters.userID=parentApplication.getCurrentUserID();
+	 		parameters.requester='checkSearchHistoryName';
+	 		userRequestCheckDB.useProxy = false;
+           	userRequestCheckDB.url	=	parentApplication.getPath()	+	"requestCheckDb.php";
+           	userRequestCheckDB.send(parameters); 
+              
+		}
+		
+		 private function handleDBResult(event:ResultEvent):void{
+	 	
+		 	parentApplication.searching=false;
+		 	btnSearchSearch.enabled = true;	
+		 	this.focusManager.setFocus(btnSearchSearch);
+				
+		 	if(userRequestCheckDB.lastResult.searchName=='duplicate'){
+		 	 	 		
+		 		Alert.show("Duplicate name for search \n"+"Please enter unique name");
+		 		txtSearchDescription.text='';
+		 	}	
+		 }
+		 
+		 private function resetSearchParameters(parameters:String):void{
+		 	
+		 /*   var selectFields:String='surname.surname,name.forenames,name.title,name.gender,name.blood_group';
+		 	var whereFields:String='name.title,name.gender,name.blood_group';
+		 	var whereValues:String='dr,male,';
+		 	var whereOperations:String='!=,=,!=';
+		 	var whereAndOr:String='AND,OR,AND';
+		 	*/
+		 	
+		 	if (parameters == '') return;
+		 	if (parameters.toLowerCase() == 'none') return;
+		 	
+		 	var uniqueString:String	=	new Date().getTime().toString();
+		 	
+		 	//var acParam:ArrayCollection=new ArrayCollection();
+		 	
+		 	var arrParam:Array = new Array();
+		 	
+		 	var arrParameters:Array = parameters.split("/#/");
+		 	var selectFields:String=arrParameters[0];
+		 	var whereFields:String=arrParameters[1];
+		 	var whereValues:String=arrParameters[2];
+		 	var whereOperations:String=arrParameters[3]+",AND"; //add an extra and to the end - needs to look at next row to determine connector 
+			var whereAndOr:String=arrParameters[4];
+			
+	    	//dg.dataProvider.addItemAt({ uniqueString:uniqueString,fields:'dob',data:'name', operation:'=',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:"val",orStatus:true},0); 			
+			
+			var arrValues:Array = whereValues.split(",");
+			var arrOperation:Array = whereOperations.split(",");
+			var arrAndOr:Array = whereAndOr.split(",");
+			var arrWhereFields:Array = whereFields.split(",");
+			var arrSelectFields:Array = selectFields.split(",");
+			var arrFields:Array;
+			var tempOrStatus:Boolean;			
+			
+			var nonValueFieldCount:int=0;
+			var tempIndex:int=0;
+		//	var targetDgIndex:int=2;//to place these data after forename and surname in the datagrid
+			
+			for (var j:int = 0; j < arrOperation.length; j++) { //add any hidden where fields which aren't already there
+				if(arrOperation[j].charAt(0) == '@')
+					arrSelectFields.push(arrWhereFields[j]);
+			}
+						
+			for (var i:int = 0; i < arrSelectFields.length; i++) { 
+			//	targetDgIndex =i;
+				uniqueString=i.toString()+new Date().getTime().toString();
+				
+				arrFields = arrSelectFields[i].split(".");//splits 'table.field' like string to table and field
+				
+				//check if the field is for display only
+				if(arrWhereFields.indexOf(arrSelectFields[i])<0){//just select case					
+					nonValueFieldCount++;
+					//dg.dataProvider.addItemAt({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:"",orStatus:false},i); 			
+					//acParam.addItemAt({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:"",orStatus:false},i); 	
+					arrParam.push({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:'*',valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:"",orStatus:false});
+				}
+				else{
+					tempIndex= arrWhereFields.indexOf(arrSelectFields[i]);
+					tempOrStatus = (arrAndOr[tempIndex+1]=='OR');	
+				
+					//dg.dataProvider.addItemAt({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:arrOperation[tempIndex],valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:arrValues[tempIndex],orStatus:tempOrStatus},i); 			
+					//acParam.addItemAt({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:arrOperation[tempIndex],valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:arrValues[tempIndex],orStatus:tempOrStatus},i); 		
+					arrParam.push({ uniqueString:uniqueString,fields:arrFields[1],data:arrFields[0], operation:arrOperation[tempIndex],valuesArray:[' ','*','=','!=','>','<','>=','<=','@=','@!=','@>','@<','@>=','@<='], srchValue:arrValues[tempIndex],orStatus:tempOrStatus});
+					arrWhereFields[tempIndex] = ''; //mark this one as done to allow duplicate fields
+				}				
+			}
+			
+			//dg.dataProvider=acParam;
+			dg.dataProvider  = arrParam;
+			currentSearchFields = arrParam;
+			
+			//select the search Window
+			parentApplication.acSideMenu.selectedIndex	=	1; 
+			//Alert.show('dg.dataProvider: '+dg.dataProvider.length.toString()+'\n arrParam: '+arrParam.length.toString()+'\n currentSearchFields: '+currentSearchFields.length);		 	
+		 }
+		 
+		 //function to show tooltip for each row in datagrid, generated when the mouse positions over the respective datagrid cell
+		 private function buildToolTip(item:Object):String{
+		 	
+			var tblToLbl:Object = {name:"", surname:"" ,nationality:"",caste:"",religion:"" ,inf_staff:"",staff:""};
+			
+			var myString:String = "";
+			if(item != null){
+				
+				if(tblToLbl[item.data]==""){
+	
+					myString = item.fields;
+				}
+				else
+					myString = item.data +'.'+ item.fields;
+				//myString = myString + "Lastname : " + item.lname + "\n"
+			}
+			return myString;
+		}
+		
+	]]>
+	</mx:Script>
+			
+	<mx:Label x="0" y="0" text="Display The Following Fields" width="100%" fontWeight="bold" textAlign="center"/>
+
+	<!--local:CheckBoxDataGrid id="dg" initialize="dg.dataProvider=arr" allowMultipleSelection="true" x="5" y="15" showHeaders="false" height="220" minWidth="240" width="95%" variableRowHeight="true">
+		<local:columns>		
+			<mx:DataGridColumn id="dgCheckBox" width="35" sortable="false" itemRenderer="packages.CheckBoxRenderer" />
+			<mx:DataGridColumn dataField="fields" />			
+		</local:columns>
+	</local:CheckBoxDataGrid--> 
+	
+	<mx:DataGrid doubleClickEnabled="true" change="dgChange(event)" doubleClick="duplicateSelectedField(event);" keyUp="applyDefaultKeyboardOperation(event)" itemClick="applyDefaultClickOperation(event)" id="dg" initialize="dg.dataProvider=arrCombined" x="0" y="15" showHeaders="false" height="315" width="95%" variableRowHeight="true" editable="true" dragEnabled="true" dragMoveEnabled="true" dataTipFunction="buildToolTip" dropEnabled="true" toolTip="Double-click a row to duplicate it">
+		<mx:columns>		
+			<mx:DataGridColumn dataField="uniqueString" width="10" editable="false" visible="false"/>			
+			<mx:DataGridColumn dataField="fields" width="100" editable="false" showDataTips="true"/>
+			<mx:DataGridColumn dataField="operation" headerText="Do" width="80" editable="false" itemRenderer="components.DGIR_DynamicDP"/>  
+	    	<mx:DataGridColumn headerText="Value" dataField="srchValue" width="100"/>	    	
+	    	<mx:DataGridColumn dataField="orStatus" editable="false" headerText="OR" width="40">
+        	 	<mx:itemRenderer>
+					<mx:Component >
+						<mx:HBox horizontalAlign="center" verticalAlign="middle" toolTip="Default case is AND, tick for OR "> 
+							<mx:CheckBox click="{data.orStatus=!data.orStatus}" selected="{data.orStatus}"/>		
+						</mx:HBox>	
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid> 
+	
+	<mx:Label x="5" y="239" text="Search By:" width="66" visible="false"/>	
+	<local:ComboBoxNew y="237" x="69" id="searchBy"  width="128" visible="false" close="addRow()"/>
+		
+	<mx:Button x="200" y="196" click="removeSelectedRow();" id="btnRemove"  toolTip="Remove selected Name-Value pair from search" icon="@Embed(source='../../files/images/remove.gif')" width="23" height="22" visible="{(dgSearch.dataProvider).length}"/>
+
+	<local:DataGridNew id="dgSearch" x="0" y="213" width="95%" height="87" editable="true" creationComplete="{initdgSearch()}" dataProvider="{arrCollParameters}"  visible="{(dgSearch.dataProvider).length}" enabled="{!parentApplication.searching}">
+	  <local:columns>
+	    <mx:DataGridColumn headerText="Name" dataField="name" width="100" editable="false"/>
+		<mx:DataGridColumn dataField="operation"  headerText="Do" width="50" editable="false"  itemRenderer="components.DGIR_DynamicDP"/>  
+	    <mx:DataGridColumn headerText="Value" dataField="srchValue"/>
+	    <mx:DataGridColumn headerText="Field" dataField="field" editable="false" visible="false"/>
+	  </local:columns>
+	</local:DataGridNew>
+
+	<mx:Label x="4" y="286"  text="Search Value:" width="85" id="lblSearchSearchValue" visible="false"/>
+	<mx:TextInput id="searchValue" x="94" y="283" width="147" visible="false"/>	
+	
+	<mx:Label x="1" y="332" text="Save as:" width="57" height="22"/>
+	<mx:TextArea id="txtSearchDescription" x="55" y="331" height="22" width="75%" focusOut="checkDuplicateSearchName()">
+		<mx:toolTip>Enter a description of the search if you want to save the query for future reference</mx:toolTip>
+	</mx:TextArea>
+	
+	<mx:Label x="2" y="358" text="Limit:" width="38"/>
+	<mx:TextInput id="txtLimit"  text="999" x="36" y="357" width="31" height="22"/>
+	
+	<mx:Button x="69" y="357" icon="@Embed(source='../../files/images/cancel.gif')" id="btnSearchCancel" width="65" height="22" toolTip="CTRL + q" label="Reset" labelPlacement="left">
+		<mx:disabledIcon>@Embed(source='../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="136" y="357" icon="@Embed(source='../../files/images/browse.gif')" id="btnSearchSearch" width="65" height="22" toolTip="CTRL + ? (+ ALT to search all)" label="Search" labelPlacement="left" enabled="{!parentApplication.searching}">
+		<mx:disabledIcon>@Embed(source='../../files/images/searchDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="203" y="357" icon="@Embed(source='../../files/images/addmore.gif')" id="btnAddMore" width="30" height="22"  toolTip="Add more search parameters" enabled="{!parentApplication.searching}">
+		<mx:click>displayPopUpDoc('More Search Parameters','')</mx:click>
+	</mx:Button>
+		
+	<mx:HTTPService id="userRequestCheckDB"  method="POST" result="{handleDBResult(event)}" fault="{defaultFault(event)}"/>
+	<mx:HTTPService id="customSearch" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event,true)"/>
+	<mx:HTTPService id="searchUserRequest" result="defaultResult(event)" showBusyCursor="true"  useProxy="false" method="POST" fault="defaultFault(event)" />
+	<mx:RadioButtonGroup id="searchPeopleFilter"  change="radio_change(event)"/>
+	<mx:RadioButton x="64" y="338" label="Staff only" groupName="searchPeopleFilter" id="chkSearchStaffs" selected="true" visible="false"/>
+	<mx:RadioButton x="125" y="362" label="Relatives" groupName="searchPeopleFilter" id="chkSearchRelatives" selected="false" visible="false"/>
+	<mx:RadioButton x="165" y="338" label="All" groupName="searchPeopleFilter" id="chkSearchAll" selected="false" visible="false"/>
+	<mx:Label x="5" y="341" text="Search:" visible="false"/>
+	
+</mx:Canvas>

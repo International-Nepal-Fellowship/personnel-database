@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupQualificationClass xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.application.*" xmlns:packages="packages.*" showCloseButton="true" width="620" close="removeMe()" borderAlpha="1" height="400" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Canvas height="100%" width="100%">
+	
+	<mx:FormItem x="77" y="65" label="Name:" width="90" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="197" y="63" width="380" enabled="{inputEnabled}" maxChars="60" toolTip="60 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="380" x="197" y="63" enabled="{listEnabled}" change="comboChange()"/>
+
+	<packages:DataGridNew id="dgList"  x="10" y="213" height="50" width="276" visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="true" width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Name" width="150" dataField="name" />	
+		</packages:columns>
+	</packages:DataGridNew> 
+	
+	<mx:Button x="67" y="293" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="293"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="293"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="293" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Label x="25" y="326" width="400" height="17" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	     
+</mx:Canvas>
+
+<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+
+</local:popupQualificationClass>

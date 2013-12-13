@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabPhotoClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.biodata.*" xmlns:packages="packages.*">
+	
+	<mx:FormItem label="Photo:" width="47" y="12" x="330"/>
+
+	<mx:FormItem label="Filename:" width="77" y="12" x="23" visible="false"/>
+	<mx:Button id="photo" click="selectFile()" x="385" y="9" width="25" icon="@Embed(source='../../../files/images/browse.gif')" enabled="{inputEnabled}" toolTip="Upload photo"/>
+	<mx:TextInput id="textPhoto"  width="270" x="108" y="9" editable="false" enabled="false" visible="false"/>	
+	
+	<mx:FormItem label="Description:" width="77" color="{parentApplication.mandatoryLabelColour}" x="10" y="12"/>
+	<mx:TextArea x="10" y="33" width="400" height="72" id="textDescription" change="checkValid(textDescription)" enabled="{inputEnabled}"/>
+
+	<mx:CheckBox x="530" y="292" id="chkShowAll" label="Include Family Photos" click="showAll()" enabled="{!inputEnabled}"/>
+	
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/AddDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Photo Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>	
+	      
+	<mx:Image x="450" y="10" width="210" height="280" id="photoHolder" horizontalAlign="center" toolTip="Click to download">
+		<mx:click ><![CDATA[ if(dgList.selectedItem){navigateToURL(new URLRequest(downloadImage(dgList.selectedItem.link)))};]]></mx:click>
+	</mx:Image>
+	
+	<packages:DataGridNew x="10" y="108" width="400" height="{defaultListHeight}" id="dgList" keyDown="moveTo(event)" visible="true" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns> 	                                  
+	    	<!--HERE IS OUR FIRST ITEMRENDERER FOR THE PREVIEW IMAGE  -->   
+	        <mx:DataGridColumn headerText="Preview" dataField="link" width="150" visible="true">
+	        	<mx:itemRenderer>
+	            	<mx:Component>
+	                	<mx:VBox>
+	                  		<mx:Image doubleClickEnabled="true" id="dgImage" source="{data.link}" width="100%" height="100" horizontalAlign="center"/>	                   
+	                  	</mx:VBox>
+	                </mx:Component>
+	            </mx:itemRenderer>
+	        </mx:DataGridColumn>
+	        <mx:DataGridColumn headerText="Description" dataField="description" width="150"/>
+	        <mx:DataGridColumn headerText="Link" dataField="link"  visible="false"/>
+	 		<mx:DataGridColumn headerText="orgImageLink" dataField="org_link"  visible="false" />
+
+	        <mx:DataGridColumn headerText="ID" dataField="__id" visible="false" />   
+	        <mx:DataGridColumn headerText="timestamp" dataField="photo_timestamp" visible="false" />         
+	  	</packages:columns>
+	</packages:DataGridNew>
+	<mx:Button id="toggleResultHeight" x="409" y="108" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="409" y="138" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+
+	<!--server request -->
+	<mx:HTTPService id="userRequestSaveTab" useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:HTTPService id="getPhoto" method="POST"  useProxy="false" fault="defaultFault(event)" result="refresh()"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+
+	        		
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="409" y="168" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+</local:tabPhotoClass>

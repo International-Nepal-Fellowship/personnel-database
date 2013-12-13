@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:tabWorkExperienceClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
+
+	<mx:FormItem label="Workplace:"  x="10" y="12" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textWorkplace"  x="115" y="9" change="checkValid(textWorkplace)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+	
+	<mx:FormItem label="Job Title:"  x="10" y="36" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="textJobTitle"  x="115" y="33" change="checkValid(textJobTitle)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+
+	<mx:FormItem x="10" y="60" label="Start Date:" width="97" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="115" y="57" id="dateStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateStartDate)" formatString="{parentApplication.appDateFormat}"  width="100" editable="true"/>
+
+	<mx:FormItem label="End Date:" width="70"  x="10" y="84" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="115" y="81" id="dateEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateEndDate)" formatString="{parentApplication.appDateFormat}"  width="100" editable="true"/>
+
+	<mx:FormItem label="Description:"  x="302" y="12" width="105"/>
+	<mx:TextArea id="textDescription"  x="415" y="10" width="295" height="45" enabled="{inputEnabled}"/>
+		
+	<mx:FormItem label="City/Town:"  x="302" y="60" width="97"/>
+	<mx:TextInput id="textCityTown"  x="415" y="57" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+	
+	<mx:FormItem label="Country:"  x="302" y="84" width="105"/>
+	<packages:ComboBoxNew id="comboCountry"  x="415" y="81" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country',true)" toolTip="Double-click for details"/>
+	<mx:Button x="551" y="81" label="+" width="32" height="22" click="displayPopUpCountry('Country')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Leaving Reason:"  x="302" y="108" width="105"/>
+	<packages:ComboBoxNew id="comboLeavingReason"  x="415" y="105" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpLeavingReason('Leaving Reason',true)" toolTip="Double-click for details"/>
+	<mx:Button x="551" y="105" label="+" width="32" height="22" click="displayPopUpLeavingReason('Leaving Reason')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Education" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
+
+	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="508" y="318" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="591" y="318" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="708" y="318" id="btnMore" width="25" height="25" click="showPopupWindow('More Education Details')" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+	
+	<packages:DataGridNew id="dgList" x="10" y="136"	height="{defaultListHeight}" width="700"		
+			keyDown="moveTo(event)" enabled="{!inputEnabled}" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" dataField="__id" width="25"/>
+			<mx:DataGridColumn headerText="Start" dataField="start_date" width="70"  />		
+			<mx:DataGridColumn headerText="End" dataField="end_date" width="70"  />		
+			<mx:DataGridColumn headerText="WorkPlace" dataField="workplace" width="70" />	
+			<mx:DataGridColumn headerText="Job Title" dataField="job_title" width="70" />	
+			<mx:DataGridColumn headerText="Country" dataField="country_id" width="70" />	
+			<mx:DataGridColumn headerText="City/Town" dataField="city_town" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Leaving Reason" dataField="leaving_reason" width="70" />
+			<mx:DataGridColumn headerText="Description" dataField="description" width="70" visible="false"/>	
+			<mx:DataGridColumn headerText="Leaving Reason ID" dataField="leaving_reason_id" width="70" visible="false"/>
+			<mx:DataGridColumn headerText="timestamp" dataField="work_experience_timestamp" visible="false" /> 	
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Button id="toggleResultHeight" x="709" y="136" width="23" icon="@Embed(source='../../../files/images/toggle.gif')" height="22" click="toggleExpandedList()" toolTip="Toggle expanded list"/>
+	<mx:Button id="copyResultToClipboard" x="709" y="166" icon="@Embed(source='../../../files/images/copy.gif')" width="23" height="22" click="exportCSV()" toolTip="Copy table data to clipboard"/>
+	<mx:HTTPService id="userRequestDeleteTab" useProxy="false" method="POST" fault="defaultFault(event)" result="deleteResult(event)"/>
+	<mx:HTTPService id="userRequestSaveTab"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	<mx:Label x="35" y="347" width="627" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button  icon="@Embed(source='../../../files/images/printer.gif')"  x="709" y="196" id="printDG"   width="23" click="parentApplication.doPrint(dgList)" height="23" toolTip="Print table data"/>
+	
+</local:tabWorkExperienceClass>

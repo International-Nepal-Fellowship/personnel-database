@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TitleWindowData.mxml
+  A sample custom pop-up that extends TitleWindow-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical"  xmlns:packages="packages.*"
+  creationComplete="initComponent()"
+  showCloseButton="true"
+  close="closeWindow(true)" x="100" y="100" height="200" width="350" borderStyle="inset" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Script><![CDATA[
+
+	import packages.DataGridNew;
+	import mx.managers.PopUpManager;
+	import mx.collections.ArrayCollection;
+ 
+ 	[Bindable]public var mainApp:Object = null;        
+ 	[Bindable]public var acItemsSelected:ArrayCollection;
+
+	public var mode:String	=	"";
+ 
+ //not really used by anything in this example, but its just my habit
+ private function initComponent():void
+ {
+ }
+ 
+//called by the close event raised byclicking the close button
+ private function closeWindow(fromCloseButton:Boolean=false):void
+ {
+   	PopUpManager.removePopUp(this);
+   	mainApp.popupClosed(fromCloseButton);
+ }
+
+ private function showFinalSelection(oEvent:Event):void
+ {
+	parentApplication.setAppMode("Add Existing");
+	if (dg2.selectedItem != null) {
+		parentApplication.runQueryForID(dg2.selectedItem.zzzid,dg2.selectedItem.zzzstaffid);
+		closeWindow();
+	}
+ }
+ 
+]]></mx:Script>
+
+	<packages:DataGridNew id="dg2" itemClick="showFinalSelection(event)" height="95%" x="10" y="10" width="95%" liveScrolling="true">
+		<packages:columns>
+			<mx:DataGridColumn  headerText="Forename(s)" dataField="forenames" width="140" />
+			<mx:DataGridColumn  headerText="Surname" dataField="surname" width="100" />	
+			<mx:DataGridColumn  headerText="DOB"  dataField="dob" width="80" />
+			<mx:DataGridColumn  headerText="StaffID" dataField="zzzstaffid" width="30" visible="false"/>		
+			<mx:DataGridColumn  headerText="ID" visible="false" dataField="zzzid" width="30"/>
+		</packages:columns>
+	</packages:DataGridNew>  
+  
+</mx:TitleWindow>

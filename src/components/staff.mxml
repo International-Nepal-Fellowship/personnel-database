@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:comp="components.staff.*" xmlns:comp1="components.service.*" width="100%" height="100%">
+
+	<mx:Script>
+    <![CDATA[
+    	import mx.collections.ArrayCollection;          
+        import mx.rpc.soap.SOAPFault;         
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import flash.net.navigateToURL;
+	    import flash.net.URLRequest;
+		
+		private var currentIndex:uint = 0;
+		
+		public function getChildLabels():String {
+			return "health_staff,training";
+		}
+	
+		private function defaultFault(event:FaultEvent):void {			
+		    // Handle service fault.
+		    if (event.fault is SOAPFault) {
+		    	
+		         var fault:SOAPFault	=	event.fault as SOAPFault;
+		         var faultElement:XML	=	fault.element;
+		    }
+		    	    
+		    Alert.show(event.fault.faultString, "Error");		            
+		}
+		
+        public function refreshList(selIndex:uint,otherList:Boolean=false):void{
+         
+         	var parameters:Object=new Object();        	
+
+   			parameters.fieldValue	=	parentApplication.getCurrentID(); 
+   			parameters.action		=	"Search Others";
+   			navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+
+			var selectedTable:String;
+       		
+       		if (portals == null)
+       			selectedTable = parentApplication.firstEnabledTable(getChildLabels());
+       		else
+       			selectedTable = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){		
+   			
+   			     case 'health_staff':
+   			     case 'training':
+   			             			
+         			parameters.fieldNames	=	parentApplication.getTabFieldNames(selectedTable);         		
+         			parameters.table1		=	selectedTable;
+         			parameters.requester	=	selectedTable;       			  
+          			break;	
+      		}
+      		
+      		if (otherList) {
+	         	userRequestGetOtherList.useProxy	=	false;
+    	     	userRequestGetOtherList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetOtherList.send(parameters);    
+        	}
+        	else {
+        		userRequestGetList.useProxy	=	false;
+    	     	userRequestGetList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetList.send(parameters);
+        	}
+       }
+     
+       private function defaultResult(event:ResultEvent,otherList:Boolean=false):void{
+          	
+			var noRecord:Boolean	= parentApplication.isNoRecord();
+			
+			if (portals == null) return;
+	
+         	var selectedTable:String = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){
+				
+				case 'health_staff': //For health_staff
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			staffdetails.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			staffdetails.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     	
+		     	case 'training': //For training
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			training.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			training.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     	
+		     		break;	    	   		
+		  	}          
+       }
+    
+       private function activate():void{
+       	//trace("app activate ("+portals.selectedIndex+")");
+		navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+       	//parentApplication.refreshListTab();
+       }
+       
+       private function itemclick():void{
+       	//trace("app itemclick ("+portals.selectedIndex+")");
+       	//refreshList(portals.selectedIndex);
+       }
+       
+       private function render():void{
+       	
+       		if (!parentApplication.isLoggedIn()) {
+       			portals.selectedIndex = 0;
+       			currentIndex = 0;
+       		}
+       		if (currentIndex == portals.selectedIndex) return;
+       		currentIndex = portals.selectedIndex;
+       		//trace("staff render ("+portals.selectedIndex+")");
+       		refreshList(portals.selectedIndex);
+       }       
+       ////********************************************************************************************//// 
+    ]]>	
+	</mx:Script>
+	
+	<mx:TabBar x="0" y="0" dataProvider="portals" itemClick="itemclick()" activate="activate()" render="render()">
+	</mx:TabBar>
+
+	<mx:ViewStack id="portals" width="100%" height="100%" x="0" y="21" historyManagementEnabled="true">	
+		
+		<comp:staffdetails id="staffdetails"  label="Health_Staff" width="100%" height="100%"/>		
+		<comp1:training id="training"  label="Training" width="100%" height="100%"/>
+
+	</mx:ViewStack>
+
+	<mx:HTTPService id="userRequestGetList"  useProxy="false" method="POST" result="defaultResult(event)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="userRequestGetOtherList"  useProxy="false" method="POST" result="defaultResult(event,true)" fault="defaultFault(event)"/>
+
+</mx:Canvas>

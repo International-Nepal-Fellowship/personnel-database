@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupLocationClass xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.service.*" xmlns:packages="packages.*" showCloseButton="true" width="620" close="removeMe()" borderAlpha="1" height="400" backgroundColor="{parentApplication.lightBackgroundColour}">
+
+<mx:Canvas height="100%" width="100%">
+	
+	<mx:FormItem x="24" y="65" label="Name:" width="83" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="127" y="63" width="230" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="230" x="127" y="62" enabled="{listEnabled}" change="comboChange()"/>
+	
+	<mx:FormItem x="24" y="89" label="Department:" width="83"/>
+	<mx:TextInput x="127" y="86" id="txtAdminDepartment"  width="94" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminDepartment)"/>
+
+	<mx:FormItem label="Address:"  x="24" y="113"  width="52"/>
+	<packages:ComboBoxNew x="127" y="110" id="comboAdminAddress" width="370" enabled="false"/>
+	<mx:Button x="505" y="110" label="+" width="32" height="22" click="displayPopUpAddress('Address')" visible="false"/>
+	
+	<mx:FormItem label="Email:" x="24" y="137"  width="47"/>
+	<packages:ComboBoxNew x="127" y="134" id="comboAdminEmail" width="230" enabled="false"/>
+	<mx:Button x="365" y="134" label="+" width="32" height="22" click="displayPopUpEmail('Email Address')" visible="false"/>
+
+	<mx:FormItem label="Phone:" x="24" y="161" width="47"/>
+	<packages:ComboBoxNew x="127" y="158" id="comboAdminPhone" width="230" enabled="false"/>
+	<mx:Button x="365" y="158" label="+" width="32" height="22" click="displayPopUpPhone('Phone Number')" visible="false"/>
+	
+	<packages:DataGridNew id="dgList"  x="10" y="213"	height="50" width="276"  visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID" visible="false" width="50" dataField="__id" />	
+			<mx:DataGridColumn headerText="Location" width="150" dataField="name" />	
+			<mx:DataGridColumn headerText="Department" width="30" dataField="dept" />
+			<mx:DataGridColumn headerText="Email ID" dataField="email_id" width="70" />	
+			<mx:DataGridColumn headerText="Address ID" dataField="address_id" width="70" />	
+			<mx:DataGridColumn headerText="Phone ID" dataField="phone_id" width="70" />	
+			<mx:DataGridColumn headerText="Email" dataField="email" width="70" />	
+			<mx:DataGridColumn headerText="Address" dataField="address" width="70" />	
+			<mx:DataGridColumn headerText="Phone" dataField="phone" width="70" />	
+			<mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" />									
+		</packages:columns>
+	</packages:DataGridNew> 
+	
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button x="399" y="273" id="btnMore" width="25" height="25" click="showPopupWindow()" enabled="{listEnabled}" visible="false">
+		<mx:icon>@Embed(source='../../../files/images/icon-more.gif')</mx:icon>
+	</mx:Button>
+
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	<mx:Button x="505" y="110" label="+" width="32" height="22" click="displayPopUpAddress('Address')" enabled="{newAddressEnabled}"/>
+	<mx:Button x="365" y="134" label="+" width="32" height="22" click="displayPopUpEmail('Email Address')" enabled="{newEmailEnabled}"/>
+	<mx:Button x="365" y="158" label="+" width="32" height="22" click="displayPopUpPhone('Phone Number')" enabled="{newPhoneEnabled}"/>
+
+</mx:Canvas>
+
+<mx:HTTPService id="requestSaveAdmin" method="POST" fault="defaultFault(event)" result="defaultResult(event)" />
+<mx:HTTPService id="requestCurrentAdmin" method="POST" fault="defaultFault(event)" result="currentAdminResult(event)" />
+<mx:HTTPService id="requestNewAdminData" method="POST" fault="defaultFault(event)" result="refreshAdminDataResult(event)"/>
+
+</local:popupLocationClass>

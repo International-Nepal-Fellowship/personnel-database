@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:othersettingsClass  initialize="loadData()" xmlns:packages="packages.*" xmlns:mx="http://www.adobe.com/2006/mxml" backgroundColor="{parentApplication.lightBackgroundColour}" height="343" width="578" xmlns:local="components.admin.*">
+
+	<mx:FormItem x="36" y="46" label="Site" width="99" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput id="txtAdminName" x="149" y="44" width="120" enabled="{inputEnabled}" maxChars="20" toolTip="20 chars" change="checkValid(txtAdminName)"/>
+	<packages:ComboBoxNew id="comboAdminName" width="120" x="149" y="44" change="comboChange()" enabled="{inputEnabled}"/>
+		
+	<mx:FormItem x="36" y="70" label="Site ID:" width="99" color="{parentApplication.mandatoryLabelColour}"/>	
+	<mx:TextInput x="149" y="68" maxChars="3" width="120" id="txtSiteSpecificID" change="checkValid(txtSiteSpecificID)" toolTip="3 digit number" enabled="{inputEnabled}" restrict="0123456789"/>
+
+	<mx:FormItem label="Email Domain:" width="99" color="{parentApplication.mandatoryLabelColour}" x="36" y="94"/>
+	<mx:TextInput x="149" y="92" width="120" id="txtEmailDomain" enabled="{inputEnabled}" change="checkValid(txtEmailDomain)" maxChars="50" toolTip="50 chars"/>
+
+	<mx:FormItem label="Fiscal Type:" width="99" color="{parentApplication.mandatoryLabelColour}" x="36" y="118"/>
+	<packages:ComboBoxNew x="149" y="116" width="120" id="comboFiscalType" enabled="{inputEnabled}"/>
+
+	<mx:FormItem x="36" y="142" label="Timeout:" width="99" color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:TextInput x="149" y="140" width="120" id="txtTimeout" enabled="{inputEnabled}" change="checkValid(txtTimeout)"  maxChars="5" restrict="0123456789" toolTip="Timeout in secs"/>
+
+	<mx:CheckBox x="36" y="168" label="Maintenance mode" id="chk4Maintenance" enabled="{inputEnabled}"/>
+	
+	<mx:FormItem label="Location:" x="286" y="46" width="99" visible="{parentApplication.siteLocationEnabled}"/>
+	<packages:ComboBoxNew x="391" y="44" id="comboServiceLocation" width="120" enabled="{inputEnabled}" visible="{parentApplication.siteLocationEnabled}" change="checkValid(comboServiceLocation)" doubleClickEnabled="true" doubleClick="displayPopUpLocation('Location',true)" toolTip="Double-click for details"/>
+	<mx:Button x="519" y="44" label="+" width="32" height="22" click="displayPopUpLocation('Location')" visible="{parentApplication.siteLocationEnabled}" enabled="{!inputEnabled}"/>
+	
+	<mx:FormItem label="Programme:" x="286" y="70" width="99" visible="{parentApplication.siteLocationEnabled}" height="22"/>
+	<packages:ComboBoxNew x="391" y="68" id="comboServiceProgramme" width="120" enabled="{inputEnabled}" visible="{parentApplication.siteLocationEnabled}" change="checkValid(comboServiceProgramme)" doubleClickEnabled="true" doubleClick="displayPopUpProgramme('Programme',true)" toolTip="Double-click for details"/>
+	<mx:Button x="519" y="68" label="+" width="32" height="22" click="displayPopUpProgramme('Programme')" visible="{parentApplication.siteLocationEnabled}" enabled="{!inputEnabled}"/>
+	
+	<mx:FormItem x="286" y="94" label="Hospital Limit:" width="99"/>
+	<mx:TextInput x="391" y="92" width="120" id="txtHospitalLimit" enabled="{inputEnabled}" change="checkValid(txtHospitalLimit)" maxChars="10" restrict="0123456789" toolTip="Yearly hospitalisation cost limit"/>
+		
+	<mx:FormItem x="295" y="47" label="SMTP Server:" width="107" color="{parentApplication.mandatoryLabelColour}" visible="false"/>
+	<mx:TextInput x="409" y="45" width="120" id="txtSMTPServer" enabled="{inputEnabled}" change="checkValid(txtSMTPServer)"  maxChars="50" toolTip="50 chars" visible="false"/>
+
+	<mx:FormItem x="295" y="75" label="SMTP User ID:" width="99" color="{parentApplication.mandatoryLabelColour}" visible="false"/>
+	<mx:TextInput x="409" y="72" width="120" id="txtSMTPUserID" enabled="{inputEnabled}" change="checkValid(txtSMTPUserID)"  maxChars="50" toolTip="50 chars" visible="false"/>
+
+	<mx:FormItem label="SMTP Password:" width="99" color="{parentApplication.mandatoryLabelColour}" x="294" y="103" visible="false"/>
+	<mx:TextInput x="409" y="100" width="120" id="txtSMTPPassword" enabled="{inputEnabled}" change="checkValid(txtSMTPPassword)" displayAsPassword="true" maxChars="50" toolTip="50 chars" visible="false"/>
+
+	<mx:Button x="67" y="273" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="150" y="273"   width="75" height="25"  visible="false">
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="273"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="273" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Label x="32" y="307" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+	<packages:DataGridNew id="dgList"  x="36" y="131"	height="134" width="493"   visible="false">
+		<packages:columns>
+			<mx:DataGridColumn headerText="ID"   dataField="__id" />	
+			<mx:DataGridColumn headerText="Name"  dataField="name" />	
+			<mx:DataGridColumn headerText="SiteID"  dataField="site_specific_id" />
+			<mx:DataGridColumn headerText="EmailDomain"  dataField="email_domain" />
+			<mx:DataGridColumn headerText="SMTP"  dataField="smtp_server" />	
+			<mx:DataGridColumn headerText="UserID"  dataField="user_id" />
+			<mx:DataGridColumn headerText="Fiscal"  dataField="fiscal_year_start" />
+			<mx:DataGridColumn headerText="Password"  dataField="password" />
+			<mx:DataGridColumn headerText="Timeout"  dataField="timeout" />	
+			<mx:DataGridColumn headerText="Hospital Limit"  dataField="hospitalisation_limit" />	
+			<mx:DataGridColumn headerText="Maintenance"  dataField="maintenance" />				
+            <mx:DataGridColumn headerText="timestamp" dataField="timestamp" width="120" />
+            <mx:DataGridColumn headerText="Location" dataField="location"  width="100"/>
+			<mx:DataGridColumn headerText="location_id" visible="false" dataField="location_id" width="30" />
+			<mx:DataGridColumn headerText="programme_id" dataField="programme_id" width="30" />
+		</packages:columns>
+	</packages:DataGridNew> 
+			 
+	<mx:HTTPService id="requestSaveAdmin"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+	
+</local:othersettingsClass>

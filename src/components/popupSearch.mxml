@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:popupSearchClass backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.*" xmlns:packages="packages.*" initialize="loadData()" showCloseButton="true" width="668" close="removeMe()" borderAlpha="1" height="472" >
+<mx:Canvas height="421" width="100%">	
+
+	<mx:Label x="10" y="12" text="Main Tab:" width="53"/>
+	<packages:ComboBoxNew x="71" y="9" width="129" id="comboMainTabs" change="updateSearchWindow(comboMainTabs)"></packages:ComboBoxNew>
+
+	<mx:Label x="228" y="12" text="Leaf Tab:" width="53"/>
+	<packages:ComboBoxNew x="289" y="9" width="134" id="comboLeafTabs" change="updateSearchWindow(comboLeafTabs)"></packages:ComboBoxNew>
+
+	<packages:DataGridNew id="dgList"  x="10" y="41"	height="334" width="190" click="pushSelectedField(event);" toolTip="click the Field to add">
+		<packages:columns>
+			<mx:DataGridColumn dataField="fields" headerText="Field" width="100" editable="false"/>
+		</packages:columns>
+	</packages:DataGridNew>
+	
+	<mx:Label x="10" y="390" width="210" height="25" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>
+	
+	<mx:Button id="btnAddNew" x="128" y="390" visible="false"/>	
+	<mx:Button id="btnEdit" x="128" y="390" visible="false"/>		
+	<mx:Button id="btnOk" click="sendData()" icon="@Embed(source='../../files/images/ok.gif')" x="228" y="390" width="75" height="25"  enabled="false" label="Apply" labelPlacement="left" disabledIcon="@Embed(source='../../files/images/disabled_ok.gif')"/>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../files/images/cancel.gif')"  x="347" y="390" click="viewMode()" width="75" height="25" label="Close" labelPlacement="left"/>
+
+	<mx:DataGrid x="228" y="41" width="392" height="334" doubleClickEnabled="true" itemDoubleClick="removeSelectedField(event);" id="dgSelectedFields" toolTip="Double-click to remove" editable="true" keyUp="applyDefaultKeyboardOperation(event)" itemClick="applyDefaultClickOperation(event)">
+		<mx:columns>
+			<mx:DataGridColumn dataField="fields" headerText="Selected Field" width="100" editable="false"/>				
+			<mx:DataGridColumn dataField="operation"  headerText="Do" width="40" editable="false" itemRenderer="components.DGIR_DynamicDP"/>  
+	    	<mx:DataGridColumn headerText="Value" dataField="srchValue" width="100" editable="true"/>
+		</mx:columns>
+	</mx:DataGrid>
+</mx:Canvas>
+</local:popupSearchClass>

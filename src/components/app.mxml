@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="createdOk()" xmlns:comp="components.application.*" width="100%" height="100%">
+
+	<mx:Script>
+    <![CDATA[
+    	import mx.collections.ArrayCollection;
+          
+        import mx.rpc.soap.SOAPFault;         
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import flash.net.navigateToURL;
+	    import flash.net.URLRequest;
+		
+		private var currentIndex:uint = 0;
+
+		public function getChildLabels():String {
+			if (parentApplication.personnelWorldwideSystem)
+				return "documentation,education,work_experience,secondment,orientation,orientation_arrangement";
+			else
+				return "";
+		}
+		
+		private function createdOk():void {	
+
+		/*
+		  	if (parentApplication.personnelNepalSystem && (portals.numChildren>5)) { // just leave work experience & education tabs if not already done
+       			portals.removeChildAt(5);
+       			portals.removeChildAt(4);
+				portals.removeChildAt(3);
+       		}
+       	*/		
+		}
+	
+		private function defaultFault(event:FaultEvent):void {			
+		    // Handle service fault.
+		    if (event.fault is SOAPFault) {
+		    	
+		         var fault:SOAPFault	=	event.fault as SOAPFault;
+		         var faultElement:XML	=	fault.element;
+		    }
+		    	    
+		    Alert.show(event.fault.faultString, "Error");		            
+		}
+		
+        public function refreshList(selIndex:uint,otherList:Boolean=false):void{
+         	
+         	var parameters:Object=new Object();        	
+
+   			parameters.fieldValue	=	parentApplication.getCurrentID(); 
+   			parameters.action		=	"Search Others";
+   			navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+         	        
+       		var selectedTable:String;
+       		
+       		if (portals == null)
+       			selectedTable = parentApplication.firstEnabledTable(getChildLabels());
+       		else
+       		 	selectedTable = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){		
+   			
+   			     case 'documentation':
+   			     case 'education':
+   			     case 'secondment':
+   			     case 'orientation':
+   			     case 'orientation_arrangement':
+   			     case 'work_experience':
+   			             			
+         			parameters.fieldNames	=	parentApplication.getTabFieldNames(selectedTable);         		
+         			parameters.table1		=	selectedTable;
+         			parameters.requester	=	selectedTable;       			  
+          			break;
+      		}
+      		
+      		if (otherList) {
+	         	userRequestGetOtherList.useProxy	=	false;
+    	     	userRequestGetOtherList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetOtherList.send(parameters);    
+        	}
+        	else {
+        		userRequestGetList.useProxy	=	false;
+    	     	userRequestGetList.url	=	parentApplication.getPath()	+	"search.php";
+        	   	userRequestGetList.send(parameters);
+        	}
+       }
+       
+       private function defaultResult(event:ResultEvent,otherList:Boolean=false):void{
+        	
+			var noRecord:Boolean	= parentApplication.isNoRecord();
+			
+			if (portals == null) return;
+	
+         	var selectedTable:String = parentApplication.getTableName(portals.selectedChild.label.toLowerCase());
+
+			switch(selectedTable){
+				
+				case 'documentation': //For documentation(displayed as Documentation tab in Application)
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			documentation.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			documentation.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	
+		     
+		     	case 'education':		//For education 
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			education.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			education.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+		     				     		
+		     	case 'secondment': //For secondment
+				
+					if(noRecord)
+						break;
+						
+					if (otherList)
+		     			secondment.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			secondment.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	
+
+		     	case 'orientation':		//For orientation
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			orientation.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			orientation.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;		     		
+		     
+		     	case 'orientation_arrangement':		//For orientationArrivals
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			orientationArrival.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			orientationArrival.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;	
+		     		
+		     	case 'work_experience':
+				
+					if(noRecord)
+						break;				
+		     		
+		     		if (otherList)
+		     			workExperience.initialise(userRequestGetOtherList.lastResult.rootTag.subTag,selectedTable);
+		     		else
+		     			workExperience.initialise(userRequestGetList.lastResult.rootTag.subTag,selectedTable);
+		     		break;
+	     		
+		  	}    
+       }
+
+       private function activate():void{
+       	//trace("app activate ("+portals.selectedIndex+")");
+       	navigateToURL(new URLRequest("javascript: document.getElementById('inf').focus();"), "_self");
+       	//parentApplication.refreshListTab();
+       }
+       
+       private function itemclick():void{
+       	//trace("app itemclick ("+portals.selectedIndex+")");
+       	//refreshList(portals.selectedIndex);
+       }
+       
+       private function render():void{
+       	
+       		if (!parentApplication.isLoggedIn()) {
+       			portals.selectedIndex = 0;
+       			currentIndex = 0;
+       		}
+       		if (currentIndex == portals.selectedIndex) return;
+       		currentIndex = portals.selectedIndex;
+       		//trace("app render ("+portals.selectedIndex+")");
+       		refreshList(portals.selectedIndex);
+       }       
+       ////********************************************************************************************//// 
+    ]]>	
+	</mx:Script>
+	
+	<mx:TabBar x="0" y="0" dataProvider="portals" itemClick="itemclick()" activate="activate()" render="render()">
+	</mx:TabBar>
+
+	<mx:ViewStack id="portals" width="100%" height="100%" x="0" y="21" historyManagementEnabled="true">		
+		<comp:documentation id="documentation"  label="Documentation" width="100%" height="100%"/>		
+		<comp:education id="education" label="Education" width="100%" height="100%"/>
+		<comp:workExperience id="workExperience" label="Work_Experience" width="100%" height="100%" />
+		<comp:secondment id="secondment" label="Secondment" width="100%" height="100%"/>
+		<comp:orientation id="orientation" label="Orientation" width="100%" height="100%"/>	
+		<comp:orientationArrival id="orientationArrival" label="Orientation_Arrangement" width="100%" height="100%"/>	
+	</mx:ViewStack>
+
+	<mx:HTTPService id="userRequestGetList"  useProxy="false" method="POST" result="defaultResult(event)" fault="defaultFault(event)"/>
+	<mx:HTTPService id="userRequestGetOtherList"  useProxy="false" method="POST" result="defaultResult(event,true)" fault="defaultFault(event)"/>
+
+</mx:Canvas>

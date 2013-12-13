@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  $Id: build.xml 407 2007-05-20 02:50:02Z lschreur $
+  $Date: 2007-05-20 12:50:02 +1000 (Sun, 20 May 2007) $
+ -->
+<project name="INF" basedir="." default="compile">
+	
+	<property name="src.dir" value="${basedir}/inf/src" />
+	<property name="build.dir" value="\\192.168.163.2\wwwroot\inf_demo\main" />
+	
+	<target name="compile" description="compiles the code">
+		<mxmlc
+			compiler="${mxmlc}"
+			mainclass="${src.dir}/inf.mxml"
+			as3="true"
+			strict="true"
+			output="${build.dir}/${ant.project.name}.swf"
+			benchmark="false"
+		/>
+	</target>
+	
+</project>

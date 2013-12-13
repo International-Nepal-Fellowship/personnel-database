@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:grouppriviledgeClass initialize="loadData();" backgroundColor="{parentApplication.lightBackgroundColour}" xmlns:mx="http://www.adobe.com/2006/mxml" height="391" width="464" xmlns:local="components.admin.*" xmlns:packages="packages.*">
+
+	<mx:FormItem x="32" y="50" label="Group:" width="42" color="{parentApplication.mandatoryLabelColour}" />
+	<packages:ComboBoxNew id="comboNames" width="120" x="77" y="50" change="getUserPermission('group')" visible="{!showAddUser}"/>
+	<mx:TextInput x="77" y="50" maxChars="50" toolTip="50 chars" width="120" id="txtNewName" enabled="{inputEnabled}" visible="{showAddUser}" change="nameChanged=true;checkValid(txtNewName)" focusOut="checkDBValues('checkGroupName')"/>
+
+	<mx:FormItem x="253" y="51" label="Main Tab:" width="55" color="{parentApplication.mandatoryLabelColour}"/>
+	<packages:ComboBoxNew id="comboMainTabs" width="120" x="316" y="50" change="changeCombo()"/>
+
+	<packages:DataGridNew width="404" id="dgList" x="32" y="82" height="220" sortableColumns="false"  enabled="{inputEnabled}">
+		<packages:columns>
+			<mx:DataGridColumn headerText="Tab Name" dataField="tabName" width="200"/>
+			<mx:DataGridColumn headerText="Add" dataField="addStatus"  width="50">
+				<mx:itemRenderer>
+					<mx:Component >
+						<mx:HBox horizontalAlign="center"> 					
+							<mx:CheckBox  enabled = "{outerDocument.enableDisableCheckBox}" click="data.addStatus=!data.addStatus" selected="{data.addStatus}"/>		
+						</mx:HBox>	
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="Delete" dataField="deleteStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox  horizontalAlign="center">
+							<mx:CheckBox enabled = "{outerDocument.enableDisableCheckBox}" click="data.deleteStatus=!data.deleteStatus"  selected="{data.deleteStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="Edit" dataField="editStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">
+							<mx:CheckBox enabled = "{outerDocument.enableDisableCheckBox}" click="data.editStatus=!data.editStatus"  selected="{data.editStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+			<mx:DataGridColumn headerText="View" dataField="viewStatus" width="50">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">	
+							<mx:CheckBox  enabled = "{outerDocument.enableDisableCheckBox}"  click="data.viewStatus=!data.viewStatus"  selected="{data.viewStatus}"/>			
+						</mx:HBox>
+					</mx:Component>						
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			
+		</packages:columns>			
+	</packages:DataGridNew>
+	
+	<mx:Button x="67" y="313" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode(),fillUserPermission(modeState)" enabled="{addEnabled}" x="150" y="313"   width="75" height="25" >
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	
+	<mx:Button id="btnOk" click="sendData()" enabled="{saveEnabled}" icon="@Embed(source='../../../files/images/save1.gif')" x="233" y="313"  width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/saveDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+	<mx:Button id="btnCancel" icon="@Embed(source='../../../files/images/cancel.gif')"  x="316" y="313" click="viewMode()" enabled="{inputEnabled}" width="75" height="25">
+		<mx:disabledIcon>@Embed(source='../../../files/images/cancelDisabled.gif')</mx:disabledIcon>
+	</mx:Button>
+<mx:HTTPService id="userRequestCheckDBUserName"  method="POST" result="{handleDBUserResult(event)}" fault="{defaultFault(event)}"/>       
+					
+	<mx:HTTPService id="requestSaveAdmin"   useProxy="false" method="POST" fault="defaultFault(event)" result="defaultResult(event)"/>
+  
+	<mx:HTTPService id="requestCurrentPermission" method="POST" fault="defaultFault(event)" result="currentUserPermissionResult(event)" />
+	<mx:Label x="32" y="347" width="400" height="28" id="status_txt" enabled="false" disabledColor="{parentApplication.statusDisabledColour}"/>	
+	
+</local:grouppriviledgeClass>
