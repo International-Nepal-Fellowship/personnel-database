@@ -2,7 +2,7 @@
 <local:tabWorkExperienceClass xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="loadData()" xmlns:local="components.application.*" xmlns:packages="packages.*">
 
 	<mx:FormItem label="Workplace:"  x="10" y="12" width="97" color="{parentApplication.mandatoryLabelColour}"/>
-	<mx:TextInput id="textWorkplace"  x="115" y="9" change="checkValid(textWorkplace)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+	<mx:TextInput id="textWorkplace"  x="115" y="9" change="checkValid(textWorkplace)"  enabled="{inputEnabled}" maxChars="250" toolTip="250 chars" width="595"/>
 	
 	<mx:FormItem label="Job Title:"  x="10" y="36" width="97" color="{parentApplication.mandatoryLabelColour}"/>
 	<mx:TextInput id="textJobTitle"  x="115" y="33" change="checkValid(textJobTitle)"  enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
@@ -13,20 +13,20 @@
 	<mx:FormItem label="End Date:" width="70"  x="10" y="84" color="{parentApplication.mandatoryLabelColour}"/>
 	<mx:DateField x="115" y="81" id="dateEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}"  change="checkValid(dateEndDate)" formatString="{parentApplication.appDateFormat}"  width="100" editable="true"/>
 
-	<mx:FormItem label="Description:"  x="302" y="12" width="105"/>
-	<mx:TextArea id="textDescription"  x="415" y="10" width="295" height="45" enabled="{inputEnabled}"/>
+	<mx:FormItem label="Leaving Reason:"  x="11" y="108" width="97"/>
+	<packages:ComboBoxNew id="comboLeavingReason"  x="115" y="105" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpLeavingReason('Leaving Reason',true)" toolTip="Double-click for details"/>
+	<mx:Button x="251" y="105" label="+" width="32" height="22" click="displayPopUpLeavingReason('Leaving Reason')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+
+	<mx:FormItem label="Description:"  x="302" y="36" width="105"/>
+	<mx:TextArea id="textDescription"  x="415" y="34" width="295" height="45" enabled="{inputEnabled}"/>
 		
-	<mx:FormItem label="City/Town:"  x="302" y="60" width="97"/>
-	<mx:TextInput id="textCityTown"  x="415" y="57" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
+	<mx:FormItem label="City/Town:"  x="302" y="84" width="97"/>
+	<mx:TextInput id="textCityTown"  x="415" y="81" enabled="{inputEnabled}" maxChars="30" toolTip="30 chars"/>
 	
-	<mx:FormItem label="Country:"  x="302" y="84" width="105"/>
-	<packages:ComboBoxNew id="comboCountry"  x="415" y="81" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country',true)" toolTip="Double-click for details"/>
-	<mx:Button x="551" y="81" label="+" width="32" height="22" click="displayPopUpCountry('Country')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
-
-	<mx:FormItem label="Leaving Reason:"  x="302" y="108" width="105"/>
-	<packages:ComboBoxNew id="comboLeavingReason"  x="415" y="105" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpLeavingReason('Leaving Reason',true)" toolTip="Double-click for details"/>
-	<mx:Button x="551" y="105" label="+" width="32" height="22" click="displayPopUpLeavingReason('Leaving Reason')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
-
+	<mx:FormItem label="Country:"  x="302" y="108" width="105"/>
+	<packages:ComboBoxNew id="comboCountry"  x="415" y="105" width="128" enabled="{inputEnabled}" doubleClickEnabled="true" doubleClick="displayPopUpCountry('Country',true)" toolTip="Double-click for details"/>
+	<mx:Button x="551" y="105" label="+" width="32" height="22" click="displayPopUpCountry('Country')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
+	
 	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Education" click="showAll()" enabled="{!inputEnabled}" visible="false"/>
 
 	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
