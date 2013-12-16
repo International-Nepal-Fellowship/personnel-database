@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<local:adminCanvas xmlns:local="components.*">
+<local:adminCanvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="components.*">
 	
 </local:adminCanvas>
