@@ -8,6 +8,7 @@
 		public var comboServiceGrade:ComboBoxNew;
 		public var comboServiceLocation:ComboBoxNew;
 		public var numServicePercentageTime:TextInput;
+		public var textServiceComments:TextArea;
 		
 		[Bindable] private var today:Date = new Date(); 
 		
@@ -24,7 +25,7 @@
          	nonMandatoryDateFields = new ArrayCollection([{label:"End Date", data:dateServiceEndDate}
          	]);
        		nonMandatoryComboFields  = new ArrayCollection([{label:"Working Week", data:comboServiceWorkingWeek},{label:"Special Contract",data:comboServiceSpecialContract}]);
-       		nonMandatoryTextFields  = new ArrayCollection([{label:"Percentage Time", data:numServicePercentageTime}]);
+       		nonMandatoryTextFields  = new ArrayCollection([{label:"Percentage Time", data:numServicePercentageTime},{label:"Comments", data:textServiceComments}]);
        
            }
 
@@ -38,6 +39,7 @@
 			listSearchBy.push({label: "percent_of_time",data:"service"});
 			listSearchBy.push({label: "special_contract",data:"service"});
 			listSearchBy.push({label: "working_week",data:"service"});
+			listSearchBy.push({label: "comments",data:"service"});
         	super.pushSearchByVariables();
         }
 
@@ -52,6 +54,7 @@
 			listSearchWhom.push({fields: "percent_of_time",data:"service"});
 			listSearchWhom.push({fields: "special_contract",data:"service"});
 			listSearchWhom.push({fields: "working_week",data:"service"});
+			listSearchWhom.push({fields: "comments",data:"service"});
         }
         		            
 		override protected function loadData(current:Boolean=false):void{
@@ -85,6 +88,7 @@
 			parameters.workingWeek		=	comboServiceWorkingWeek.text;
 			parameters.specialContract	=	comboServiceSpecialContract.text;
 			parameters.percentageTime	=	numServicePercentageTime.text;
+			parameters.comments			=	textServiceComments.text;
 			
 			if(modeState == 'Edit'){
 				parameters.timestamp=dgList.selectedItem.service_timestamp;
@@ -141,6 +145,7 @@
 			comboServiceLocation.selectedIndex=0;	
 			comboServiceWorkingWeek.selectedIndex=0;
 			comboServiceSpecialContract.selectedIndex=0;
+			textServiceComments.text="";
 		}        
            
 		override protected function checkValid(inputObject:Object):void{
@@ -180,6 +185,8 @@
          	dateServiceStartDate.text	=	DateUtils.stringToDateFieldString(dgList.selectedItem.date_from,dateServiceStartDate,parentApplication.dateFormat);
 			dateServiceEndDate.text	=	DateUtils.stringToDateFieldString(dgList.selectedItem.date_until,dateServiceEndDate,parentApplication.dateFormat);			
 
+			textServiceComments.text		=	dgList.selectedItem.comments;
+			
 			comboServicePost.selectedIndex	=	parentApplication.getComboIndex(comboServicePost.dataProvider,'data',dgList.selectedItem.post_id);	 
 			checkPostActive();
 
