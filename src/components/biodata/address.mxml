@@ -44,7 +44,7 @@
 		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
 	</mx:Button>
 	<mx:Button id="btnAddNew"  icon="@Embed(source='../../../files/images/add.gif')" click="addMode()" enabled="{addEnabled}" x="300" y="318" width="75" height="25" >
-		<mx:disabledIcon>@Embed(source='../../../files/images/AddDisabled.gif')</mx:disabledIcon>
+		<mx:disabledIcon>@Embed(source='../../../files/images/addDisabled.gif')</mx:disabledIcon>
 	</mx:Button>
 	<mx:Button id="btnDelete"  icon="@Embed(source='../../../files/images/delete.gif')" click="deleteRecord()" enabled="{deleteEnabled}" x="383" y="318" width="75" height="25">
 		<mx:disabledIcon>@Embed(source='../../../files/images/deleteDisabled.gif')</mx:disabledIcon>
