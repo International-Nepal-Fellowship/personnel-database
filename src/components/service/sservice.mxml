@@ -13,22 +13,25 @@
 	<packages:ComboBoxNew x="86" y="57" id="comboServiceLocation" width="128" enabled="{inputEnabled}"  change="checkValid(comboServiceLocation)" doubleClickEnabled="true" doubleClick="displayPopUpLocation('Location',true)" toolTip="Double-click for details"/>
 	<mx:Button x="224" y="57" label="+" width="32" height="22" click="displayPopUpLocation('Location')" visible="{addAdminEnabled}" enabled="{!inputEnabled}"/>
 	
-	<mx:FormItem label="Start Date:" x="10" y="84" width="77"  color="{parentApplication.mandatoryLabelColour}"/>
-	<mx:DateField x="123" y="81" id="dateServiceStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceStartDate),CheckSingleDateValidity(dateServiceStartDate)" editable="true"/>
+	<mx:FormItem label="Start Date:" x="10" y="84" width="67"  color="{parentApplication.mandatoryLabelColour}"/>
+	<mx:DateField x="86" y="81" id="dateServiceStartDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceStartDate),CheckSingleDateValidity(dateServiceStartDate)" editable="true"/>
 
-	<mx:FormItem label="End Date:" x="10" y="108" width="77"/>
-	<mx:DateField x="123" y="105" id="dateServiceEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceEndDate)" editable="true"/>
+	<mx:FormItem label="End Date:" x="10" y="108" width="67"/>
+	<mx:DateField x="86" y="105" id="dateServiceEndDate" yearNavigationEnabled="true" enabled="{inputEnabled}" formatString="{parentApplication.appDateFormat}" change="checkValid(dateServiceEndDate)" editable="true"/>
 
-	<mx:FormItem label="Working Week:" x="298" y="57" width="107"/>
-	<packages:ComboBoxNew x="415" y="54" width="93" id="comboServiceWorkingWeek" enabled="{inputEnabled}"></packages:ComboBoxNew>
+	<mx:FormItem label="Working Week:" x="298" y="36" width="107"/>
+	<packages:ComboBoxNew x="415" y="33" width="93" id="comboServiceWorkingWeek" enabled="{inputEnabled}"></packages:ComboBoxNew>
 	
-	<mx:FormItem label="Percentage Time:" x="298" y="81" width="107"/>
-	<mx:TextInput x="415" y="78" width="93" maxChars="3" restrict="0123456789" id="numServicePercentageTime" enabled="{inputEnabled}" change="checkValid(numServicePercentageTime)" toolTip="integer from 0-100"/>
+	<mx:FormItem label="Percentage Time:" x="298" y="60" width="107"/>
+	<mx:TextInput x="415" y="57" width="93" maxChars="3" restrict="0123456789" id="numServicePercentageTime" enabled="{inputEnabled}" change="checkValid(numServicePercentageTime)" toolTip="integer from 0-100"/>
 	
-	<mx:FormItem label="Special Contract:" x="298" y="105" width="107"/>
-	<packages:ComboBoxNew x="415" y="102" width="93" id="comboServiceSpecialContract" enabled="{inputEnabled}"></packages:ComboBoxNew>
+	<mx:FormItem label="Special Contract:" x="298" y="84" width="107"/>
+	<packages:ComboBoxNew x="415" y="81" width="93" id="comboServiceSpecialContract" enabled="{inputEnabled}"></packages:ComboBoxNew>
 
-	<mx:CheckBox x="530" y="133" id="chkShowAll" label="Include Family Service" click="showAll()" enabled="{!inputEnabled}"/>
+	<mx:FormItem label="Comments:"  x="298" y="108" width="72"/>
+	<mx:TextArea id="textServiceComments"  x="415" y="109" width="295" height="42" enabled="{inputEnabled}"/>
+	
+	<mx:CheckBox x="539" y="84" id="chkShowAll" label="Include Family Service" click="showAll()" enabled="{!inputEnabled}"/>
 
 	<mx:Button x="217" y="318" id="btnEdit" icon="@Embed(source='../../../files/images/edit.gif')" click="editMode()" enabled="{editEnabled}" width="75" height="25">
 		<mx:disabledIcon>@Embed(source='../../../files/images/editDisabled.gif')</mx:disabledIcon>
@@ -65,6 +68,7 @@
 			<mx:DataGridColumn  headerText="Special"  dataField="special_contract" width="40"/>
 			<mx:DataGridColumn  headerText="ID" visible="false" dataField="__id" width="30"/>			
 			<mx:DataGridColumn  headerText="timestamp"  dataField="service_timestamp" width="120" visible="false" />									
+			<mx:DataGridColumn  headerText="Comments" visible="false" dataField="comments" width="30" />
 		</packages:columns>
 	</packages:DataGridNew>
 
