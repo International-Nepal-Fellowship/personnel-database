@@ -182,7 +182,7 @@
         private const MS_MASK:String   = "000";
         private var TIMER_INTERVAL:int = 1000;        
 		private var baseTimer:int;
-		private const versionText:String = "Version 1.0.13: 16th January 2013"; 
+		private const versionText:String = "Version 1.0.15: 14th June 2013"; 
 		
 		private var varIPAddress:String	=	"http://localhost/files/";
 		private var noRecord:Boolean	= false;
@@ -1274,7 +1274,7 @@
 				break;
 				
 			case 'service':
-				result = 'service_timestamp,id,post_id,grade_id,location_id,date_from,date_until,percent_of_time,special_contract,working_week';
+				result = 'service_timestamp,id,post_id,grade_id,location_id,date_from,date_until,percent_of_time,special_contract,working_week,comments';
 				break;
 				
 			case 'movement':
@@ -3522,7 +3522,7 @@
 
 	  public function isAdmin():Boolean {
 	  	
-	  	return((userLoginInfo['role']=='admin') || (userLoginInfo['role']=='superadmin'))
+	  	return((userLoginInfo['role']=='admin') || (userLoginInfo['role']=='localadmin') || (userLoginInfo['role']=='superadmin'))
 	  }      
 
 	  public function isSuperAdmin():Boolean {
