@@ -463,7 +463,7 @@
         						portals.selectedIndex = portals.selectedIndex +1;
                 		}
                 		else {
-                			switch(portals.selectedChild.className)
+                			switch(portals.selectedChild.name)
         					{	       					
         						case "biodatas":
         		
@@ -536,7 +536,7 @@
         						portals.selectedIndex = portals.selectedIndex -1;
                 		}
                 		else {
-                			switch(portals.selectedChild.className)
+                			switch(portals.selectedChild.name)
         					{	       					
         						case "biodatas":
         		
@@ -957,7 +957,7 @@
 			
 			var tableName:String="";
 
-        	switch(portals.selectedChild.className)
+        	switch(portals.selectedChild.name)
         	{	
         		case "biodatas":
         		
@@ -1048,7 +1048,7 @@
 			
 			var tableName:String="";
 
-        	switch (_admin.portals.selectedChild.className) {
+        	switch (_admin.portals.selectedChild.name) {
 				
 			case "changelog":
 				tableName = 'change_log';
@@ -1200,7 +1200,7 @@
 				break;	
 				
 			default:
-				tableName = _admin.portals.selectedChild.className;
+				tableName = _admin.portals.selectedChild.name;
 				break;					
 			}
 	
@@ -1734,8 +1734,8 @@
 
 		private function loadNamesResult():void {
 
-			trace("loadnamesresult: "+_admin.portals.selectedChild.className);		
-			switch (_admin.portals.selectedChild.className) {
+			trace("loadnamesresult: "+_admin.portals.selectedChild.name);		
+			switch (_admin.portals.selectedChild.name) {
 				
 				case "backup":
 				case "changelog":
@@ -1944,7 +1944,7 @@
 				
 				var table:String = getAdminTableName();
 
-				switch (_admin.portals.selectedChild.className) {
+				switch (_admin.portals.selectedChild.name) {
 				
 				case "backup":
 				case "changelog":
@@ -2617,7 +2617,7 @@
         	
         	var selectedLabel:String='';
         	
-        	switch(portals.selectedChild.className)
+        	switch(portals.selectedChild.name)
         	{	
         		case "biodatas":
         		
@@ -2900,11 +2900,11 @@
         			break;
         		
         		case 'training':
-        			if (portals.selectedChild.className == "test"){
+        			if (portals.selectedChild.name == "test"){
         				tests.refreshList(4,otherList);
         				searchFamilyDetails();
         			}
-        			if (portals.selectedChild.className == "staff")
+        			if (portals.selectedChild.name == "staff")
         				staff.refreshList(1,otherList);        			
         			break;
         		
@@ -2922,23 +2922,23 @@
         			break;
         		        		
         		case 'education':
-        			if (portals.selectedChild.className == "app")
+        			if (portals.selectedChild.name == "app")
         				app.refreshList(1,otherList);
-        			if (portals.selectedChild.className == "biodatas")
+        			if (portals.selectedChild.name == "biodatas")
 						biodatas.refreshList(5,otherList);
         			break;
         		
         		case 'work_experience':
-        			if (portals.selectedChild.className == "app")
+        			if (portals.selectedChild.name == "app")
         				app.refreshList(2,otherList);
-        			if (portals.selectedChild.className == "biodatas")
+        			if (portals.selectedChild.name == "biodatas")
 						biodatas.refreshList(6,otherList);
         			break;
         		        		
         		case 'secondment':
-        			if (portals.selectedChild.className == "app")
+        			if (portals.selectedChild.name == "app")
         				app.refreshList(3,otherList);
-        			if (portals.selectedChild.className == "test")
+        			if (portals.selectedChild.name == "test")
         				tests.refreshList(8,otherList);
         			break;
         			
@@ -3002,7 +3002,7 @@
    			//if (!fromRelative) 
    				//biodatas.general.findListOfRelatives();
         	
-        	if(portals.selectedChild.className == "biodatas")
+        	if(portals.selectedChild.name == "biodatas")
        			if (biodatas.portals.selectedIndex > 0)
        				biodatas.refreshList(biodatas.portals.selectedIndex);      
         } 
@@ -3010,28 +3010,28 @@
         private function displayQueryResultService(fromRelative:Boolean=false):void{
      		//it displays the search result obtained from the 'searchUserRequest' httpservice
 
-			if(portals.selectedChild.className == "test")
+			if(portals.selectedChild.name == "test")
         		tests.refreshList(tests.portals.selectedIndex);
         } 
         
         private function displayQueryResultApplication(fromRelative:Boolean=false):void{
      		//it displays the search result obtained from the 'searchUserRequest' httpservice
      		
-     		if(portals.selectedChild.className == "app")
+     		if(portals.selectedChild.name == "app")
         		app.refreshList(app.portals.selectedIndex);
         }
         
         private function displayQueryResultPatient(fromRelative:Boolean=false):void{
      		//it displays the search result obtained from the 'searchUserRequest' httpservice
      		
-     		if(portals.selectedChild.className == "patient")
+     		if(portals.selectedChild.name == "patient")
         		patient.refreshList(patient.portals.selectedIndex);
         }
      
          private function displayQueryResultStaff(fromRelative:Boolean=false):void{
      		//it displays the search result obtained from the 'searchUserRequest' httpservice
      		
-     		if(portals.selectedChild.className == "staff")
+     		if(portals.selectedChild.name == "staff")
         		staff.refreshList(staff.portals.selectedIndex);
         }
    
@@ -4456,7 +4456,7 @@
 	 	var cnt:uint=0;
 	 	trace("set app mode to "+value+"("+refresh+")");
 	
-	 	var currentTab:String = portals.selectedChild.className;	 	
+	 	var currentTab:String = portals.selectedChild.name;	 	
 	 	//if ((appMode == value) && (!refresh)) return;
 	 	//if (currentTab == "iniscr") return;
 	 	
