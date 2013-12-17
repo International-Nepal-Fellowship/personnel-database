@@ -5,6 +5,7 @@ package components.service
 	import packages.ComboBoxNew;
 	import mx.controls.DateField;
 	import mx.controls.TextInput;
+	import mx.controls.TextArea;
 	import components.popUpWindow;
 	import components.service.popUpPost;
 	import components.service.popUpLocation;

@@ -3,6 +3,7 @@ package components.service
 	import packages.tabCanvasClass;
 	import packages.ComboBoxNew;
 	import mx.controls.TextInput;
+	import mx.controls.TextArea;
 	import mx.controls.DateField;
 	import components.popUpWindow;
 	import mx.managers.PopUpManager;

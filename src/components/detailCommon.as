@@ -1,6 +1,4 @@
 // common code for tabDetailClass and popupDetailClass
-import mx.controls.TextArea;
-
 
 		public var dateDetailStartDate:DateField;
 		public var dateDetailEndDate:DateField;
