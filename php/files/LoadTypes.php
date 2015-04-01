@@ -178,6 +178,7 @@ $retVal.='<visatype>Study</visatype>';
 $retVal.='<visasubtype>Select..</visasubtype>';
 $retVal.='<visasubtype>Extension</visasubtype>';
 $retVal.='<visasubtype>Entry</visasubtype>';
+$retVal.='<visasubtype>Transfer</visasubtype>';
 
 $retVal.='<qualification>None</qualification>';
 $retVal.='<qualification>Technical</qualification>';
